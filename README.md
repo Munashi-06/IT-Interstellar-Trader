@@ -11,7 +11,6 @@ Antes de clonar y compilar, asegúrate de tener instalado:
 
 ### Linux (Ubuntu/Debian)
 Ejecuta el siguiente comando para instalar las dependencias necesarias de SFML y herramientas de compilación:
-```bash
 sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev
 
 #### Cómo Compilar y Ejecutar
