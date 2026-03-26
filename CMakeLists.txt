@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(MiJuegoSFML)
+project(IT-Interstellar-Trader)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -13,6 +13,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SFML)
 
-add_executable(MiJuegoSFML src/main.cpp)
+add_executable(IT-Interstellar-Trader src/main.cpp)
 
-target_link_libraries(MiJuegoSFML sfml-graphics sfml-window sfml-system)
+target_link_libraries(IT-Interstellar-Trader sfml-graphics sfml-window sfml-system)

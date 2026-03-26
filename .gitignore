@@ -1,0 +1,27 @@
+# --- Compilación ---
+build/
+bin/
+obj/
+out/
+
+# --- Visual Studio & Herramientas de C++ ---
+.vs/
+*.user
+*.sln
+*.vcxproj
+*.filters
+*.proto
+*.pdb
+*.ilk
+*.exp
+
+# --- VS Code ---
+.vscode/
+
+# --- Archivos de Sistema ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- SFML / Dependencias ---
+_deps/
