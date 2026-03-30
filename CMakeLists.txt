@@ -13,6 +13,15 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(SFML)
 
-add_executable(IT-Interstellar-Trader src/main.cpp)
+add_executable(IT-Interstellar-Trader 
+    src/main.cpp
+    src/menu.cpp
+)
+
+add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets"
+    "$<TARGET_FILE_DIR:IT-Interstellar-Trader>/assets"
+)
 
 target_link_libraries(IT-Interstellar-Trader sfml-graphics sfml-window sfml-system)

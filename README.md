@@ -24,7 +24,8 @@ Sigue estos pasos en tu terminal (PowerShell en Windows o Bash en Linux) dentro 
    cmake --build . --config Debug
 4. **Ejecutar el Juego:**
    - Windows:
-      .\Debug\IT-Interstellar-Trader.exe
+      cd Debug
+      .\IT-Interstellar-Trader.exe
    - Linux:
       ./IT-Interstellar-Trader
 
