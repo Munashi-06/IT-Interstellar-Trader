@@ -1,5 +1,8 @@
 #include "Menu.hpp"
+#include "Settings.hpp"
 #include "Player.hpp"
+#include <iostream>
+#include <optional>
 
 enum class State {
     Menu,
@@ -9,6 +12,8 @@ enum class State {
     Options,
     GameOver
 };
+
+GameConfig mainConfig;
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
@@ -23,8 +28,16 @@ void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
-    window.setVerticalSyncEnabled(true);
+
+    window.setFramerateLimit(mainConfig.fpsLimit);
+    window.setVerticalSyncEnabled(mainConfig.vsync);
+    sf::Font font;
+    if(!font.openFromFile("assets/fonts/04B_03__.TTF")) {
+        std::cerr << "Error cargando la fuente" << std::endl;
+    }
+
     Menu mainMenu(1280.f, 720.f);
+    Settings settingsMenu(1280.f, 720.f, font);
 
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("assets/mainMenu_background.jpg")) {
@@ -76,7 +89,32 @@ int main() {
                 }
             }
 
-            if(currentState == State::DifficultySelection) {
+            else if (currentState == State::Options){
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
+                    if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) 
+                        settingsMenu.moveUp();
+                    if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) 
+                        settingsMenu.moveDown(); 
+                    if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A)
+                        settingsMenu.changeValue(-5);
+                    if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D)
+                        settingsMenu.changeValue(5);
+                    
+                    if (keyPressed->code == sf::Keyboard::Key::Enter) {
+                        std::string opt = settingsMenu.getSelectedOption();
+                        if (opt == "APPLY"){
+                            settingsMenu.applySettings(window, mainConfig);
+                        } else if (opt == "BACK") {
+                            currentState = State::Menu;
+                        }
+                    }
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Menu;
+                    }
+                }
+            }
+
+            else if(currentState == State::DifficultySelection) {
                 // Aquí iría la lógica de input para el submenu de selección de dificultad
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     // Permitir volver al menú con Escape
@@ -119,6 +157,10 @@ int main() {
             window.draw(backgroundSprite);
             mainMenu.draw(window);
         } 
+        else if (currentState == State::Options){
+            window.draw(backgroundSprite);
+            settingsMenu.draw(window);
+        }
         else if (currentState == State::Playing) {
             window.clear(sf::Color(0, 0, 20));
             player.update(deltaTime);

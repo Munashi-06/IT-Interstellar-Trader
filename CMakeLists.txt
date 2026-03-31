@@ -16,7 +16,11 @@ FetchContent_MakeAvailable(SFML)
 add_executable(IT-Interstellar-Trader 
     src/main.cpp
     src/Menu.cpp
+    src/Menu.hpp
+    src/Settings.cpp
+    src/Settings.hpp
     src/Player.cpp
+    src/Player.hpp
 )
 
 add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD
