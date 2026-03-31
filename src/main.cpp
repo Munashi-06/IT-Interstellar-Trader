@@ -1,15 +1,19 @@
 #include "Menu.hpp"
+#include "Player.hpp"
 
 enum class State {
     Menu,
+    DifficultySelection,
     Playing,
+    Pause,
     Options,
     GameOver
 };
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
-        state = State::Playing;
+        // state = State::DifficultySelection; // Submenu del Menu Principal
+        state = State::Playing; // Temporal, para probar el cambio de estados
     } else if (option == "SETTINGS") {
         state = State::Options;
     } else if (option == "EXIT") {
@@ -19,6 +23,7 @@ void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
+    window.setVerticalSyncEnabled(true);
     Menu mainMenu(1280.f, 720.f);
 
     sf::Texture backgroundTexture;
@@ -34,8 +39,15 @@ int main() {
 
     State currentState = State::Menu;
 
+    Player player(640.f, 360.f, "assets/player.png");
+
+    sf::Clock clock; // Para medir el tiempo entre frames
+
+    sf::Vector2f mousePos; 
+
     while (window.isOpen()) {
-        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+        float deltaTime = clock.restart().asSeconds(); // Tiempo desde el último frame
 
         // 1. INPUT (Depende del estado)
         while (const std::optional event = window.pollEvent()) {
@@ -64,14 +76,36 @@ int main() {
                 }
             }
 
+            if(currentState == State::DifficultySelection) {
+                // Aquí iría la lógica de input para el submenu de selección de dificultad
+                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    // Permitir volver al menú con Escape
+                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Menu;
+                    }
+                    
+                    if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                        // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
+                        currentState = State::Playing; // Temporal, para probar el cambio de estados
+                    }
+                }
+            }
+        
             if(currentState == State::Playing) {
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     // Permitir volver al menú con Escape (Borrar despues, esto es para probar el cambio de estados)
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Menu;
                     }
-
                     // Aquí iría la lógica de input para el juego
+                    sf::Vector2f dir(0.f, 0.f);
+                    if (keyPressed->code == sf::Keyboard::Key::W) dir.y -= 1;
+                    if (keyPressed->code == sf::Keyboard::Key::S) dir.y += 1;
+                    if (keyPressed->code == sf::Keyboard::Key::A) dir.x -= 1;
+                    if (keyPressed->code == sf::Keyboard::Key::D) dir.x += 1;
+                    
+                    player.move(dir, deltaTime);
+                    player.update(deltaTime);
                 }
                 // Aquí iría la lógica de input para el juego
             }
@@ -86,8 +120,10 @@ int main() {
             mainMenu.draw(window);
         } 
         else if (currentState == State::Playing) {
-            // world.update() y world.draw(window)
-            window.clear(sf::Color(0, 0, 20)); 
+            window.clear(sf::Color(0, 0, 20));
+            player.update(deltaTime);
+            player.draw(window);
+            // world.update() y world.draw(window) irían aquí
         }
 
         window.display();
