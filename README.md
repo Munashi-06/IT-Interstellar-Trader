@@ -11,23 +11,23 @@ Antes de clonar y compilar, asegúrate de tener instalado:
 
 ### Linux (Ubuntu/Debian)
 Ejecuta el siguiente comando para instalar las dependencias necesarias de SFML y herramientas de compilación:
-sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev
+- sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev
 
 ## Cómo Compilar y Ejecutar
 Sigue estos pasos en tu terminal (PowerShell en Windows o Bash en Linux) dentro de la carpeta del proyecto:
 1. **Crear carpeta de compilación:**
-   mkdir build
-   cd build
+   - mkdir build
+   - cd build
 2. **Configurar el proyecto (Descarga SFML automáticamente):**
-   cmake ..
+   - cmake ..
 3. **Compilar el codigo:**
-   cmake --build . --config Debug
+   - cmake --build . --config Debug
 4. **Ejecutar el Juego:**
    - Windows:
-      cd Debug
-      .\IT-Interstellar-Trader.exe
+      - cd Debug
+      - .\IT-Interstellar-Trader.exe
    - Linux:
-      ./IT-Interstellar-Trader
+      - ./IT-Interstellar-Trader
 
 
 ## Estructura del Proyecto
