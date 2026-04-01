@@ -50,6 +50,12 @@ int main() {
     float scaleY = 720 / static_cast<float>(textureSize.y);
     backgroundSprite.setScale({scaleX, scaleY});
 
+    sf::Texture settingsBackgroundTexture;
+    if (!settingsBackgroundTexture.loadFromFile("assets/settingsMenu_background.png")) {
+        std::cerr << "Error cargando la imagen de fondo de settings" << std::endl;
+    }
+    sf::Sprite settingsBackgroundSprite(settingsBackgroundTexture);
+
     State currentState = State::Menu;
 
     Player player(640.f, 360.f, "assets/player.png");
@@ -90,29 +96,34 @@ int main() {
             }
 
             else if (currentState == State::Options){
-                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
-                    if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) 
-                        settingsMenu.moveUp();
-                    if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) 
-                        settingsMenu.moveDown(); 
-                    if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A)
-                        settingsMenu.changeValue(-5);
-                    if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D)
-                        settingsMenu.changeValue(5);
-                    
-                    if (keyPressed->code == sf::Keyboard::Key::Enter) {
-                        std::string opt = settingsMenu.getSelectedOption();
-                        if (opt == "APPLY"){
-                            settingsMenu.applySettings(window, mainConfig);
-                        } else if (opt == "BACK") {
-                            currentState = State::Menu;
+                settingsMenu.updateHover(mousePos);
+                
+                while (const std::optional event = window.pollEvent()){
+                    if (event->is<sf::Event::Closed>()) window.close();
+
+                    if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()){
+                        if(mouseEvent->button == sf::Mouse::Button::Left){
+                            settingsMenu.handleMouseClick(mousePos);
+                            std::string opt = settingsMenu.getSelectedOption();
+                            if(opt == "APPLY"){
+                                settingsMenu.applySettings(window, mainConfig);
+                            }
+                            else if(opt == "BACK"){
+                                settingsMenu.resetTempConfig(mainConfig);
+                                currentState = State::Menu;
+                            }
                         }
                     }
-                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
-                        currentState = State::Menu;
+
+                    if (event->is<sf::Event::MouseButtonReleased>()){
+                        settingsMenu.releaseSlider();
+                    }
+
+                    if (event->is<sf::Event::MouseMoved>()){
+                        settingsMenu.handleMouseMove(mousePos);
                     }
                 }
-            }
+            }                 
 
             else if(currentState == State::DifficultySelection) {
                 // Aquí iría la lógica de input para el submenu de selección de dificultad
@@ -158,7 +169,7 @@ int main() {
             mainMenu.draw(window);
         } 
         else if (currentState == State::Options){
-            window.draw(backgroundSprite);
+            window.draw(settingsBackgroundSprite);
             settingsMenu.draw(window);
         }
         else if (currentState == State::Playing) {

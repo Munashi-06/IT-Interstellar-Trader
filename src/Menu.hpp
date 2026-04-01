@@ -25,6 +25,12 @@ struct Button {
         text.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f + 12.f});
         text.setPosition({pos.x + size.x / 2.f, pos.y + size.y / 2.f});
     }
+    //esto es para alinear las opciones
+    void setAlignmentLeft(float margin = 15.f){
+        sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin({0.f, bounds.size.y / 2.f + 12.f});
+        text.setPosition({shape.getPosition().x + margin, shape.getPosition().y + shape.getSize().y / 2.f});
+    }
 
     void draw(sf::RenderWindow& window) {
         if (selected) {
