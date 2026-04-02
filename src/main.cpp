@@ -1,5 +1,8 @@
 #include "Menu.hpp"
 #include "Player.hpp"
+#include "Item.hpp"
+#include "Inventory.hpp"
+#include "ItemFactory.hpp"
 
 enum class State {
     Menu,
@@ -20,6 +23,26 @@ void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
         window.close();
     }
 }
+
+/*
+        EJEMPLO DE USO DE LA CLASE ITEM, INVENTARIO Y FACTORY
+        (ESTO NO VA EN EL MAIN, SOLO ES UN EJEMPLO DE CÓMO USARLAS
+        REALMENTE IRIA EN LA CLASE WORLD O EN LA LÓGICA DE NEGOCIO DEL JUEGO,
+        DEPENDIENDO DE CÓMO ORGANICEMOS EL CÓDIGO)
+
+// 1. Cargamos el catálogo global
+auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
+
+// 2. El jugador compra "Agua Purificada"
+std::string itemABuscar = "Agua Purificada";
+
+if (galaxyItems.count(itemABuscar)) {
+    // IMPORTANTE: Creamos una COPIA para el inventario del jugador
+    // (Podrías implementar un método virtual clone() en Item para esto)
+    auto& prototipo = galaxyItems[itemABuscar];
+    playerInventory.addItem(std::make_unique<Resource>(prototipo->getName(), prototipo->getPrice()), 1);
+}
+*/
 
 int main() {
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
