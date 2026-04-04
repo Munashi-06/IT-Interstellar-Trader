@@ -3,13 +3,16 @@
 bool Inventory::addItem(std::unique_ptr<Item> newItem, int qty) {
     if (slots.count(newItem->getName())) {
         slots[newItem->getName()].quantity += qty;
+        return true;
     }
     else {
         if (slots.size() < capacity) {
             slots[newItem->getName()] = { std::move(newItem), qty };
+            return true;
         }
         else {
             std::cout << "¡Inventario lleno!" << std::endl;
+            return false;
         }
     }
 }

@@ -20,6 +20,8 @@ add_executable(IT-Interstellar-Trader
     src/Item.cpp
     src/Inventory.cpp
     src/ItemFactory.cpp
+    src/Planet.cpp
+    src/Economy.cpp
 )
 
 add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD

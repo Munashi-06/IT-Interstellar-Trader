@@ -4,6 +4,17 @@
 #include <vector>
 #include <string>
 
+static sf::Color selectedColor = sf::Color(100, 100, 100);
+// lista de colores para los botones, puedes elegir el que más te guste
+/*
+sf::Color(200, 200, 200); // Gris claro
+sf::Color(255, 255, 255); // Blanco
+sf::Color(180, 180, 255); // Azul claro
+sf::Color(255, 180, 180); // Rojo claro
+sf::Color(180, 255, 180); // Verde claro
+*/
+static sf::Color unselectedColor = sf::Color::White;
+
 struct Button {
     sf::RectangleShape shape;
     sf::Text text;
@@ -15,10 +26,10 @@ struct Button {
         shape.setSize(size);
         shape.setPosition(pos);
         shape.setFillColor(sf::Color::Transparent); // Invisible por defecto
-        shape.setOutlineColor(sf::Color::Cyan);
+        shape.setOutlineColor(selectedColor);
         shape.setOutlineThickness(2);
 
-        text.setFillColor(sf::Color::White);
+        text.setFillColor(unselectedColor);
         
         // Centrar texto en la caja
         sf::FloatRect bounds = text.getLocalBounds();
@@ -29,9 +40,10 @@ struct Button {
     void draw(sf::RenderWindow& window) {
         if (selected) {
             window.draw(shape); // Solo dibujamos la caja si está seleccionado
-            text.setFillColor(sf::Color::Cyan);
-        } else {
-            text.setFillColor(sf::Color::White);
+            text.setFillColor(selectedColor);
+        }
+        else {
+            text.setFillColor(unselectedColor);
         }
         window.draw(text);
     }
@@ -49,5 +61,6 @@ public:
 private:
     int selectedItemIndex = 0;
     sf::Font font;
+    sf::Text title;
     std::vector<Button> options;
 };

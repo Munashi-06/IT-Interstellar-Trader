@@ -1,7 +1,7 @@
 #include "Item.hpp"
 
 Item::Item(std::string n, double p, ItemCategory cat, Rarity r)
-    : Item(n, p, cat, r) 
+    : name(n), basePrice(p), category(cat), rarity(r)
 {}
 
 Resource::Resource(std::string n, double p, Rarity r)

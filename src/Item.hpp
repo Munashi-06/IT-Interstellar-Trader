@@ -13,8 +13,7 @@ enum class Rarity { Common, Rare, Exotic, Legendary, Quest };
 // Clase base para los items
 class Item {
 public:
-    Item(std::string name, double basePrice, ItemCategory cat, Rarity rare)
-        : name(name), basePrice(basePrice), category(cat), rarity(rare) {}
+    Item(std::string name, double basePrice, ItemCategory cat, Rarity rare);
 
     virtual ~Item() = default;
 
@@ -22,6 +21,13 @@ public:
     std::string getName() const { return name; }
     ItemCategory getCategory() const { return category; }
     Rarity getRarity() const { return rarity; }
+    bool isIllegal() const { return category == ItemCategory::Illegal; }
+    bool isQuestItem() const { return category == ItemCategory::Quest; }
+    bool isLuxury() const { return category == ItemCategory::Luxury; }
+    bool isResource() const { return category == ItemCategory::Resource; }
+    bool isTechnology() const { return category == ItemCategory::Technology; }
+    bool isFood() const { return category == ItemCategory::Food; }
+    bool isMedic() const { return category == ItemCategory::Medical; }
     
     // El precio podría variar según el planeta, por eso es virtual
     virtual double getPrice() const { return basePrice; }

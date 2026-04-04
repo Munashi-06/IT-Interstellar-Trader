@@ -1,9 +1,22 @@
 #include "Menu.hpp"
 
-Menu::Menu(float width, float height) {
+Menu::Menu(float width, float height)
+    : title(font, "", 70)
+{
     if (!font.openFromFile("assets/fonts/04B_03__.TTF")) {
         std::cerr << "Error cargando la fuente" << std::endl;
     }
+
+    // --- Configuración del Título ---
+    title.setFont(font);
+    title.setString("INTERSTELLAR TRADER");
+    title.setCharacterSize(70); // Más grande que los botones
+    title.setFillColor(sf::Color::White); // Color distintivo
+    
+    // Centrar el título horizontalmente
+    sf::FloatRect titleBounds = title.getLocalBounds();
+    title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
+    title.setPosition({width / 2.f, 160.f}); // 100 píxeles desde arriba
 
     std::vector<std::string> labels = {"START", "SETTINGS", "EXIT"};
     
@@ -19,6 +32,7 @@ Menu::Menu(float width, float height) {
 }
 
 void Menu::draw(sf::RenderWindow& window) {
+    window.draw(title);
     for (auto& btn : options) {
         btn.draw(window);
     }

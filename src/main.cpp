@@ -1,8 +1,9 @@
 #include "Menu.hpp"
 #include "Player.hpp"
-#include "Item.hpp"
 #include "Inventory.hpp"
 #include "ItemFactory.hpp"
+#include "Planet.hpp"
+#include "Economy.hpp"
 
 enum class State {
     Menu,
@@ -50,7 +51,7 @@ int main() {
     Menu mainMenu(1280.f, 720.f);
 
     sf::Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile("assets/mainMenu_background.jpg")) {
+    if (!backgroundTexture.loadFromFile("assets/mainMenu_background.jpeg")) {
         std::cerr << "Error cargando la imagen de fondo" << std::endl;
     }
     sf::Sprite backgroundSprite(backgroundTexture);
@@ -66,7 +67,7 @@ int main() {
 
     sf::Clock clock; // Para medir el tiempo entre frames
 
-    sf::Vector2f mousePos; 
+    sf::Vector2f mousePos;
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
