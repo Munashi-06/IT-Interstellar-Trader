@@ -25,31 +25,44 @@ void Menu::draw(sf::RenderWindow& window) {
 }
 
 void Menu::moveUp() {
-    options[selectedItemIndex].selected = false;
-    selectedItemIndex = (selectedItemIndex - 1 + options.size()) % options.size();
+    if(selectedItemIndex < 0){
+        selectedItemIndex = options.size() - 1; // Si no hay ningún botón seleccionado, seleccionamos el último
+    } else {
+        options[selectedItemIndex].selected = false;
+        selectedItemIndex = (selectedItemIndex - 1 + options.size()) % options.size();
+    }
     options[selectedItemIndex].selected = true;
 }
 
 void Menu::moveDown() {
-    options[selectedItemIndex].selected = false;
-    selectedItemIndex = (selectedItemIndex + 1) % options.size();
+    if (selectedItemIndex < 0) {
+        selectedItemIndex = 0; // Si no hay ningún botón seleccionado, seleccionamos el primero
+    } else {
+        options[selectedItemIndex].selected = false;
+        selectedItemIndex = (selectedItemIndex + 1) % options.size();
+    }
     options[selectedItemIndex].selected = true;
 }
 
-void Menu::updateHover(sf::Vector2f mousePos) {
-    static sf::Vector2f lastMousePos = {0, 0};
+bool Menu::updateHover(sf::Vector2f mousePos) {
+    int oldIndex = selectedItemIndex;
+    int hoveredIndex = -1;
     
-    // Solo procesamos el hover si el mouse se ha movido físicamente
-    if (mousePos != lastMousePos) {
-        for (size_t i = 0; i < options.size(); ++i) {
-            if (options[i].shape.getGlobalBounds().contains(mousePos)) {
-                options[selectedItemIndex].selected = false;
-                selectedItemIndex = i;
-                options[selectedItemIndex].selected = true;
-            }
+    for (size_t i =0; i < options.size(); ++i) {
+        if (options[i].shape.getGlobalBounds().contains(mousePos)){
+            hoveredIndex = (int)i;
+            break;
         }
-        lastMousePos = mousePos;
     }
+    if (hoveredIndex != -1 && hoveredIndex != oldIndex) {
+        if (oldIndex >= 0 && oldIndex < (int)options.size()){
+            options[oldIndex].selected = false;
+        }
+        selectedItemIndex = hoveredIndex;
+        options[selectedItemIndex].selected = true;
+        return true; // Se ha cambiado la selección
+        }
+    return false; // No se ha cambiado la selección
 }
 
 std::string Menu::getSelectedOption() const {

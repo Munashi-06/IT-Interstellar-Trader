@@ -29,4 +29,4 @@ add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD
     "$<TARGET_FILE_DIR:IT-Interstellar-Trader>/assets"
 )
 
-target_link_libraries(IT-Interstellar-Trader sfml-graphics sfml-window sfml-system)
+target_link_libraries(IT-Interstellar-Trader sfml-graphics sfml-window sfml-system sfml-audio)

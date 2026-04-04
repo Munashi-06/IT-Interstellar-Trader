@@ -49,7 +49,7 @@ public:
     void draw(sf::RenderWindow& window);
     void moveUp();
     void moveDown();
-    void updateHover(sf::Vector2f mousePos);
+    bool updateHover(sf::Vector2f mousePos);
     std::string getSelectedOption() const;
 
 private:
