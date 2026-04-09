@@ -10,17 +10,7 @@
 #include <optional>
 #include <SFML/Audio.hpp>
 
-
 GameConfig mainConfig;
-
-enum class State {
-    Menu,
-    DifficultySelection,
-    Playing,
-    Pause,
-    Options,
-    GameOver
-};
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
