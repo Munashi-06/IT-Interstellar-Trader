@@ -1,9 +1,17 @@
 #include "Menu.hpp"
+#include "Settings.hpp"
 #include "Player.hpp"
 #include "Inventory.hpp"
 #include "ItemFactory.hpp"
 #include "Planet.hpp"
 #include "Economy.hpp"
+#include "State.hpp"
+#include <iostream>
+#include <optional>
+#include <SFML/Audio.hpp>
+
+
+GameConfig mainConfig;
 
 enum class State {
     Menu,
@@ -46,9 +54,43 @@ if (galaxyItems.count(itemABuscar)) {
 */
 
 int main() {
+    mainConfig.loadFromSavedFile("config.txt");
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
-    window.setVerticalSyncEnabled(true);
+
+    if (mainConfig.vsync){
+        window.setVerticalSyncEnabled(true);
+        window.setFramerateLimit(0); // Desactivar límite de FPS para que VSync controle la tasa de refresco
+    } else{
+        window.setVerticalSyncEnabled(false);
+        window.setFramerateLimit(mainConfig.fpsLimit);
+    }
+    sf::Font font;
+    if(!font.openFromFile("assets/fonts/04B_03__.TTF")) {
+        std::cerr << "Error cargando la fuente" << std::endl;
+    }
+
+    sf::Music music;
+    if (!music.openFromFile("assets/audio/undertale_dogsong.ogg")){ //musica de fondo del menu para probar la funcionalidad de volumen en settings
+        std::cerr << "Error cargando la música" << std::endl;
+    }
+    music.setLooping(true);
+    music.setVolume((float)mainConfig.musicVolume);
+    music.play();
+
+    sf::SoundBuffer hoverBuffer, clickBuffer;
+    if (!hoverBuffer.loadFromFile("assets/audio/hover_sound.ogg") || !clickBuffer.loadFromFile("assets/audio/option_selection_sound.ogg")){
+        std::cerr << "Error cargando los efectos de sonido" << std::endl;
+    }
+
+    sf::Sound hoverSound(hoverBuffer);
+    sf::Sound clickSound(clickBuffer);
+
+    hoverSound.setVolume((float)mainConfig.sfxVolume);
+    clickSound.setVolume((float)mainConfig.sfxVolume);
+
     Menu mainMenu(1280.f, 720.f);
+    Settings settingsMenu(1280.f, 720.f, font);
+    settingsMenu.resetTempConfig(mainConfig);
 
     sf::Texture backgroundTexture;
     if (!backgroundTexture.loadFromFile("assets/mainMenu_background.jpeg")) {
@@ -60,6 +102,12 @@ int main() {
     float scaleX = 1280 / static_cast<float>(textureSize.x);
     float scaleY = 720 / static_cast<float>(textureSize.y);
     backgroundSprite.setScale({scaleX, scaleY});
+
+    sf::Texture settingsBackgroundTexture;
+    if (!settingsBackgroundTexture.loadFromFile("assets/settingsMenu_background.png")) {
+        std::cerr << "Error cargando la imagen de fondo de settings" << std::endl;
+    }
+    sf::Sprite settingsBackgroundSprite(settingsBackgroundTexture);
 
     State currentState = State::Menu;
 
@@ -82,25 +130,98 @@ int main() {
                     // Soporte para Flechas + WASD
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) 
                         mainMenu.moveUp();
+                        hoverSound.play();
                     if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) 
                         mainMenu.moveDown();
+                        hoverSound.play();
                     
                     // Confirmar con Enter o Espacio
                     if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
+                        clickSound.play();
                     }
                 }
-
+                
+                if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                    sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
+                    if(mainMenu.updateHover(mPos)){
+                        hoverSound.stop(); //detiene el sonido anterior si se cambia de opción rápidamente (opcional)
+                        hoverSound.play();
+                    }
+                }
                 // Detectar Click del Mouse
                 if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
                         // Si el mouse está sobre el botón actual (actualizado por updateHover)
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
+                        clickSound.play();
                     }
                 }
             }
 
-            if(currentState == State::DifficultySelection) {
+            else if (currentState == State::Options){
+                if (event->is<sf::Event::Closed>()) window.close();
+                
+                    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
+                        if(keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up){
+                            settingsMenu.moveUp();
+                            hoverSound.play();
+                        } else if(keyPressed->code == sf::Keyboard::Key::S || keyPressed->code == sf::Keyboard::Key::Down){
+                            settingsMenu.moveDown();
+                            hoverSound.play();
+                        } else if (keyPressed->code == sf::Keyboard::Key::Escape){
+                            settingsMenu.resetTempConfig(mainConfig);
+                            currentState = State::Menu;
+                        } else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space){
+                            settingsMenu.handleAction(currentState, window, mainConfig);
+                            clickSound.play();
+                        } else if (keyPressed->code == sf::Keyboard::Key::D || keyPressed->code == sf::Keyboard::Key::Right){
+                            settingsMenu.changeValue(1); // Cambia el valor en 5 unidades, ajustar según sea necesario
+                            hoverSound.play();
+                        } else if (keyPressed->code == sf::Keyboard::Key::A || keyPressed->code == sf::Keyboard::Key::Left){
+                            settingsMenu.changeValue(-1); // Cambia el valor en -5 unidades, ajustar según sea necesario
+                            hoverSound.play();
+                        }
+                    }
+
+                    if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()){
+                        if(mouseEvent->button == sf::Mouse::Button::Left){
+                            sf::Vector2f mousePos = window.mapPixelToCoords(mouseEvent->position);
+                            clickSound.play();
+                            settingsMenu.handleMouseClick(mousePos);
+                            std::string opt = settingsMenu.getSelectedOption();
+                            if(opt == "APPLY"){
+                                settingsMenu.applySettings(window, mainConfig);
+                                music.setVolume((float)mainConfig.musicVolume);
+                            }
+                            else if(opt == "BACK"){
+                                music.setVolume((float)mainConfig.musicVolume);
+                                hoverSound.setVolume((float)mainConfig.sfxVolume);
+                                clickSound.setVolume((float)mainConfig.sfxVolume);
+                                settingsMenu.resetTempConfig(mainConfig);
+                                currentState = State::Menu;
+                            }
+                        }
+                    }
+
+                    if (event->is<sf::Event::MouseButtonReleased>()){
+                        settingsMenu.releaseSlider();
+                    }
+
+                    if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()){
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouseMoved->position);
+                        if(settingsMenu.updateHover(mousePos)){
+                            hoverSound.stop(); //detiene el sonido anterior si se cambia de opción rápidamente (opcional)
+                            hoverSound.play();
+                        }
+                        
+                        settingsMenu.handleMouseMove(mousePos);
+                        music.setVolume((float)settingsMenu.getTempMusicVolume());
+                        hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
+                        clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
+                    }
+                }
+            else if(currentState == State::DifficultySelection) {
                 // Aquí iría la lógica de input para el submenu de selección de dificultad
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     // Permitir volver al menú con Escape
@@ -114,6 +235,10 @@ int main() {
                     }
                 }
             }
+
+            music.setVolume((float)settingsMenu.getTempMusicVolume());
+            hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
+            clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
         
             if(currentState == State::Playing) {
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -139,10 +264,13 @@ int main() {
         window.clear();
         
         if (currentState == State::Menu) {
-            mainMenu.updateHover(mousePos);
             window.draw(backgroundSprite);
             mainMenu.draw(window);
         } 
+        else if (currentState == State::Options){
+            window.draw(settingsBackgroundSprite);
+            settingsMenu.draw(window);
+        }
         else if (currentState == State::Playing) {
             window.clear(sf::Color(0, 0, 20));
             player.update(deltaTime);
@@ -152,6 +280,5 @@ int main() {
 
         window.display();
     }
-
     return 0;
 }
