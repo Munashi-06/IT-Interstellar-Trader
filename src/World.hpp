@@ -14,17 +14,15 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Item>> globalCatalog; // Catálogo global de items para referencia en eventos y mercados
     std::unique_ptr<Heap> radar; // Heap para gestionar planetas por prioridad de eventos
 public:
-    World(float deltaT, std::unique_ptr<Heap> r) : currentTurn(0), deltaTime(deltaT), radar(std::move(r)) {
-        // Usamos tu Factory para inicializar el universo
-        solarSystem = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets_db.txt");
-        // Cargar el catálogo global de items
+    World(float deltaT, std::unique_ptr<Heap> r, std::vector<Planet> planetas) 
+        : currentTurn(0), 
+          deltaTime(deltaT), 
+          radar(std::move(r)), 
+          solarSystem(std::move(planetas)) 
+    {
         globalCatalog = ItemFactory::loadDatabase("assets/data/items.txt");
-        // Inicializar el heap de radar
-        for (const auto& plnt : solarSystem) {
-            radar->insert(Planet(plnt), radar->getHeapArray(), cmp); 
-        }
     }
-    // Se llama cada vez que el jugador viaja o descansa
+    
     void update();
 
     void setDeltaTime(float dt) { deltaTime = dt; }

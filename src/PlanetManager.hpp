@@ -1,11 +1,11 @@
+#pragma once
 #include "Planet.hpp"
 #include <fstream>
 #include <sstream>
 #include <map>
 #include <random>
-#include <algorithm>
 
-void insertion_sort(std::vector<Planet> &a) {
+inline void insertionSort(std::vector<Planet> &a) {
     for(int i = 1; i < a.size(); i++) {
         Planet key = std::move(a[i]); 
         int j = i - 1;

@@ -1,11 +1,11 @@
 #pragma once
 #include "Planet.hpp"
 
-int randomInt(int min, int max) {
+inline int randomInt(int min, int max) {
     return rand() % (max - min + 1) + min;
 }
 
-int getRandomEventDuration(PlanetEvent event) {
+inline int getRandomEventDuration(PlanetEvent event) {
     switch (event) {
         case PlanetEvent::War: return randomInt(100, 250);
         case PlanetEvent::Plague: return randomInt(50, 300);

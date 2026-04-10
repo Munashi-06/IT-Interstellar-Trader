@@ -110,7 +110,40 @@ int main() {
 
     sf::Vector2f mousePos;
 
-    World world(0.0f); // Inicializamos el mundo con un deltaTime de 0, se actualizará en el loop principal
+    // --- LÓGICA DE INICIALIZACIÓN DEL MUNDO ---
+
+    // 1. Cargamos el vector base de planetas
+    std::vector<Planet> planetasBase = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
+
+    if (planetasBase.empty()) {
+        return -1; // Error de carga
+    }
+
+    // 2. Creamos el Heap. 
+    // IMPORTANTE: Pasamos una COPIA del primer planeta para no romper el vector planetasBase
+    auto radarInicial = std::make_unique<Heap>(Planet(planetasBase[0]));
+
+    // 3. Llenamos el heap con el resto (también copias)
+    for (size_t i = 1; i < planetasBase.size(); ++i) {
+        radarInicial->insert(Planet(planetasBase[i]), radarInicial->getHeapArray(), cmp);
+    }
+
+    // 4. Inicializamos el mundo con TODO
+    // Usamos std::move para pasarle la propiedad de los objetos al World
+    World world(0.0f, std::move(radarInicial), std::move(planetasBase));
+
+    // --- FIN DE LA LÓGICA DE INICIALIZACIÓN ---
+
+    // Ahora 'world' tiene el control de los planetas y el radar
+    
+    // Bucle principal (ejemplo SFML)
+    /*
+    while (window.isOpen()) {
+        float dt = clock.restart().asSeconds();
+        world.setDeltaTime(dt);
+        world.update(); // Aquí se procesarían los eventos y el radar
+    }
+    */
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));

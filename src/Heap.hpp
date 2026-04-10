@@ -3,7 +3,9 @@
 #include "Planet.hpp"
 #include <vector>
 
-bool cmp(const Planet& a, const Planet& b); // Función de comparación para ordenar los planetas en el heap
+typedef bool (*Cmp)(const Planet&, const Planet&);
+
+inline bool cmp(const Planet& a, const Planet& b) // Función de comparación para ordenar los planetas en el heap
 {
 /*
     Aun sigo pensando como se podrian hacer las comparaciones pero se podrian comparar por
@@ -63,16 +65,16 @@ private:
     std::vector<Planet> heap_array; // Almacena los planetas en un arreglo para facilitar las operaciones de sift-up y sift-down
     size_t n = 0; // Tamaño actual del heap
     // Funciones auxiliares para mantener la propiedad del heap reciben como comparador la funcion cmp declarada arriba
-    void sift_up(std::vector<Planet>& arr, size_t idx, Cmp cmp);
-    void sift_down(std::vector<Planet>& arr, size_t idx, Cmp cmp);
+    void sift_up(std::vector<Planet>& arr, size_t idx, bool (*cmp)(const Planet&, const Planet&));
+    void sift_down(std::vector<Planet>& arr, size_t idx, bool (*cmp)(const Planet&, const Planet&));
 public:
     Heap(Planet&& p) noexcept;
 
     std::vector<Planet>& getHeapArray() noexcept { return heap_array; }
 
-    void insert(Planet&& p, std::vector<Planet>& arr, Cmp cmp = cmp);
-    void remove(std::vector<Planet>& arr, Cmp cmp = cmp);
+    void insert(Planet&& p, std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
+    void remove(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
 
     // Actualizar el heap después de modificar un planeta (por ejemplo, después de que un evento termine)
-    void update(size_t idx, std::vector<Planet>& arr, Cmp cmp = cmp);
-}
+    void update(Planet& modified, std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
+};

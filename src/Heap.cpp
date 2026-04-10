@@ -1,84 +1,48 @@
 #include "Heap.hpp"
 
-Heap::Heap(Planet&& p) noexcept
-    : BinNode<Planet>(std::move(p))
-{
-    // Agrega el planeta inicial al heap_array en la posicion 1 (null, planeta)
-    this->heap_array.push_back(Planet());
-    this->heap_array[1] = std::move(p);
+// Constructor
+Heap::Heap(Planet&& p) noexcept : BinNode<Planet>(std::move(p)) {
+    this->heap_array.push_back(Planet()); // Posición 0 vacía
+    this->heap_array.push_back(std::move(p)); // Posición 1 es la raíz
     this->n = 1;
 }
 
-void Heap::sift_up(std::vector<Planet>& arr, size_t idx, Cmp cmp)
-{
-    // Mientras no sea la raíz y el hijo sea "mejor" que el padre
+void Heap::sift_up(std::vector<Planet>& arr, size_t idx, Cmp comparador) {
     while (idx > 1) {
         size_t padre = idx / 2;
-        if (cmp(arr[idx], arr[padre])) {
+        if (comparador(arr[idx], arr[padre])) {
             std::swap(arr[idx], arr[padre]);
             idx = padre;
-        } else {
-            break;
-        }
+        } else break;
     }
 }
 
-
-void Heap::sift_down(std::vector<Planet>& arr, size_t idx, Cmp cmp)
-{
-        size_t l, r, c;
+void Heap::sift_down(std::vector<Planet>& arr, size_t idx, Cmp comparador) {
     while (true) {
-        l = 2 * idx;
-        r = 2 * idx + 1;
-        c = idx;
-        
-        if (l <= n && cmp(arr[l], arr[c])) c = l;
-        if (r <= n && cmp(arr[r], arr[c])) c = r;
+        size_t l = 2 * idx;
+        size_t r = 2 * idx + 1;
+        size_t c = idx;
+
+        if (l <= n && comparador(arr[l], arr[c])) c = l;
+        if (r <= n && comparador(arr[r], arr[c])) c = r;
 
         if (c != idx) {
             std::swap(arr[idx], arr[c]);
             idx = c;
-        }
-        else {
-            break;
-        }
+        } else break;
     }
 }
 
-void Heap::insert(Planet&& p, std::vector<Planet>& arr, Cmp cmp = cmp)
-{
-    // Agrega el nuevo planeta al final del arreglo
+void Heap::insert(Planet&& p, std::vector<Planet>& arr, Cmp comparador) {
     arr.push_back(std::move(p));
     n++;
-
-    // Mantiene la propiedad del heap
-    sift_up(arr, n, cmp);
+    sift_up(arr, n, comparador);
 }
 
-void Heap::remove(std::vector<Planet>& arr, Cmp cmp = cmp)
-{
-    if (n == 0) return; // Heap vacío
-
-    // Reemplaza la raíz con el último elemento
+void Heap::remove(std::vector<Planet>& arr, Cmp comparador) {
+    if (n == 0) return;
     arr[1] = std::move(arr[n]);
     arr.pop_back();
     n--;
-
-    // Mantiene la propiedad del heap
-    sift_down(arr, 1, cmp);
-}
-
-void Heap::update(Planet& modified, std::vector<Planet>& arr, Cmp cmp = cmp)
-{
-    // Recorre el heap para encontrar el planeta modificado
-    // como solo se van a tener unos pocos planetas en el heap, esto no debería ser un gran problema de rendimiento
-    for (size_t i = 1; i <= n; ++i) {
-        if (arr[i].getName() == modified.getName()) { // Asumiendo que el nombre es único
-            sift_up(arr, i, cmp);
-            if (arr[i].getName() == modified.getName()) { // Si no se movió hacia arriba, intenta hacia abajo
-                sift_down(arr, i, cmp);
-            }
-            break;
-        }
-    }
+    if (n > 0) sift_down(arr, 1, comparador);
 }

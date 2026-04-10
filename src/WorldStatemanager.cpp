@@ -9,66 +9,35 @@ void WorldStateManager::update(float deltaTime, std::vector<Planet>& planets) {
 }
 
 void WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
-    // 1. Contar cuántos eventos activos hay
-    int activeEvents = 0;
-    for (const auto& planet : planets) {
-        if (planet.getEvent() != PlanetEvent::None) activeEvents++;
-    }
+    if (planets.empty()) return;
 
-    // 2. Si es menor a maxActiveEvents, elegir un planeta al azar
-    if (activeEvents < maxActiveEvents) {
-        int randomIndex = rand() % planets.size();
-        Planet& chosenPlanet = planets[randomIndex];
-
-        // 3. Cambiar su PlanetEvent basándose en sus atributos
-        // (Aquí podrías implementar una lógica más compleja que considere los atributos del planeta)
-        int eventChance = rand() % 100;
-        if (eventChance < 20) {
-            chosenPlanet.setEvent(PlanetEvent::War);
-        } else if (eventChance < 40) {
-            chosenPlanet.setEvent(PlanetEvent::Plague);
-        } else if (eventChance < 60) {
-            chosenPlanet.setEvent(PlanetEvent::TechBoom);
-        } else if (eventChance < 80) {
-            chosenPlanet.setEvent(PlanetEvent::Famine);
-        } else {
-            chosenPlanet.setEvent(PlanetEvent::None); // Evento aleatorio que no afecta al planeta
-        }
-    }
-}
-
-void WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
+    // 1. Seleccionar un planeta al azar
     Planet& target = planets[rand() % planets.size()];
     
+    // Si ya tiene un evento, no le damos otro para no solapar
+    if (target.getEvent() != PlanetEvent::None) return;
+
     int roll = rand() % 100;
 
-    // Si la seguridad es baja, hay mucha chance de Piratería
-    if (target.getSecurityLevel() < 4 && roll < 60) {
+    // 2. Lógica de Pesos por Atributos
+    // Piratería: Más probable si securityLevel es bajo (< 4)
+    if (target.getSecurityLevel() < 4 && roll < 40) {
         target.setEvent(PlanetEvent::Piracy);
-        target.setEventDuration(getRandomEventDuration(PlanetEvent::Piracy));
-    } 
-    // Si la abundancia es baja, hay chance de Hambruna
-    else if (target.getResourceAbundance() < 3 && roll < 50) {
+        target.setEventDuration(5 + rand() % 5); 
+    }
+    // Hambruna: Más probable si resourceAbundance es bajo (< 3)
+    else if (target.getResourceAbundance() < 3 && roll < 30) {
         target.setEvent(PlanetEvent::Famine);
-        target.setEventDuration(getRandomEventDuration(PlanetEvent::Famine));
+        target.setEventDuration(7 + rand() % 4);
     }
-    // Si la tecnología médica es baja, hay chance de Plaga
-    else if (target.getMedicalTech() < 4 && roll < 40) {
+    // Plaga: Más probable si medicalTech es bajo (< 4)
+    else if (target.getMedicalTech() < 4 && roll < 25) {
         target.setEvent(PlanetEvent::Plague);
-        target.setEventDuration(getRandomEventDuration(PlanetEvent::Plague));
+        target.setEventDuration(4 + rand() % 6);
     }
-    // Si el nivel tecnológico es alto, hay chance de Boom Tecnológico
-    else if (target.getTechLevel() > 7 && roll < 30) {
+    // Auge Tecnológico: Más probable si techLevel es alto (> 7)
+    else if (target.getTechLevel() > 7 && roll < 15) {
         target.setEvent(PlanetEvent::TechBoom);
-        target.setEventDuration(getRandomEventDuration(PlanetEvent::TechBoom));
-    }
-    // Si el nivel de seguridad es alto, hay chance de Guerra (conflictos entre facciones por recursos)
-    else if (target.getSecurityLevel() > 7 && roll < 20) {
-        target.setEvent(PlanetEvent::War);
-        target.setEventDuration(getRandomEventDuration(PlanetEvent::War));
-    }
-    else {
-        target.setEvent(PlanetEvent::None); // Evento aleatorio que no afecta al planeta
-        target.setEventDuration(getRandomEventDuration(PlanetEvent::None));
+        target.setEventDuration(3 + rand() % 3);
     }
 }

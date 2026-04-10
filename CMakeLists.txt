@@ -26,6 +26,9 @@ add_executable(IT-Interstellar-Trader
     src/State.hpp
     src/PlanetManager.cpp
     src/WorldStatemanager.cpp
+    src/World.cpp
+    src/Heap.cpp
+    src/BinaryNode.hpp
 )
 
 add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD

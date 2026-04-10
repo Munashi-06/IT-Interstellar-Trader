@@ -1,6 +1,6 @@
 #include "PlanetManager.hpp"
 
-static std::vector<Planet> loadUniqueOrbitPlanets(const std::string& filename) {
+std::vector<Planet> PlanetManager::loadUniqueOrbitPlanets(const std::string& filename) {
     std::map<int, std::vector<Planet>> orbitPool;
     std::ifstream file(filename);
     std::string line;
@@ -61,6 +61,6 @@ static std::vector<Planet> loadUniqueOrbitPlanets(const std::string& filename) {
         selectedPlanets.push_back(candidates[pDist(g)]);
     }
 
-    insertion_sort(selectedPlanets);
+    insertionSort(selectedPlanets);
     return selectedPlanets;
 }
