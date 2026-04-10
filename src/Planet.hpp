@@ -24,6 +24,7 @@ private:
     int moonCount; // Número de lunas, podría influir en la presencia de estaciones espaciales y su oferta de items
     int medicalTech; // Nivel de tecnología médica, podría influir en la oferta y precio de items de categoría Medical
 public:
+    Planet();
     Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med);
 
     std::string getName() const;

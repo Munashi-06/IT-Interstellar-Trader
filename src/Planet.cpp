@@ -1,5 +1,10 @@
 #include "Planet.hpp"
 
+Planet::Planet() : name("Empty"), description("Empty"), orbit(0), techLevel(0), securityLevel(0), resourceAbundance(0), luxuryDemand(0), moonCount(0), medicalTech(0)
+{
+    // Constructor por defecto
+}
+
 Planet::Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med)
     : name(n), description(d), orbit(orb), techLevel(tech), securityLevel(sec), resourceAbundance(res), luxuryDemand(lux), moonCount(moon), medicalTech(med)
 {}
