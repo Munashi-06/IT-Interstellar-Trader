@@ -6,6 +6,9 @@
 #include "Planet.hpp"
 #include "Economy.hpp"
 #include "State.hpp"
+#include "WorldStatemanager.hpp"
+#include "PlanetManager.hpp"
+#include "World.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -107,9 +110,11 @@ int main() {
 
     sf::Vector2f mousePos;
 
+    World world(0.0f); // Inicializamos el mundo con un deltaTime de 0, se actualizará en el loop principal
+
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        float deltaTime = clock.restart().asSeconds(); // Tiempo desde el último frame
+        world.setDeltaTime(clock.restart().asSeconds()); // Tiempo desde el último frame
 
         // 1. INPUT (Depende del estado)
         while (const std::optional event = window.pollEvent()) {
@@ -243,8 +248,8 @@ int main() {
                     if (keyPressed->code == sf::Keyboard::Key::A) dir.x -= 1;
                     if (keyPressed->code == sf::Keyboard::Key::D) dir.x += 1;
                     
-                    player.move(dir, deltaTime);
-                    player.update(deltaTime);
+                    player.move(dir, world.getDeltaTime());
+                    player.update(world.getDeltaTime());
                 }
                 // Aquí iría la lógica de input para el juego
             }
@@ -263,7 +268,7 @@ int main() {
         }
         else if (currentState == State::Playing) {
             window.clear(sf::Color(0, 0, 20));
-            player.update(deltaTime);
+            player.update(world.getDeltaTime());
             player.draw(window);
             // world.update() y world.draw(window) irían aquí
         }

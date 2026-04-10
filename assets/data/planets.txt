@@ -1,0 +1,4 @@
+Tatooine,"Desierto",1,1,3,2,1,2,1
+Coruscant,"Ciudad",1,10,10,1,10,4,10
+Hoth,"Hielo",2,2,2,4,1,3,2
+Mustafar,"Lava",2,3,5,8,2,0,1

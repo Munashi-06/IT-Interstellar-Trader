@@ -40,6 +40,7 @@ protected:
 };
 
 // Clases derivadas para cada categoría de item
+#pragma region ClasesDerivadas
 class Resource : public Item {
 public:
     Resource(std::string n, double p, Rarity r);
@@ -80,3 +81,4 @@ public:
     
     std::string getQuestID() const;
 };
+#pragma endregion
