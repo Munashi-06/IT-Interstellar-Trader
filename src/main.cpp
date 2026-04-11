@@ -9,6 +9,7 @@
 #include "WorldStatemanager.hpp"
 #include "PlanetManager.hpp"
 #include "World.hpp"
+#include "RadarUI.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -145,6 +146,8 @@ int main() {
     }
     */
 
+// Usamos la misma fuente que ya tienes cargada para los menús
+    RadarUI radarUI(font);
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         world.setDeltaTime(clock.restart().asSeconds()); // Tiempo desde el último frame
@@ -303,7 +306,17 @@ int main() {
             window.clear(sf::Color(0, 0, 20));
             player.update(world.getDeltaTime());
             player.draw(window);
-            // world.update() y world.draw(window) irían aquí
+            // 1. Lógica
+            world.update(); 
+            // Actualizamos la UI con el arreglo interno del Heap
+            radarUI.update(world.getRadar()->getHeapArray()); 
+
+            // 2. Dibujo
+            window.clear(sf::Color(0, 0, 20));
+            player.draw(window);
+            
+            // Dibujamos el Radar encima de todo
+            radarUI.draw(window);
         }
 
         window.display();
