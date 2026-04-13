@@ -4,9 +4,11 @@
 #include "WorldStateManager.hpp"
 #include "ItemFactory.hpp"
 #include "Heap.hpp"
+#include <SFML/Graphics.hpp>
 
 class World {
 private:
+    sf::Clock worldClock;
     std::vector<Planet> solarSystem;
     WorldStateManager stateManager;
     int currentTurn;
@@ -30,4 +32,5 @@ public:
     const std::vector<Planet>& getPlanets() const { return solarSystem; }
     const std::unordered_map<std::string, std::unique_ptr<Item>>& getGlobalCatalog() const { return globalCatalog; }
     void updateRadar(Planet& plnt) noexcept; // Actualiza el heap de radar
+    float getTime() const {return worldClock.getElapsedTime().asSeconds();}
 };

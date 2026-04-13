@@ -10,6 +10,7 @@ public:
     void draw(sf::RenderWindow& window);
     void update(float deltaTime);
     void move(sf::Vector2f direction, float deltaTime);
+    sf::Vector2f getPosition() const {return sprite->getPosition();}
 
 private:
     std::unique_ptr<sf::Sprite> sprite; 

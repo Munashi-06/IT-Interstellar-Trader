@@ -49,6 +49,7 @@ if (galaxyItems.count(itemABuscar)) {
 int main() {
     mainConfig.loadFromSavedFile("config.txt");
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
+    sf::Clock worldClock;
 
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
@@ -144,6 +145,27 @@ int main() {
         world.update(); // Aquí se procesarían los eventos y el radar
     }
     */
+
+    sf::VertexArray starsFar(sf::PrimitiveType::Points, 800);
+    for (int i = 0; i < 800; i++) {
+        starsFar[i].position = {(float)(rand()%2000), (float)(rand()%2000)};
+        int c = 60 + (rand()% 40);
+        starsFar[i].color = sf::Color(c, c, c);
+    }
+
+    sf::VertexArray starsMid(sf::PrimitiveType::Points, 400);
+    for (int i = 0; i < 400; i++) {
+        starsMid[i].position = {(float)(rand()%2000), (float)(rand()%2000)};
+        int c = 120 + (rand()% 60);
+        starsMid[i].color = sf::Color(c, c, c);
+    }
+
+    sf::VertexArray starsNear(sf::PrimitiveType::Points, 200);
+    for (int i = 0; i < 200; i++) {
+        starsNear[i].position = {(float)(rand()%2000), (float)(rand()%2000)};
+        int c = 200 + (rand()% 55);
+        starsNear[i].color = sf::Color(c, c, c);
+    }
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -284,6 +306,7 @@ int main() {
                     player.move(dir, world.getDeltaTime());
                     player.update(world.getDeltaTime());
                 }
+                music.stop();
                 // Aquí iría la lógica de input para el juego
             }
         }
@@ -300,7 +323,50 @@ int main() {
             settingsMenu.draw(window);
         }
         else if (currentState == State::Playing) {
-            window.clear(sf::Color(0, 0, 20));
+            window.clear(sf::Color(0, 0, 15));
+            sf::Vector2f playerPos = player.getPosition();
+            sf::RenderStates states;
+
+            sf::Transform tFar;
+            tFar.translate(-playerPos*0.2f);
+            states.transform = tFar;
+            window.draw(starsFar, states);
+
+            sf::Transform tMid;
+            tMid.translate(-playerPos*0.4f);
+            states.transform = tMid;
+            window.draw(starsMid, states);
+
+            sf::Transform tNear;
+            tNear.translate(-playerPos*0.7f);
+            states.transform = tNear;
+            window.draw(starsNear, states);
+
+            sf::Vector2f center(640.f, 360.f);
+            sf::CircleShape sun(15.f);
+            sun.setFillColor(sf::Color::White);
+            sun.setOrigin({15.f, 15.f});
+            sun.setPosition(center);
+            window.draw(sun);
+
+            float time = worldClock.getElapsedTime().asSeconds(); 
+            const auto& planets = world.getPlanets();
+
+            for (const auto& planet : planets) {
+            // Definimos la distancia según la órbita (ej: órbita 1 = 80px, órbita 10 = 350px)
+                float distance = planet.getOrbit() * 33.f + 33.f;
+                float speed = 0.5f / (planet.getOrbit() * 0.2f);
+                float x = center.x + std::cos(time * speed) * distance;
+                float y = center.y + std::sin(time * speed) * distance;
+
+                sf::CircleShape planetShape(8.f);
+                planetShape.setFillColor(sf::Color(150, 150, 150)); // Gris base
+                planetShape.setOrigin({8.f, 8.f});
+                planetShape.setPosition({x, y});
+    
+                window.draw(planetShape);
+            }
+
             player.update(world.getDeltaTime());
             player.draw(window);
             // world.update() y world.draw(window) irían aquí

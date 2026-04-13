@@ -42,24 +42,20 @@ std::vector<Planet> PlanetManager::loadUniqueOrbitPlanets(const std::string& fil
     // --- lógica de selección ---
     std::random_device rd;
     std::mt19937 g(rd());
-    std::uniform_int_distribution<int> distCount(5, 8);
-    size_t targetCount = distCount(g);
 
     std::vector<Planet> selectedPlanets;
+
+    for (int orbit = 1; orbit <= 10; ++orbit) {
+        if (orbitPool.count(orbit) && !orbitPool[orbit].empty()) {
+            std::uniform_int_distribution<int> dist(0, orbitPool[orbit].size() - 1);
+            int randomIndex = dist(g);
+        
+            selectedPlanets.push_back(orbitPool[orbit][randomIndex]);
+        } else {
+            std::cerr << "Aviso: No hay planetas definidos para la orbita " << orbit << std::endl;
+        }
+    }
     std::vector<int> availableOrbits;
-    for(auto const& [orbit, list] : orbitPool) {
-        availableOrbits.push_back(orbit);
-    }
-
-    targetCount = std::min(targetCount, availableOrbits.size());
-    std::shuffle(availableOrbits.begin(), availableOrbits.end(), g);
-
-    for (size_t i = 0; i < targetCount; ++i) {
-        int targetOrbit = availableOrbits[i];
-        auto& candidates = orbitPool[targetOrbit];
-        std::uniform_int_distribution<int> pDist(0, (int)candidates.size() - 1);
-        selectedPlanets.push_back(candidates[pDist(g)]);
-    }
 
     insertionSort(selectedPlanets);
     return selectedPlanets;
