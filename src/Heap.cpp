@@ -46,3 +46,16 @@ void Heap::remove(std::vector<Planet>& arr, Cmp comparador) {
     n--;
     if (n > 0) sift_down(arr, 1, comparador);
 }
+
+void Heap::update(Planet& modified, std::vector<Planet>& arr, Cmp comparador) {
+    // Para actualizar un planeta modificado, primero lo buscamos en el heap
+    // Luego aplicamos sift-up o sift-down según corresponda
+    for (size_t i = 1; i <= n; ++i) {
+        if (arr[i].getName() == modified.getName()) { // Asumiendo que el nombre es único
+            arr[i] = std::move(modified); // Actualizamos el planeta
+            sift_up(arr, i, comparador);
+            sift_down(arr, i, comparador);
+            break;
+        }
+    }
+}

@@ -12,6 +12,7 @@
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
+#include <ctime>
 
 GameConfig mainConfig;
 
@@ -54,7 +55,8 @@ int main() {
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
         window.setFramerateLimit(0); // Desactivar límite de FPS para que VSync controle la tasa de refresco
-    } else{
+    }
+    else{
         window.setVerticalSyncEnabled(false);
         window.setFramerateLimit(mainConfig.fpsLimit);
     }
@@ -103,6 +105,8 @@ int main() {
     }
     sf::Sprite settingsBackgroundSprite(settingsBackgroundTexture);
 
+    // RadarUI radarUI(font); // Creamos la interfaz usando la fuente que ya cargaste
+
     State currentState = State::Menu;
 
     Player player(640.f, 360.f, "assets/player.png");
@@ -117,6 +121,7 @@ int main() {
     std::vector<Planet> planetasBase = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
 
     if (planetasBase.empty()) {
+        std::cout << "[ERROR] No se cargaron planetas." << std::endl;
         return -1; // Error de carga
     }
 
@@ -137,14 +142,6 @@ int main() {
 
     // Ahora 'world' tiene el control de los planetas y el radar
     
-    // Bucle principal (ejemplo SFML)
-    /*
-    while (window.isOpen()) {
-        float dt = clock.restart().asSeconds();
-        world.setDeltaTime(dt);
-        world.update(); // Aquí se procesarían los eventos y el radar
-    }
-    */
 
     sf::VertexArray starsFar(sf::PrimitiveType::Points, 800);
     for (int i = 0; i < 800; i++) {
@@ -166,10 +163,41 @@ int main() {
         int c = 200 + (rand()% 55);
         starsNear[i].color = sf::Color(c, c, c);
     }
+    
+    // imprimir en consola los planetas cargados para verificar que se han cargado correctamente
+    std::cout << "Planetas cargados en el mundo:" << std::endl;
+    for (const auto& planeta : world.getPlanets()) {
+        std::cout << "Nombre: " << planeta.getName() << ", Orbita: " << planeta.getOrbit() << std::endl;
+    }
+
+    // Cargar la textura de alerta para eventos nuevos
+    sf::Texture alertTexture;
+    if (!alertTexture.loadFromFile("assets/alert_icon.png")) {
+        std::cerr << "Error cargando la textura de alerta" << std::endl;
+    }
+    sf::Sprite alertSprite(alertTexture);
+    alertSprite.setPosition({1100.f, 600.f}); // Esquina inferior derecha
+
+    float alertTimer = 0.f; // Para que la imagen desaparezca después de unos segundos
+
+#pragma region Bucle principal
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        world.setDeltaTime(clock.restart().asSeconds()); // Tiempo desde el último frame
+        float dt = clock.restart().asSeconds(); // Tiempo entre frames
+        world.setDeltaTime(dt);
+
+        // --- LÓGICA DE EVENTOS ---
+        if (currentState == State::Playing) {
+            if (world.update()) {
+                // Actualizamos los textos de la interfaz con los datos del Heap
+                // radarUI.update(world.getRadar().getHeapArray());
+                std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
+                alertTimer = 3.0f; // La alerta durará 3 segundos
+            }
+            
+            if (alertTimer > 0) alertTimer -= dt;
+        }
 
         // 1. INPUT (Depende del estado)
         while (const std::optional event = window.pollEvent()) {
@@ -271,7 +299,8 @@ int main() {
                         clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
                     }
                 }
-            else if(currentState == State::DifficultySelection) {
+            
+                else if(currentState == State::DifficultySelection) {
                 // Aquí iría la lógica de input para el submenu de selección de dificultad
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     // Permitir volver al menú con Escape
@@ -291,6 +320,8 @@ int main() {
             clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
         
             if(currentState == State::Playing) {
+                music.stop();
+
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     // Permitir volver al menú con Escape (Borrar despues, esto es para probar el cambio de estados)
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
@@ -306,7 +337,6 @@ int main() {
                     player.move(dir, world.getDeltaTime());
                     player.update(world.getDeltaTime());
                 }
-                music.stop();
                 // Aquí iría la lógica de input para el juego
             }
         }
@@ -369,10 +399,16 @@ int main() {
 
             player.update(world.getDeltaTime());
             player.draw(window);
+            // radarUI.draw(window);
             // world.update() y world.draw(window) irían aquí
+            if (alertTimer > 0) {
+                window.draw(alertSprite);
+            }
         }
 
         window.display();
     }
     return 0;
 }
+
+#pragma endregion

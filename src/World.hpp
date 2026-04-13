@@ -25,7 +25,7 @@ public:
         globalCatalog = ItemFactory::loadDatabase("assets/data/items.txt");
     }
     
-    void update();
+    bool update();
 
     void setDeltaTime(float dt) { deltaTime = dt; }
     float getDeltaTime() const { return deltaTime; }
@@ -33,4 +33,5 @@ public:
     const std::unordered_map<std::string, std::unique_ptr<Item>>& getGlobalCatalog() const { return globalCatalog; }
     void updateRadar(Planet& plnt) noexcept; // Actualiza el heap de radar
     float getTime() const {return worldClock.getElapsedTime().asSeconds();}
+    void forceRadarUpdate();
 };

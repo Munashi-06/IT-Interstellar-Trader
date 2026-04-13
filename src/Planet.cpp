@@ -1,13 +1,42 @@
 #include "Planet.hpp"
 
-Planet::Planet() : name("Empty"), description("Empty"), orbit(0), techLevel(0), securityLevel(0), resourceAbundance(0), luxuryDemand(0), moonCount(0), medicalTech(0)
+Planet::Planet() : name("Empty"), description("Empty"), localStock({}), EVENT_DURATION(0), orbit(0), techLevel(0), securityLevel(0), resourceAbundance(0), luxuryDemand(0), moonCount(0), medicalTech(0)
 {
     // Constructor por defecto
 }
 
 Planet::Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med)
-    : name(n), description(d), orbit(orb), techLevel(tech), securityLevel(sec), resourceAbundance(res), luxuryDemand(lux), moonCount(moon), medicalTech(med)
-{}
+    : name(n), description(d), EVENT_DURATION(0), orbit(orb), techLevel(tech), securityLevel(sec), resourceAbundance(res), luxuryDemand(lux), moonCount(moon), medicalTech(med)
+{
+    // Inicializamos la tabla hash de stock
+}
+
+Planet& Planet::operator=(const Planet& other) {
+    if (this != &other) {
+        name = other.name;
+        description = other.description;
+        currentEvent = other.currentEvent;
+        EVENT_DURATION = other.EVENT_DURATION;
+        localStock = other.localStock;
+        orbit = other.orbit;
+        techLevel = other.techLevel;
+        securityLevel = other.securityLevel;
+        resourceAbundance = other.resourceAbundance;
+        luxuryDemand = other.luxuryDemand;
+        moonCount = other.moonCount;
+        medicalTech = other.medicalTech;
+    }
+    return *this;
+}
+
+Planet::Planet(const Planet& other)
+    : name(other.name), description(other.description), currentEvent(other.currentEvent), EVENT_DURATION(other.EVENT_DURATION),
+      localStock(other.localStock), orbit(other.orbit), techLevel(other.techLevel), securityLevel(other.securityLevel),
+      resourceAbundance(other.resourceAbundance), luxuryDemand(other.luxuryDemand), moonCount(other.moonCount),
+      medicalTech(other.medicalTech)
+{
+    // Constructor de copia
+}
 
 std::string Planet::getName() const {
     return name;

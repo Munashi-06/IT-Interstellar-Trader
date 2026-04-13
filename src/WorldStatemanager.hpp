@@ -18,12 +18,12 @@ inline int getRandomEventDuration(PlanetEvent event) {
 
 class WorldStateManager {
 private:
-    float eventTimer;
-    float timeBetweenEvents;
-    int maxActiveEvents;
+    float eventTimer = 0.0f; 
+    float timeBetweenEvents = 10.0f; // Tiempo mínimo para que intente generar un nuevo evento
+    int maxActiveEvents = 3; // Máximo número de eventos activos al mismo tiempo
 
 public:
-    void update(float deltaTime, std::vector<Planet>& planets);
+    bool update(float deltaTime, std::vector<Planet>& planets);
 
-    void triggerRandomEvent(std::vector<Planet>& planets);
+    bool triggerRandomEvent(std::vector<Planet>& planets);
 };

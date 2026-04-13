@@ -72,6 +72,9 @@ public:
 
     std::vector<Planet>& getHeapArray() noexcept { return heap_array; }
 
+    void setHeapArray(std::vector<Planet>& newArr) noexcept { heap_array = std::move(newArr); n = heap_array.size() - 1; }
+    void setN(size_t newN) noexcept { n = newN; }
+
     void insert(Planet&& p, std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
     void remove(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
 

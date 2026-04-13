@@ -26,6 +26,8 @@ private:
 public:
     Planet();
     Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med);
+    Planet(const Planet& other); // Constructor de copia
+    Planet& operator=(const Planet& other); // Operador de asignación
 
     std::string getName() const;
     std::string getDescription() const;
