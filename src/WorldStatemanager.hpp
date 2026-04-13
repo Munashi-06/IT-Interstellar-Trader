@@ -19,7 +19,7 @@ inline int getRandomEventDuration(PlanetEvent event) {
 class WorldStateManager {
 private:
     float eventTimer = 0.0f; 
-    float timeBetweenEvents = 10.0f; // Tiempo mínimo para que intente generar un nuevo evento
+    float timeBetweenEvents = 1.0f; // Tiempo mínimo para que intente generar un nuevo evento
     int maxActiveEvents = 3; // Máximo número de eventos activos al mismo tiempo
 
 public:

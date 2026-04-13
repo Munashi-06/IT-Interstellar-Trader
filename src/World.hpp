@@ -27,6 +27,7 @@ public:
     
     bool update();
 
+    std::unique_ptr<Heap>& getRadar() { return radar; }
     void setDeltaTime(float dt) { deltaTime = dt; }
     float getDeltaTime() const { return deltaTime; }
     const std::vector<Planet>& getPlanets() const { return solarSystem; }

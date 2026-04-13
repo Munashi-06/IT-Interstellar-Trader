@@ -29,6 +29,7 @@ add_executable(IT-Interstellar-Trader
     src/World.cpp
     src/Heap.cpp
     src/BinaryNode.hpp
+    src/RadarUI.hpp
 )
 
 add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD

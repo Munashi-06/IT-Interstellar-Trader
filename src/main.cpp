@@ -9,6 +9,7 @@
 #include "WorldStatemanager.hpp"
 #include "PlanetManager.hpp"
 #include "World.hpp"
+#include "RadarUI.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -179,8 +180,11 @@ int main() {
     alertSprite.setPosition({1100.f, 600.f}); // Esquina inferior derecha
 
     float alertTimer = 0.f; // Para que la imagen desaparezca después de unos segundos
-
+    
+    // Usamos la misma fuente que ya tienes cargada para los menús
+    RadarUI radarUI(font);
 #pragma region Bucle principal
+
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -191,7 +195,7 @@ int main() {
         if (currentState == State::Playing) {
             if (world.update()) {
                 // Actualizamos los textos de la interfaz con los datos del Heap
-                // radarUI.update(world.getRadar().getHeapArray());
+                radarUI.update(world.getRadar()->getHeapArray());
                 std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
                 alertTimer = 3.0f; // La alerta durará 3 segundos
             }
@@ -399,11 +403,14 @@ int main() {
 
             player.update(world.getDeltaTime());
             player.draw(window);
-            // radarUI.draw(window);
-            // world.update() y world.draw(window) irían aquí
+
             if (alertTimer > 0) {
                 window.draw(alertSprite);
             }
+
+            // Dibujamos el Radar encima de todo (siempre va al final para que se dibuje
+            // encima de los demás elementos)
+            radarUI.draw(window);
         }
 
         window.display();
