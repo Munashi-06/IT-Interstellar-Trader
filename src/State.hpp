@@ -8,5 +8,6 @@ enum class State {
     Options,
     GameOver,
     TravelConfirmation,
-    InPlanet
+    InPlanet,
+    ShipMenu
 };

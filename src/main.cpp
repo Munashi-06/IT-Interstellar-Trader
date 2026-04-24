@@ -152,6 +152,20 @@ int main() {
     uiPlanetSprite.setOrigin({20.f, 20.f});
     uiPlanetSprite.setPosition({ 55.f, 580.f }); 
 
+    sf::RectangleShape adminShipBtn({200.f, 50.f});
+    adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
+    adminShipBtn.setOutlineThickness(2);
+    adminShipBtn.setOutlineColor(sf::Color::White);
+    adminShipBtn.setPosition({ 1050.f, 60.f });
+
+    sf::Text adminShipText(font, "ADMINISTRAR NAVE");
+    adminShipText.setCharacterSize(16);
+    adminShipText.setFillColor(sf::Color::White);
+    // Centrar texto en el botón
+    sf::FloatRect textRect = adminShipText.getLocalBounds();
+    adminShipText.setOrigin({textRect.size.x / 2.f, textRect.size.y / 2.f});
+    adminShipText.setPosition({ 1150.f, 80.f });
+
     sf::RectangleShape confirmBg({400.f, 200.f});
     confirmBg.setFillColor(sf::Color(20, 20, 20, 240)); 
     confirmBg.setOutlineThickness(3);
@@ -169,6 +183,41 @@ int main() {
     optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
     optionsText.setPosition({640.f, 400.f});
 
+    //////////////////////////////////////
+    // --- ELEMENTOS DEL MENÚ DE NAVE ---
+    sf::Texture shipMenuTexture;
+    if (!shipMenuTexture.loadFromFile("assets/player.png")) {
+        std::cerr << "Error cargando textura de previsualización" << std::endl;
+    }
+
+    sf::RectangleShape shipMenuBg({640.f, 400.f});
+    // Fondo transparente (Alfa: 180)
+    shipMenuBg.setFillColor(sf::Color(15, 15, 25, 180));
+    shipMenuBg.setOutlineThickness(3);
+    shipMenuBg.setOutlineColor(sf::Color::Cyan);
+    shipMenuBg.setOrigin({320.f, 200.f});
+    shipMenuBg.setPosition({640.f, 360.f});
+
+    sf::Text shipMenuTitle(font, "ESTADO DE LA NAVE");
+    shipMenuTitle.setCharacterSize(25);
+    shipMenuTitle.setFillColor(sf::Color::Cyan);
+    shipMenuTitle.setPosition({480.f, 180.f});
+
+  sf::Sprite shipPreview(shipMenuTexture); // Ahora usamos la textura cargada aquí
+    shipPreview.setScale({2.f, 2.f});
+    shipPreview.setPosition({210.f, 120.f});
+
+    sf::RectangleShape upgradeBtn({200.f, 40.f});
+    upgradeBtn.setFillColor(sf::Color(0, 150, 0));
+    upgradeBtn.setPosition({650.f, 320.f});
+
+    sf::Text upgradeText(font, "SUBIR DE NIVEL");
+    upgradeText.setCharacterSize(18);
+    sf::FloatRect upRect = upgradeText.getLocalBounds();
+    upgradeText.setOrigin({upRect.size.x / 2.f, upRect.size.y / 2.f});
+    upgradeText.setPosition({750.f, 340.f}); 
+    /////////////////////////////////////
+
     int selectedPlanetIndex = 0;
 
     while (window.isOpen()) {
@@ -184,10 +233,18 @@ int main() {
             if (alertTimer > 0) alertTimer -= dt;
         }
 
+        if (currentState == State::Playing) {
+            if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
+                adminShipBtn.setFillColor(sf::Color(80, 80, 80, 255));
+                adminShipBtn.setOutlineColor(sf::Color::Cyan);
+            } else {
+                adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
+                adminShipBtn.setOutlineColor(sf::Color::White);
+            }
+        }
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
 
-            // --- CORRECCIÓN DE FLUJO DE EVENTOS ---
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
@@ -270,6 +327,14 @@ int main() {
                 clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
             }
             else if (currentState == State::Playing) {
+                if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseEvent->button == sf::Mouse::Button::Left) {
+                        if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
+                            clickSound.play();
+                            currentState = State::ShipMenu; 
+                        }
+                    }
+                }
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Menu;
@@ -311,8 +376,22 @@ int main() {
                     }
                 }
             }
+            else if (currentState == State::ShipMenu) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Playing;
+                    }
+                }
+                if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseEvent->button == sf::Mouse::Button::Left) {
+                        if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
+                            clickSound.play();
+                            std::cout << "Nivel de nave aumentado!" << std::endl;
+                        }
+                    }
+                }
+            }
         }
-        // --- FIN DE PROCESAMIENTO DE EVENTOS ---
 
         window.clear();
         
@@ -324,7 +403,7 @@ int main() {
             window.draw(settingsBackgroundSprite);
             settingsMenu.draw(window);
         }
-        else if (currentState == State::Playing) {
+        else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation) {
             window.clear(sf::Color(0, 0, 15));
             sf::Vector2f playerPos = player.getPosition();
             sf::RenderStates states;
@@ -380,19 +459,40 @@ int main() {
             window.draw(planetNameText);
             if (alertTimer > 0) window.draw(alertSprite);
             radarUI.draw(window);
+            window.draw(adminShipBtn);
+            window.draw(adminShipText);
+
+            // Capa de Confirmación de Viaje
+            if (currentState == State::TravelConfirmation) {
+                confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
+                confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
+                confirmText.setPosition({640.f, 330.f});
+                window.draw(confirmBg);
+                window.draw(confirmText);
+                window.draw(optionsText);
+            }
+
+            // Capa de Menú de Nave
+            if (currentState == State::ShipMenu) {
+                window.draw(shipMenuBg);
+                window.draw(shipMenuTitle);
+                window.draw(shipPreview);
+                
+                if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
+                    upgradeBtn.setFillColor(sf::Color(0, 200, 0));
+                } else {
+                    upgradeBtn.setFillColor(sf::Color(0, 150, 0));
+                }
+                window.draw(upgradeBtn);
+                window.draw(upgradeText);
+                
+                sf::Text backMsg(font, "ESC para volver");
+                backMsg.setCharacterSize(14);
+                backMsg.setPosition({580.f, 530.f});
+                window.draw(backMsg);
+            }
         }
-
-        if (currentState == State::TravelConfirmation) {
-            confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
-            confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
-            confirmText.setPosition({640.f, 330.f});
-
-            window.draw(confirmBg);
-            window.draw(confirmText);
-            window.draw(optionsText);
-        }
-
-        if (currentState == State::InPlanet) {
+        else if (currentState == State::InPlanet) {
             window.clear(sf::Color::Black); 
             sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());
             msg.setPosition({400.f, 300.f});
