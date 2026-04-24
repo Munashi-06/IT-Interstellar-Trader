@@ -7,10 +7,12 @@ public:
     Player() = default;
     Player(float x, float y, const std::string& texturePath);
     
+
     void draw(sf::RenderWindow& window);
     void update(float deltaTime);
     void move(sf::Vector2f direction, float deltaTime);
     sf::Vector2f getPosition() const {return sprite->getPosition();}
+    void setPosition(sf::Vector2f pos) { sprite->setPosition(pos); hitbox.setPosition(pos); }
 
 private:
     std::unique_ptr<sf::Sprite> sprite; 

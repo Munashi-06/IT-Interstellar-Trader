@@ -6,5 +6,7 @@ enum class State {
     Playing,
     Pause,
     Options,
-    GameOver
+    GameOver,
+    TravelConfirmation,
+    InPlanet
 };

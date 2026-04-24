@@ -183,7 +183,41 @@ int main() {
     
     // Usamos la misma fuente que ya tienes cargada para los menús
     RadarUI radarUI(font);
-#pragma region Bucle principal
+
+    sf::Text planetNameText(font, "");
+    planetNameText.setCharacterSize(22);
+    planetNameText.setFillColor(sf::Color::White);
+    planetNameText.setOutlineColor(sf::Color::Black);
+    planetNameText.setOutlineThickness(1);
+    // Posición en la esquina inferior izquierda
+    planetNameText.setPosition({ 30.f, 660.f });
+
+    // Representación visual del planeta en la UI
+    sf::CircleShape uiPlanetSprite(40.f); // Un poco más grande para la UI
+    uiPlanetSprite.setOrigin({20.f, 20.f});
+    uiPlanetSprite.setPosition({ 55.f, 580.f }); // Encima del nombre del planeta
+
+    // Ventana de confirmación
+sf::RectangleShape confirmBg({400.f, 200.f});
+confirmBg.setFillColor(sf::Color(20, 20, 20, 240)); // Fondo casi negro
+confirmBg.setOutlineThickness(3);
+confirmBg.setOutlineColor(sf::Color::Cyan);
+confirmBg.setOrigin({200.f, 100.f});
+confirmBg.setPosition({640.f, 360.f}); // Centro de la pantalla
+
+sf::Text confirmText(font, "");
+confirmText.setCharacterSize(20);
+confirmText.setFillColor(sf::Color::White);
+
+sf::Text optionsText(font, "[Y] SI - VIAJAR    [N] NO - CANCELAR");
+optionsText.setCharacterSize(18);
+optionsText.setFillColor(sf::Color::Yellow);
+optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
+optionsText.setPosition({640.f, 400.f});
+
+    int selectedPlanetIndex = 0;
+
+    #pragma region Bucle principal
 
 
     while (window.isOpen()) {
@@ -209,13 +243,14 @@ int main() {
 
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // Soporte para Flechas + WASD
-                    if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) 
-                        mainMenu.moveUp();
-                        hoverSound.play();
-                    if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) 
-                        mainMenu.moveDown();
-                        hoverSound.play();
+                if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
+                    mainMenu.moveUp();
+                    hoverSound.play();
+                }
+                if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
+                    mainMenu.moveDown();
+                    hoverSound.play();
+                }
                     
                     // Confirmar con Enter o Espacio
                     if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
@@ -318,33 +353,60 @@ int main() {
                     }
                 }
             }
+                else if (currentState == State::TravelConfirmation) {
+                    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                        if (keyPressed->code == sf::Keyboard::Key::Y) {
+                            currentState = State::InPlanet; // Si presiona Y, viaja
+                        }
+                        if (keyPressed->code == sf::Keyboard::Key::N) {
+                            currentState = State::Playing;  // Si presiona N, cancela y vuelve al mapa
+                        }
+                    }
+                }
+                // Busca esta sección en tu código y reemplaza/agrega el caso de State::InPlanet
+                else if (currentState == State::InPlanet) {
+                    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                        if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                            currentState = State::Playing; // Regresa al mapa estelar
+                            hoverSound.play();             
+                        }
+                    }
+                }
 
             music.setVolume((float)settingsMenu.getTempMusicVolume());
             hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
             clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
         
             if(currentState == State::Playing) {
-                music.stop();
 
-                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // Permitir volver al menú con Escape (Borrar despues, esto es para probar el cambio de estados)
-                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                        currentState = State::Menu;
-                    }
-                    // Aquí iría la lógica de input para el juego
-                    sf::Vector2f dir(0.f, 0.f);
-                    if (keyPressed->code == sf::Keyboard::Key::W) dir.y -= 1;
-                    if (keyPressed->code == sf::Keyboard::Key::S) dir.y += 1;
-                    if (keyPressed->code == sf::Keyboard::Key::A) dir.x -= 1;
-                    if (keyPressed->code == sf::Keyboard::Key::D) dir.x += 1;
-                    
-                    player.move(dir, world.getDeltaTime());
-                    player.update(world.getDeltaTime());
+            if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                if(keyPressed->code == sf::Keyboard::Key::Escape) {
+                    currentState = State::Menu;
                 }
-                // Aquí iría la lógica de input para el juego
+
+                const auto& planetas = world.getPlanets();
+                if (!planetas.empty()) {
+                    // Selección circular con flechas o WASD
+                    if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D ||
+                        keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
+                        selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size();
+                        hoverSound.play();
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A ||
+                            keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
+                        selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size();
+                        hoverSound.play();
+                    }
+
+                    if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                        clickSound.play();
+                        currentState = State::TravelConfirmation; // Activamos la ventana
+                    }
+                    
+                }
             }
         }
-
+        }
         // 2. UPDATE & DRAW
         window.clear();
         
@@ -386,36 +448,91 @@ int main() {
             float time = worldClock.getElapsedTime().asSeconds(); 
             const auto& planets = world.getPlanets();
 
-            for (const auto& planet : planets) {
-            // Definimos la distancia según la órbita (ej: órbita 1 = 80px, órbita 10 = 350px)
-                float distance = planet.getOrbit() * 33.f + 33.f;
-                float speed = 0.5f / (planet.getOrbit() * 0.2f);
-                float x = center.x + std::cos(time * speed) * distance;
-                float y = center.y + std::sin(time * speed) * distance;
+            for (size_t i = 0; i < planets.size(); ++i) {
+            // Calculamos la posición actual del planeta en su órbita
+            float distance = planets[i].getOrbit() * 33.f + 33.f;
+            float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
+            float x = center.x + std::cos(time * speed) * distance;
+            float y = center.y + std::sin(time * speed) * distance;
 
-                sf::CircleShape planetShape(8.f);
-                planetShape.setFillColor(sf::Color(150, 150, 150)); // Gris base
-                planetShape.setOrigin({8.f, 8.f});
-                planetShape.setPosition({x, y});
-    
-                window.draw(planetShape);
+            sf::CircleShape planetShape(8.f);
+            planetShape.setOrigin({8.f, 8.f});
+            planetShape.setPosition({x, y});
+
+            // Si es el planeta que tenemos seleccionado, resaltarlo y mover la nave allí
+            if (i == (size_t)selectedPlanetIndex) {
+                planetShape.setFillColor(sf::Color::Cyan); 
+                planetShape.setOutlineThickness(2);
+                planetShape.setOutlineColor(sf::Color::White);
+                
+                // La nave se teletransporta a la posición del planeta en cada frame
+                player.setPosition({x, y}); 
+            } else {
+                planetShape.setFillColor(sf::Color(150, 150, 150));
+                planetShape.setOutlineThickness(0);
             }
+
+            window.draw(planetShape);
+        }
 
             player.update(world.getDeltaTime());
             player.draw(window);
 
-            if (alertTimer > 0) {
-                window.draw(alertSprite);
-            }
+            // --- NUEVA LÓGICA DE TEXTO ---
+        if (!planets.empty()) {
+            // Seteamos el nombre del planeta según el índice seleccionado
+            planetNameText.setString("PLANETA ACTUAL: " + planets[selectedPlanetIndex].getName());
+        }
 
-            // Dibujamos el Radar encima de todo (siempre va al final para que se dibuje
-            // encima de los demás elementos)
-            radarUI.draw(window);
+        // 1. Actualizar el contenido del texto con el planeta seleccionado
+        if (!planets.empty()) {
+            // 1. Actualizar el texto
+            planetNameText.setString(planets[selectedPlanetIndex].getName());
+
+            // 2. Hacer que el círculo de la UI coincida con el planeta seleccionado
+            // Si el planeta es el seleccionado en el mapa, usamos Cian, si no, Gris.
+            // Aquí podrías usar planetas[selectedPlanetIndex].getColor() si tu clase Planet tuviera color.
+            uiPlanetSprite.setFillColor(sf::Color::Cyan); 
+            uiPlanetSprite.setOutlineThickness(2);
+            uiPlanetSprite.setOutlineColor(sf::Color::White);
+        }
+
+        player.update(world.getDeltaTime());
+        player.draw(window);
+        
+        // --- DIBUJO DE INTERFAZ EN LA ESQUINA ---
+        window.draw(uiPlanetSprite); // Dibujamos la "bola" del planeta[cite: 10]
+        window.draw(planetNameText);   // Dibujamos el nombre debajo
+
+        if (alertTimer > 0) {
+            window.draw(alertSprite);
+        }
+
+        radarUI.draw(window);
+    } // Cierra: else if // Cierra: else if (currentState == State::Playing)
+
+        if (currentState == State::TravelConfirmation) {
+            // Actualizamos el texto con el nombre del planeta seleccionado actualmente
+            confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
+            confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
+            confirmText.setPosition({640.f, 330.f});
+
+            window.draw(confirmBg);
+            window.draw(confirmText);
+            window.draw(optionsText);
+        }
+
+        if (currentState == State::InPlanet) {
+            window.clear(sf::Color::Black); 
+            sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());
+            msg.setPosition({400.f, 300.f});
+            window.draw(msg);
         }
 
         window.display();
-    }
+    } // Cierra el while window.isOpen
+
     return 0;
-}
+} // Cierra: int main()
 
 #pragma endregion

@@ -1,4 +1,6 @@
 #include "Player.hpp"
+#include <cmath>
+
 
 Player::Player(float x, float y, const std::string& texturePath) 
     : hitbox({30.f, 35.f})
