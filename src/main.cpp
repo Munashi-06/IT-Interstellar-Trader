@@ -19,8 +19,7 @@ GameConfig mainConfig;
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
-        // state = State::DifficultySelection; // Submenu del Menu Principal
-        state = State::Playing; // Temporal, para probar el cambio de estados
+        state = State::Playing; 
     } else if (option == "SETTINGS") {
         state = State::Options;
     } else if (option == "EXIT") {
@@ -28,34 +27,15 @@ void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     }
 }
 
-/*
-        EJEMPLO DE USO DE LA CLASE ITEM, INVENTARIO Y FACTORY
-        (ESTO NO VA EN EL MAIN, SOLO ES UN EJEMPLO DE CÓMO USARLAS
-        REALMENTE IRIA EN LA CLASE WORLD O EN LA LÓGICA DE NEGOCIO DEL JUEGO,
-        DEPENDIENDO DE CÓMO ORGANICEMOS EL CÓDIGO)
-
-// 1. Cargamos el catálogo global
-auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
-
-// 2. El jugador compra "Agua Purificada"
-std::string itemABuscar = "Agua Purificada";
-
-if (galaxyItems.count(itemABuscar)) {
-    // IMPORTANTE: Creamos una COPIA para el inventario del jugador
-    // (Podrías implementar un método virtual clone() en Item para esto)
-    auto& prototipo = galaxyItems[itemABuscar];
-    playerInventory.addItem(std::make_unique<Resource>(prototipo->getName(), prototipo->getPrice()), 1);
-}
-*/
-
 int main() {
+    bool estado = false;
     mainConfig.loadFromSavedFile("config.txt");
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
     sf::Clock worldClock;
 
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
-        window.setFramerateLimit(0); // Desactivar límite de FPS para que VSync controle la tasa de refresco
+        window.setFramerateLimit(0); 
     }
     else{
         window.setVerticalSyncEnabled(false);
@@ -67,7 +47,7 @@ int main() {
     }
 
     sf::Music music;
-    if (!music.openFromFile("assets/audio/undertale_dogsong.ogg")){ //musica de fondo del menu para probar la funcionalidad de volumen en settings
+    if (!music.openFromFile("assets/audio/undertale_dogsong.ogg")){ 
         std::cerr << "Error cargando la música" << std::endl;
     }
     music.setLooping(true);
@@ -106,43 +86,28 @@ int main() {
     }
     sf::Sprite settingsBackgroundSprite(settingsBackgroundTexture);
 
-    // RadarUI radarUI(font); // Creamos la interfaz usando la fuente que ya cargaste
-
     State currentState = State::Menu;
 
     Player player(640.f, 360.f, "assets/player.png");
 
-    sf::Clock clock; // Para medir el tiempo entre frames
+    sf::Clock clock; 
 
     sf::Vector2f mousePos;
 
-    // --- LÓGICA DE INICIALIZACIÓN DEL MUNDO ---
-
-    // 1. Cargamos el vector base de planetas
     std::vector<Planet> planetasBase = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
 
     if (planetasBase.empty()) {
         std::cout << "[ERROR] No se cargaron planetas." << std::endl;
-        return -1; // Error de carga
+        return -1; 
     }
 
-    // 2. Creamos el Heap. 
-    // IMPORTANTE: Pasamos una COPIA del primer planeta para no romper el vector planetasBase
     auto radarInicial = std::make_unique<Heap>(Planet(planetasBase[0]));
 
-    // 3. Llenamos el heap con el resto (también copias)
     for (size_t i = 1; i < planetasBase.size(); ++i) {
         radarInicial->insert(Planet(planetasBase[i]), radarInicial->getHeapArray(), cmp);
     }
 
-    // 4. Inicializamos el mundo con TODO
-    // Usamos std::move para pasarle la propiedad de los objetos al World
     World world(0.0f, std::move(radarInicial), std::move(planetasBase));
-
-    // --- FIN DE LA LÓGICA DE INICIALIZACIÓN ---
-
-    // Ahora 'world' tiene el control de los planetas y el radar
-    
 
     sf::VertexArray starsFar(sf::PrimitiveType::Points, 800);
     for (int i = 0; i < 800; i++) {
@@ -165,23 +130,15 @@ int main() {
         starsNear[i].color = sf::Color(c, c, c);
     }
     
-    // imprimir en consola los planetas cargados para verificar que se han cargado correctamente
-    std::cout << "Planetas cargados en el mundo:" << std::endl;
-    for (const auto& planeta : world.getPlanets()) {
-        std::cout << "Nombre: " << planeta.getName() << ", Orbita: " << planeta.getOrbit() << std::endl;
-    }
-
-    // Cargar la textura de alerta para eventos nuevos
     sf::Texture alertTexture;
     if (!alertTexture.loadFromFile("assets/alert_icon.png")) {
         std::cerr << "Error cargando la textura de alerta" << std::endl;
     }
     sf::Sprite alertSprite(alertTexture);
-    alertSprite.setPosition({1100.f, 600.f}); // Esquina inferior derecha
+    alertSprite.setPosition({1100.f, 600.f}); 
 
-    float alertTimer = 0.f; // Para que la imagen desaparezca después de unos segundos
+    float alertTimer = 0.f; 
     
-    // Usamos la misma fuente que ya tienes cargada para los menús
     RadarUI radarUI(font);
 
     sf::Text planetNameText(font, "");
@@ -189,225 +146,174 @@ int main() {
     planetNameText.setFillColor(sf::Color::White);
     planetNameText.setOutlineColor(sf::Color::Black);
     planetNameText.setOutlineThickness(1);
-    // Posición en la esquina inferior izquierda
     planetNameText.setPosition({ 30.f, 660.f });
 
-    // Representación visual del planeta en la UI
-    sf::CircleShape uiPlanetSprite(40.f); // Un poco más grande para la UI
+    sf::CircleShape uiPlanetSprite(40.f); 
     uiPlanetSprite.setOrigin({20.f, 20.f});
-    uiPlanetSprite.setPosition({ 55.f, 580.f }); // Encima del nombre del planeta
+    uiPlanetSprite.setPosition({ 55.f, 580.f }); 
 
-    // Ventana de confirmación
-sf::RectangleShape confirmBg({400.f, 200.f});
-confirmBg.setFillColor(sf::Color(20, 20, 20, 240)); // Fondo casi negro
-confirmBg.setOutlineThickness(3);
-confirmBg.setOutlineColor(sf::Color::Cyan);
-confirmBg.setOrigin({200.f, 100.f});
-confirmBg.setPosition({640.f, 360.f}); // Centro de la pantalla
+    sf::RectangleShape confirmBg({400.f, 200.f});
+    confirmBg.setFillColor(sf::Color(20, 20, 20, 240)); 
+    confirmBg.setOutlineThickness(3);
+    confirmBg.setOutlineColor(sf::Color::Cyan);
+    confirmBg.setOrigin({200.f, 100.f});
+    confirmBg.setPosition({640.f, 360.f}); 
 
-sf::Text confirmText(font, "");
-confirmText.setCharacterSize(20);
-confirmText.setFillColor(sf::Color::White);
+    sf::Text confirmText(font, "");
+    confirmText.setCharacterSize(20);
+    confirmText.setFillColor(sf::Color::White);
 
-sf::Text optionsText(font, "[Y] SI - VIAJAR    [N] NO - CANCELAR");
-optionsText.setCharacterSize(18);
-optionsText.setFillColor(sf::Color::Yellow);
-optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
-optionsText.setPosition({640.f, 400.f});
+    sf::Text optionsText(font, "[Y] SI - VIAJAR    [N] NO - CANCELAR");
+    optionsText.setCharacterSize(18);
+    optionsText.setFillColor(sf::Color::Yellow);
+    optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
+    optionsText.setPosition({640.f, 400.f});
 
     int selectedPlanetIndex = 0;
 
-    #pragma region Bucle principal
-
-
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-        float dt = clock.restart().asSeconds(); // Tiempo entre frames
+        float dt = clock.restart().asSeconds(); 
         world.setDeltaTime(dt);
 
-        // --- LÓGICA DE EVENTOS ---
         if (currentState == State::Playing) {
             if (world.update()) {
-                // Actualizamos los textos de la interfaz con los datos del Heap
                 radarUI.update(world.getRadar()->getHeapArray());
-                std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
-                alertTimer = 3.0f; // La alerta durará 3 segundos
+                alertTimer = 3.0f; 
             }
-            
             if (alertTimer > 0) alertTimer -= dt;
         }
 
-        // 1. INPUT (Depende del estado)
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
 
+            // --- CORRECCIÓN DE FLUJO DE EVENTOS ---
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
-                    mainMenu.moveUp();
-                    hoverSound.play();
-                }
-                if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
-                    mainMenu.moveDown();
-                    hoverSound.play();
-                }
-                    
-                    // Confirmar con Enter o Espacio
-                    if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                    if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
+                        mainMenu.moveUp();
+                        hoverSound.play();
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
+                        mainMenu.moveDown();
+                        hoverSound.play();
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
                         clickSound.play();
                     }
                 }
-                
-                if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
                     sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
                     if(mainMenu.updateHover(mPos)){
-                        hoverSound.stop(); //detiene el sonido anterior si se cambia de opción rápidamente (opcional)
+                        hoverSound.stop();
                         hoverSound.play();
                     }
                 }
-                // Detectar Click del Mouse
-                if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
-                        // Si el mouse está sobre el botón actual (actualizado por updateHover)
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
                         clickSound.play();
                     }
                 }
             }
-
             else if (currentState == State::Options){
-                if (event->is<sf::Event::Closed>()) window.close();
-                
-                    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
-                        if(keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up){
-                            settingsMenu.moveUp();
-                            hoverSound.play();
-                        } else if(keyPressed->code == sf::Keyboard::Key::S || keyPressed->code == sf::Keyboard::Key::Down){
-                            settingsMenu.moveDown();
-                            hoverSound.play();
-                        } else if (keyPressed->code == sf::Keyboard::Key::Escape){
-                            settingsMenu.resetTempConfig(mainConfig);
-                            currentState = State::Menu;
-                        } else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space){
-                            settingsMenu.handleAction(currentState, window, mainConfig);
-                            clickSound.play();
-                        } else if (keyPressed->code == sf::Keyboard::Key::D || keyPressed->code == sf::Keyboard::Key::Right){
-                            settingsMenu.changeValue(1); // Cambia el valor en 5 unidades, ajustar según sea necesario
-                            hoverSound.play();
-                        } else if (keyPressed->code == sf::Keyboard::Key::A || keyPressed->code == sf::Keyboard::Key::Left){
-                            settingsMenu.changeValue(-1); // Cambia el valor en -5 unidades, ajustar según sea necesario
-                            hoverSound.play();
-                        }
-                    }
-
-                    if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()){
-                        if(mouseEvent->button == sf::Mouse::Button::Left){
-                            sf::Vector2f mousePos = window.mapPixelToCoords(mouseEvent->position);
-                            clickSound.play();
-                            settingsMenu.handleMouseClick(mousePos);
-                            std::string opt = settingsMenu.getSelectedOption();
-                            if(opt == "APPLY"){
-                                settingsMenu.applySettings(window, mainConfig);
-                                music.setVolume((float)mainConfig.musicVolume);
-                            }
-                            else if(opt == "BACK"){
-                                music.setVolume((float)mainConfig.musicVolume);
-                                hoverSound.setVolume((float)mainConfig.sfxVolume);
-                                clickSound.setVolume((float)mainConfig.sfxVolume);
-                                settingsMenu.resetTempConfig(mainConfig);
-                                currentState = State::Menu;
-                            }
-                        }
-                    }
-
-                    if (event->is<sf::Event::MouseButtonReleased>()){
-                        settingsMenu.releaseSlider();
-                    }
-
-                    if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()){
-                        sf::Vector2f mousePos = window.mapPixelToCoords(mouseMoved->position);
-                        if(settingsMenu.updateHover(mousePos)){
-                            hoverSound.stop(); //detiene el sonido anterior si se cambia de opción rápidamente (opcional)
-                            hoverSound.play();
-                        }
-                        
-                        settingsMenu.handleMouseMove(mousePos);
-                        music.setVolume((float)settingsMenu.getTempMusicVolume());
-                        hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
-                        clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
+                    if(keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up){
+                        settingsMenu.moveUp();
+                        hoverSound.play();
+                    } else if(keyPressed->code == sf::Keyboard::Key::S || keyPressed->code == sf::Keyboard::Key::Down){
+                        settingsMenu.moveDown();
+                        hoverSound.play();
+                    } else if (keyPressed->code == sf::Keyboard::Key::Escape){
+                        settingsMenu.resetTempConfig(mainConfig);
+                        currentState = State::Menu;
+                    } else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space){
+                        settingsMenu.handleAction(currentState, window, mainConfig);
+                        clickSound.play();
+                    } else if (keyPressed->code == sf::Keyboard::Key::D || keyPressed->code == sf::Keyboard::Key::Right){
+                        settingsMenu.changeValue(1); 
+                        hoverSound.play();
+                    } else if (keyPressed->code == sf::Keyboard::Key::A || keyPressed->code == sf::Keyboard::Key::Left){
+                        settingsMenu.changeValue(-1); 
+                        hoverSound.play();
                     }
                 }
-            
-                else if(currentState == State::DifficultySelection) {
-                // Aquí iría la lógica de input para el submenu de selección de dificultad
+                else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()){
+                    if(mouseEvent->button == sf::Mouse::Button::Left){
+                        sf::Vector2f mPos = window.mapPixelToCoords(mouseEvent->position);
+                        clickSound.play();
+                        settingsMenu.handleMouseClick(mPos);
+                        std::string opt = settingsMenu.getSelectedOption();
+                        if(opt == "APPLY"){
+                            settingsMenu.applySettings(window, mainConfig);
+                        }
+                        else if(opt == "BACK"){
+                            settingsMenu.resetTempConfig(mainConfig);
+                            currentState = State::Menu;
+                        }
+                    }
+                }
+                else if (event->is<sf::Event::MouseButtonReleased>()){
+                    settingsMenu.releaseSlider();
+                }
+                else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()){
+                    sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
+                    if(settingsMenu.updateHover(mPos)){
+                        hoverSound.stop();
+                        hoverSound.play();
+                    }
+                    settingsMenu.handleMouseMove(mPos);
+                }
+                music.setVolume((float)settingsMenu.getTempMusicVolume());
+                hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
+                clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
+            }
+            else if (currentState == State::Playing) {
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // Permitir volver al menú con Escape
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Menu;
                     }
-                    
-                    if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                        // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
-                        currentState = State::Playing; // Temporal, para probar el cambio de estados
+                    const auto& planetas = world.getPlanets();
+                    if (!planetas.empty()) {
+                        if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D ||
+                            keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
+                            selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size();
+                            hoverSound.play();
+                        }
+                        else if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A ||
+                                keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
+                            selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size();
+                            hoverSound.play();
+                        }
+                        else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                            clickSound.play();
+                            currentState = State::TravelConfirmation; 
+                        }
                     }
                 }
             }
-                else if (currentState == State::TravelConfirmation) {
-                    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                        if (keyPressed->code == sf::Keyboard::Key::Y) {
-                            currentState = State::InPlanet; // Si presiona Y, viaja
-                        }
-                        if (keyPressed->code == sf::Keyboard::Key::N) {
-                            currentState = State::Playing;  // Si presiona N, cancela y vuelve al mapa
-                        }
+            else if (currentState == State::TravelConfirmation) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Y) {
+                        currentState = State::InPlanet; 
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::N) {
+                        currentState = State::Playing;  
                     }
                 }
-                // Busca esta sección en tu código y reemplaza/agrega el caso de State::InPlanet
-                else if (currentState == State::InPlanet) {
-                    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                        if (keyPressed->code == sf::Keyboard::Key::Escape) {
-                            currentState = State::Playing; // Regresa al mapa estelar
-                            hoverSound.play();             
-                        }
+            }
+            else if (currentState == State::InPlanet) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Playing; 
+                        hoverSound.play();             
                     }
-                }
-
-            music.setVolume((float)settingsMenu.getTempMusicVolume());
-            hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
-            clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
-        
-            if(currentState == State::Playing) {
-
-            if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                    currentState = State::Menu;
-                }
-
-                const auto& planetas = world.getPlanets();
-                if (!planetas.empty()) {
-                    // Selección circular con flechas o WASD
-                    if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D ||
-                        keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
-                        selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size();
-                        hoverSound.play();
-                    }
-                    else if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A ||
-                            keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
-                        selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size();
-                        hoverSound.play();
-                    }
-
-                    if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                        clickSound.play();
-                        currentState = State::TravelConfirmation; // Activamos la ventana
-                    }
-                    
                 }
             }
         }
-        }
-        // 2. UPDATE & DRAW
+        // --- FIN DE PROCESAMIENTO DE EVENTOS ---
+
         window.clear();
         
         if (currentState == State::Menu) {
@@ -423,96 +329,60 @@ optionsText.setPosition({640.f, 400.f});
             sf::Vector2f playerPos = player.getPosition();
             sf::RenderStates states;
 
-            sf::Transform tFar;
-            tFar.translate(-playerPos*0.2f);
-            states.transform = tFar;
-            window.draw(starsFar, states);
+            sf::Transform tFar; tFar.translate(-playerPos*0.2f);
+            states.transform = tFar; window.draw(starsFar, states);
 
-            sf::Transform tMid;
-            tMid.translate(-playerPos*0.4f);
-            states.transform = tMid;
-            window.draw(starsMid, states);
+            sf::Transform tMid; tMid.translate(-playerPos*0.4f);
+            states.transform = tMid; window.draw(starsMid, states);
 
-            sf::Transform tNear;
-            tNear.translate(-playerPos*0.7f);
-            states.transform = tNear;
-            window.draw(starsNear, states);
+            sf::Transform tNear; tNear.translate(-playerPos*0.7f);
+            states.transform = tNear; window.draw(starsNear, states);
 
             sf::Vector2f center(640.f, 360.f);
-            sf::CircleShape sun(15.f);
-            sun.setFillColor(sf::Color::White);
-            sun.setOrigin({15.f, 15.f});
-            sun.setPosition(center);
+            sf::CircleShape sun(15.f); sun.setFillColor(sf::Color::White);
+            sun.setOrigin({15.f, 15.f}); sun.setPosition(center);
             window.draw(sun);
 
             float time = worldClock.getElapsedTime().asSeconds(); 
             const auto& planets = world.getPlanets();
 
             for (size_t i = 0; i < planets.size(); ++i) {
-            // Calculamos la posición actual del planeta en su órbita
-            float distance = planets[i].getOrbit() * 33.f + 33.f;
-            float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
-            float x = center.x + std::cos(time * speed) * distance;
-            float y = center.y + std::sin(time * speed) * distance;
+                float distance = planets[i].getOrbit() * 33.f + 33.f;
+                float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
+                float x = center.x + std::cos(time * speed) * distance;
+                float y = center.y + std::sin(time * speed) * distance;
 
-            sf::CircleShape planetShape(8.f);
-            planetShape.setOrigin({8.f, 8.f});
-            planetShape.setPosition({x, y});
+                sf::CircleShape planetShape(8.f);
+                planetShape.setOrigin({8.f, 8.f});
+                planetShape.setPosition({x, y});
 
-            // Si es el planeta que tenemos seleccionado, resaltarlo y mover la nave allí
-            if (i == (size_t)selectedPlanetIndex) {
-                planetShape.setFillColor(sf::Color::Cyan); 
-                planetShape.setOutlineThickness(2);
-                planetShape.setOutlineColor(sf::Color::White);
-                
-                // La nave se teletransporta a la posición del planeta en cada frame
-                player.setPosition({x, y}); 
-            } else {
-                planetShape.setFillColor(sf::Color(150, 150, 150));
-                planetShape.setOutlineThickness(0);
+                if (i == (size_t)selectedPlanetIndex) {
+                    planetShape.setFillColor(sf::Color::Cyan); 
+                    planetShape.setOutlineThickness(2);
+                    planetShape.setOutlineColor(sf::Color::White);
+                    player.setPosition({x, y}); 
+                } else {
+                    planetShape.setFillColor(sf::Color(150, 150, 150));
+                }
+                window.draw(planetShape);
             }
 
-            window.draw(planetShape);
-        }
+            if (!planets.empty()) {
+                planetNameText.setString(planets[selectedPlanetIndex].getName());
+                uiPlanetSprite.setFillColor(sf::Color::Cyan); 
+                uiPlanetSprite.setOutlineThickness(2);
+                uiPlanetSprite.setOutlineColor(sf::Color::White);
+            }
 
             player.update(world.getDeltaTime());
             player.draw(window);
-
-            // --- NUEVA LÓGICA DE TEXTO ---
-        if (!planets.empty()) {
-            // Seteamos el nombre del planeta según el índice seleccionado
-            planetNameText.setString("PLANETA ACTUAL: " + planets[selectedPlanetIndex].getName());
+            window.draw(uiPlanetSprite);
+            window.draw(planetNameText);
+            if (alertTimer > 0) window.draw(alertSprite);
+            radarUI.draw(window);
         }
-
-        // 1. Actualizar el contenido del texto con el planeta seleccionado
-        if (!planets.empty()) {
-            // 1. Actualizar el texto
-            planetNameText.setString(planets[selectedPlanetIndex].getName());
-
-            // 2. Hacer que el círculo de la UI coincida con el planeta seleccionado
-            // Si el planeta es el seleccionado en el mapa, usamos Cian, si no, Gris.
-            // Aquí podrías usar planetas[selectedPlanetIndex].getColor() si tu clase Planet tuviera color.
-            uiPlanetSprite.setFillColor(sf::Color::Cyan); 
-            uiPlanetSprite.setOutlineThickness(2);
-            uiPlanetSprite.setOutlineColor(sf::Color::White);
-        }
-
-        player.update(world.getDeltaTime());
-        player.draw(window);
-        
-        // --- DIBUJO DE INTERFAZ EN LA ESQUINA ---
-        window.draw(uiPlanetSprite); // Dibujamos la "bola" del planeta[cite: 10]
-        window.draw(planetNameText);   // Dibujamos el nombre debajo
-
-        if (alertTimer > 0) {
-            window.draw(alertSprite);
-        }
-
-        radarUI.draw(window);
-    } // Cierra: else if // Cierra: else if (currentState == State::Playing)
 
         if (currentState == State::TravelConfirmation) {
-            // Actualizamos el texto con el nombre del planeta seleccionado actualmente
             confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
             confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
             confirmText.setPosition({640.f, 330.f});
@@ -530,9 +400,7 @@ optionsText.setPosition({640.f, 400.f});
         }
 
         window.display();
-    } // Cierra el while window.isOpen
+    }
 
     return 0;
-} // Cierra: int main()
-
-#pragma endregion
+}
