@@ -32,6 +32,7 @@ public:
     std::string getName() const;
     std::string getDescription() const;
     PlanetEvent getEvent() const;
+    std::string getEventName() const;
     void setEvent(PlanetEvent e);
     int getEventDuration() const;
     void setEventDuration(int duration);

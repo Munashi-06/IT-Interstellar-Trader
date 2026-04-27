@@ -50,6 +50,18 @@ PlanetEvent Planet::getEvent() const {
     return currentEvent;
 }
 
+std::string Planet::getEventName() const {
+    switch (currentEvent) {
+        case PlanetEvent::None: return "None";
+        case PlanetEvent::Famine: return "Hambruna";
+        case PlanetEvent::Piracy: return "Pirteria";
+        case PlanetEvent::Plague: return "Peste";
+        case PlanetEvent::TechBoom: return "Boom Tecnologico";
+        case PlanetEvent::War: return "Guerra";
+        default: return "Unknown Event";
+    }
+}
+
 void Planet::setEvent(PlanetEvent e) {
     currentEvent = e;
 }

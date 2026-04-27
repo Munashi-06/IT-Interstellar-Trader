@@ -35,13 +35,13 @@ public:
         for (size_t i = 0; i < heapArray.size() && i < 5; ++i) { 
             std::string info = std::to_string(i + 1) + ". " + heapArray[i].getName();
             if (heapArray[i].getEvent() != PlanetEvent::None) {
-                info += " (!)"; 
+                info += " (" + heapArray[i].getEventName() + ")";
             }
 
             // Creamos el texto directamente como un puntero único dentro del vector
             auto entry = std::make_unique<sf::Text>(font, info, 16);
             
-            entry->setPosition({65.f, 70.f + (i * 30.f)});
+            entry->setPosition({65.f, 90.f + (i * 25.f)});
             
             if (heapArray[i].getEvent() != PlanetEvent::None) {
                 entry->setFillColor(sf::Color::Yellow);

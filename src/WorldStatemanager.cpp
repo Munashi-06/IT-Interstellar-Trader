@@ -1,24 +1,32 @@
 #include "WorldStatemanager.hpp"
 #include <string>
 
-// Helper function to convert PlanetEvent enum to string
-std::string planetEventToString(PlanetEvent event) {
-    switch (event) {
-        case PlanetEvent::None: return "Ninguno";
-        case PlanetEvent::Piracy: return "Piratería";
-        case PlanetEvent::Famine: return "Hambruna";
-        case PlanetEvent::Plague: return "Plaga";
-        case PlanetEvent::TechBoom: return "Auge Tecnológico";
-        default: return "Desconocido";
-    }
-}
-
 bool WorldStateManager::update(float deltaTime, std::vector<Planet>& planets) {
     eventTimer += deltaTime;
     bool eventTriggered = false;
+
+    // 1. Manejar la expiración de eventos existentes
+    // Supongamos que cada "segundo" de juego baja la duración
+    static float oneSecondTimer = 0;
+    oneSecondTimer += deltaTime;
+
     if (eventTimer >= timeBetweenEvents) {
         eventTriggered = triggerRandomEvent(planets);
         eventTimer = 0;
+    }
+
+    if (oneSecondTimer >= 1.0f) {
+        for (auto& p : planets) {
+            if (p.getEvent() != PlanetEvent::None) {
+                p.decreaseEventDuration();
+                if (p.getEvent() == PlanetEvent::None) {
+                    eventTriggered = true; // Un evento acaba de terminar
+                    std::cout << "[EVENTO TERMINADO] En el planeta " << p.getName() << " ha terminado el evento: " 
+                              << p.getEventName() << std::endl;
+                }
+            }
+        }
+        oneSecondTimer = 0;
     }
     return eventTriggered; // Devuelve si se generó un evento para que el mundo sepa si debe actualizar el radar
 }
@@ -42,7 +50,7 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
         target.setEvent(PlanetEvent::Piracy);
         target.setEventDuration(5 + rand() % 5); 
         std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-                 << planetEventToString(target.getEvent()) << " con duracion de " << target.getEventDuration() << " seg." << std::endl;
+                 << target.getEventName() << " con duracion de " << target.getEventDuration() << " seg." << std::endl;
         return true;
     }
     // Hambruna: Más probable si resourceAbundance es bajo (< 3)
@@ -50,7 +58,7 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
         target.setEvent(PlanetEvent::Famine);
         target.setEventDuration(7 + rand() % 4);
         std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-              << planetEventToString(target.getEvent()) << " con duración de " << target.getEventDuration() << " seg." << std::endl;
+              << target.getEventName() << " con duración de " << target.getEventDuration() << " seg." << std::endl;
         return true;
     }
     // Plaga: Más probable si medicalTech es bajo (< 4)
@@ -58,7 +66,7 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
         target.setEvent(PlanetEvent::Plague);
         target.setEventDuration(4 + rand() % 6);
         std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-              << planetEventToString(target.getEvent()) << " con duración de " << target.getEventDuration() << " seg." << std::endl;
+              << target.getEventName() << " con duración de " << target.getEventDuration() << " seg." << std::endl;
         return true;
     }
     // Auge Tecnológico: Más probable si techLevel es alto (> 7)
@@ -66,7 +74,7 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
         target.setEvent(PlanetEvent::TechBoom);
         target.setEventDuration(3 + rand() % 3);
         std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-              << planetEventToString(target.getEvent()) << " con duración de " << target.getEventDuration() << " seg." << std::endl;
+              << target.getEventName() << " con duración de " << target.getEventDuration() << " seg." << std::endl;
     
         return true;
     }

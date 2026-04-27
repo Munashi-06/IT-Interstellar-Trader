@@ -72,7 +72,6 @@ int main() {
     }
     music.setLooping(true);
     music.setVolume((float)mainConfig.musicVolume);
-    music.play();
 
     sf::SoundBuffer hoverBuffer, clickBuffer;
     if (!hoverBuffer.loadFromFile("assets/audio/hover_sound.ogg") || !clickBuffer.loadFromFile("assets/audio/option_selection_sound.ogg")){
@@ -185,6 +184,9 @@ int main() {
     RadarUI radarUI(font);
 #pragma region Bucle principal
 
+    int musicPlaying = 0; // Controla cuando se reproduce la musica del menu (da problemas, revisar)
+    bool showRadar = false; // Variable para controlar la visibilidad del radar
+    bool aux = true; // Variable auxiliar para mostrar el radar solo una vez al inicio
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -196,6 +198,7 @@ int main() {
             if (world.update()) {
                 std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
                 alertTimer = 3.0f; // La alerta durará 3 segundos
+                radarUI.update(world.getRadar()->getHeapArray());
             }
             
             if (alertTimer > 0) alertTimer -= dt;
@@ -302,19 +305,19 @@ int main() {
                     }
                 }
             
-                else if(currentState == State::DifficultySelection) {
-                // Aquí iría la lógica de input para el submenu de selección de dificultad
-                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // Permitir volver al menú con Escape
-                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                        currentState = State::Menu;
-                    }
-                    
-                    if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                        // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
-                        currentState = State::Playing; // Temporal, para probar el cambio de estados
-                    }
+            else if(currentState == State::DifficultySelection) {
+            // Aquí iría la lógica de input para el submenu de selección de dificultad
+            if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                // Permitir volver al menú con Escape
+                if(keyPressed->code == sf::Keyboard::Key::Escape) {
+                    currentState = State::Menu;
                 }
+                
+                if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                    // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
+                    currentState = State::Playing; // Temporal, para probar el cambio de estados
+                }
+            }
             }
 
             music.setVolume((float)settingsMenu.getTempMusicVolume());
@@ -322,7 +325,6 @@ int main() {
             clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
         
             if(currentState == State::Playing) {
-                music.stop();
 
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     // Permitir volver al menú con Escape (Borrar despues, esto es para probar el cambio de estados)
@@ -347,6 +349,9 @@ int main() {
         window.clear();
         
         if (currentState == State::Menu) {
+            if(musicPlaying == 1 || musicPlaying == 3){
+                musicPlaying = 0;
+            }
             window.draw(backgroundSprite);
             mainMenu.draw(window);
         } 
@@ -355,6 +360,9 @@ int main() {
             settingsMenu.draw(window);
         }
         else if (currentState == State::Playing) {
+            if(musicPlaying == 0 || musicPlaying == 2){
+                musicPlaying = 1;
+            }
             window.clear(sf::Color(0, 0, 15));
             sf::Vector2f playerPos = player.getPosition();
             sf::RenderStates states;
@@ -408,10 +416,21 @@ int main() {
 
             // Dibujamos el Radar encima de todo (siempre va al final para que se dibuje
             // encima de los demás elementos)
-            radarUI.update(world.getRadar()->getHeapArray());
+            if(aux) {
+                radarUI.update(world.getRadar()->getHeapArray());
+                aux = false; // Solo actualizar el radar la primera vez para mostrarlo al inicio
+            }
             radarUI.draw(window);
         }
-
+         
+        if(musicPlaying == 0){
+            music.play();
+            musicPlaying = 2;
+        }
+        else if(musicPlaying == 1){
+            music.stop();
+            musicPlaying = 3;
+        }
         window.display();
     }
     return 0;
