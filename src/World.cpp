@@ -21,20 +21,19 @@ void World::updateRadar(Planet& plnt) noexcept {
 }
 
 void World::forceRadarUpdate() {
-    // 1. En lugar de limpiar el original, crea uno temporal
-    std::vector<Planet> nuevoHeap;
-    nuevoHeap.push_back(Planet()); // Índice 0
+    std::vector<Planet> paraMostrar;
     
-    // IMPORTANTE: Reseteamos el contador interno del heap 
-    // para que coincida con el nuevo vector que vamos a llenar
-    radar->setN(0);
-
+    // 1. Obtenemos los planetas del sistema solar
     for (const auto& p : solarSystem) {
-        // Usa una función de inserción que reciba el vector por parámetro
-        // o asegúrate de que insert() no asuma que el vector ya tiene espacio
-        radar->insert(Planet(p), nuevoHeap, cmp); 
+        paraMostrar.push_back(p);
     }
 
-    // 2. Solo al final, asigna el nuevo heap al radar
-    radar->setHeapArray(nuevoHeap); 
+    // 2. Ordenamos el vector completo usando tu función cmp
+    // Esto garantiza un orden lineal perfecto para la UI
+    std::sort(paraMostrar.begin(), paraMostrar.end(), cmp);
+
+    // 3. Pasamos este vector ordenado al Radar
+    // Nota: El radar ahora recibirá un vector ordenado del 0 al N, 
+    // así que ajusta el bucle del RadarUI para empezar en i=0
+    radar->setHeapArray(paraMostrar);
 }

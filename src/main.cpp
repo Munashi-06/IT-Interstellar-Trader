@@ -194,8 +194,6 @@ int main() {
         // --- LÓGICA DE EVENTOS ---
         if (currentState == State::Playing) {
             if (world.update()) {
-                // Actualizamos los textos de la interfaz con los datos del Heap
-                radarUI.update(world.getRadar()->getHeapArray());
                 std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
                 alertTimer = 3.0f; // La alerta durará 3 segundos
             }
@@ -410,6 +408,7 @@ int main() {
 
             // Dibujamos el Radar encima de todo (siempre va al final para que se dibuje
             // encima de los demás elementos)
+            radarUI.update(world.getRadar()->getHeapArray());
             radarUI.draw(window);
         }
 

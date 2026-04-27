@@ -32,8 +32,8 @@ public:
     void update(const std::vector<Planet>& heapArray) {
         planetEntries.clear();
         
-        for (size_t i = 1; i < heapArray.size() && i <= 5; ++i) { 
-            std::string info = std::to_string(i) + ". " + heapArray[i].getName();
+        for (size_t i = 0; i < heapArray.size() && i < 5; ++i) { 
+            std::string info = std::to_string(i + 1) + ". " + heapArray[i].getName();
             if (heapArray[i].getEvent() != PlanetEvent::None) {
                 info += " (!)"; 
             }

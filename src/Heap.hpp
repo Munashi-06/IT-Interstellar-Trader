@@ -17,7 +17,13 @@ inline bool cmp(const Planet& a, const Planet& b) // Función de comparación pa
     ya que el jugador puede decidir visitar un planeta sin eventos pero con un nivel tecnologico alto
     para comprar tecnologia, o un planeta con alta abundancia de recursos para comprar comida, etc.
 */
-    float scoreA = 0.0f;
+    if (a.getEvent() == PlanetEvent::None && b.getEvent() != PlanetEvent::None) {
+        return false; // b tiene evento, a no, así que b es más prioritario
+    }
+    if (a.getEvent() != PlanetEvent::None && b.getEvent() == PlanetEvent::None) {
+        return true; // a tiene evento, b no, así que a es más prioritario
+    }
+    float scoreA = 0.0f;    
     float scoreB = 0.0f;
 
     // Sumamos modificadores (puedes usar los atributos que ya tienes)
@@ -76,6 +82,7 @@ public:
     void setN(size_t newN) noexcept { n = newN; }
 
     void insert(Planet&& p, std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
+    void insertArray(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&)); // Inserta un vector completo al heap (útil para la actualización completa del radar)
     void remove(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
 
     // Actualizar el heap después de modificar un planeta (por ejemplo, después de que un evento termine)
