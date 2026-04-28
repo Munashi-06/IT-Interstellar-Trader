@@ -14,7 +14,7 @@
 #include <optional>
 #include <SFML/Audio.hpp>
 #include <ctime>
-#include <cmath> // Necesario para atan2 y sqrt
+#include <cmath> 
 
 GameConfig mainConfig;
 
@@ -216,7 +216,8 @@ int main() {
 
     int selectedPlanetIndex = 0;
     sf::Vector2f targetPosition(640.f, 360.f); 
-    float travelSpeed = 400.f; // Velocidad de la nave
+    float travelSpeed = 400.f; 
+    float shipAnimX = -100.f; // Variable para la animación horizontal
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -359,6 +360,7 @@ int main() {
             else if (currentState == State::TravelConfirmation) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Y) {
+                        shipAnimX = -100.f; // Reiniciamos posición de la animación
                         currentState = State::InPlanet; 
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::N) {
@@ -437,14 +439,13 @@ int main() {
                     planetShape.setFillColor(sf::Color::Cyan); 
                     planetShape.setOutlineThickness(2);
                     planetShape.setOutlineColor(sf::Color::White);
-                    targetPosition = {x, y}; // Actualización dinámica del objetivo
+                    targetPosition = {x, y}; 
                 } else {
                     planetShape.setFillColor(sf::Color(150, 150, 150));
                 }
                 window.draw(planetShape);
             }
 
-            // --- MOVIMIENTO SUAVE Y ROTACIÓN (CORREGIDO) ---
             sf::Vector2f currentPos = player.getPosition();
             sf::Vector2f direction = targetPosition - currentPos;
             float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -454,7 +455,7 @@ int main() {
                 float angleDegrees = angleRadians * 180.f / 3.14159265f;
                 player.setRotation(angleDegrees + 90.f);
 
-                direction /= dist; // Normalizar
+                direction /= dist; 
                 float moveDistance = travelSpeed * dt;
 
                 if (moveDistance > dist) {
@@ -512,9 +513,29 @@ int main() {
         }
         else if (currentState == State::InPlanet) {
             window.clear(sf::Color::Black); 
+            
+            shipAnimX += 400.f * dt; // Velocidad de la animación
+            if (shipAnimX > 1380.f) shipAnimX = -100.f;
+
+            sf::Vector2f originalPos = player.getPosition();
+            
+            player.setPosition({shipAnimX, 500.f}); 
+            player.setRotation(90.f); // Mirando a la derecha
+            player.draw(window);
+            player.setPosition(originalPos);
+            player.setRotation(0.f); 
+            // -----------------------
+
             sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());
-            msg.setPosition({400.f, 300.f});
+            msg.setOrigin({msg.getLocalBounds().size.x / 2.f, 0.f});
+            msg.setPosition({640.f, 300.f});
             window.draw(msg);
+
+            sf::Text escMsg(font, "Presiona ESC para despegar");
+            escMsg.setCharacterSize(15);
+            escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
+            escMsg.setPosition({640.f, 650.f});
+            window.draw(escMsg);
         }
 
         window.display();
