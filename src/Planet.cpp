@@ -9,6 +9,7 @@ Planet::Planet(std::string n, std::string d, int orb, int tech, int sec, int res
     : name(n), description(d), EVENT_DURATION(0), orbit(orb), techLevel(tech), securityLevel(sec), resourceAbundance(res), luxuryDemand(lux), moonCount(moon), medicalTech(med)
 {
     // Inicializamos la tabla hash de stock
+    loadTexture();
 }
 
 Planet& Planet::operator=(const Planet& other) {
@@ -25,6 +26,20 @@ Planet& Planet::operator=(const Planet& other) {
         luxuryDemand = other.luxuryDemand;
         moonCount = other.moonCount;
         medicalTech = other.medicalTech;
+        baseScale = other.baseScale;
+        highlighted = other.highlighted;
+
+        if (other.texture && other.sprite){
+            texture = std::make_unique<sf::Texture>(*other.texture);
+            sprite = std::make_unique<sf::Sprite>(*texture);
+            sprite->setTextureRect(other.sprite->getTextureRect());
+            sprite->setScale(other.sprite->getScale());
+            sprite->setOrigin(other.sprite->getOrigin());
+        } else {
+            texture.reset();
+            sprite.reset();
+        }
+            
     }
     return *this;
 }
@@ -33,9 +48,33 @@ Planet::Planet(const Planet& other)
     : name(other.name), description(other.description), currentEvent(other.currentEvent), EVENT_DURATION(other.EVENT_DURATION),
       localStock(other.localStock), orbit(other.orbit), techLevel(other.techLevel), securityLevel(other.securityLevel),
       resourceAbundance(other.resourceAbundance), luxuryDemand(other.luxuryDemand), moonCount(other.moonCount),
-      medicalTech(other.medicalTech)
+      medicalTech(other.medicalTech), baseScale(other.baseScale), highlighted(other.highlighted)
 {
     // Constructor de copia
+    if (other.texture && other.sprite){
+        texture = std::make_unique<sf::Texture>(*other.texture);
+        sprite = std::make_unique<sf::Sprite>(*texture);
+        sprite->setTextureRect(other.sprite->getTextureRect());
+        sprite->setScale(other.sprite->getScale());
+        sprite->setOrigin(other.sprite->getOrigin());
+    }
+}
+
+void Planet::loadTexture() {
+    std::string path = "assets/planets/" + name + ".png";
+    texture = std::make_unique<sf::Texture>();
+
+    if(texture->loadFromFile(path)){
+        sprite = std::make_unique<sf::Sprite>(*texture);
+        sf::Vector2u texSize = texture->getSize();
+        baseScale = 40.f / std::max(texSize.x, texSize.y);
+        sprite->setScale({baseScale, baseScale});
+        sprite->setOrigin({static_cast<float>(texSize.x)/2.f, static_cast<float>(texSize.y)/2.f});
+    } else {
+        std::cerr <<"No se pudo cargar textura para " << name << ":" << path << std::endl;
+        texture.reset();
+        sprite.reset();
+    }
 }
 
 std::string Planet::getName() const {
@@ -48,6 +87,18 @@ std::string Planet::getDescription() const {
 
 PlanetEvent Planet::getEvent() const {
     return currentEvent;
+}
+
+std::string Planet::getEventName() const {
+    switch (currentEvent) {
+        case PlanetEvent::None: return "Ninguno";
+        case PlanetEvent::War: return "Guerra";
+        case PlanetEvent::Plague: return "Plaga";
+        case PlanetEvent::TechBoom: return "Auge Tecnológico";
+        case PlanetEvent::Famine: return "Hambruna";
+        case PlanetEvent::Piracy: return "Piratería";
+        default: return "Desconocido";
+    }
 }
 
 void Planet::setEvent(PlanetEvent e) {

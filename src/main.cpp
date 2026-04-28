@@ -446,6 +446,38 @@ int main() {
                 window.draw(planetShape);
             }
 
+            for(auto& planet : world.getPlanets()){
+                float distance = planet.getOrbit() * 33.f + 33.f;
+                float speed = 0.5f / (planet.getOrbit() * 0.2f);
+                float x = center.x + std::cos(time * speed) * distance;
+                float y = center.y + std::sin(time * speed) * distance;
+
+                if(planet.hasSprite()){
+                    planet.getSprite()->setPosition({x, y});
+        
+                    // Detección de proximidad
+                    sf::Vector2f planetPos(x, y);
+                    sf::Vector2f playerPos = player.getPosition();
+        
+                    if (planet.isPointNear(playerPos, planetPos)) {
+                        planet.setHighlighted(true);
+                    } else {
+                        planet.setHighlighted(false);
+                    }
+        
+                // Actualizar escala suave
+                planet.updateScale(dt);
+        
+                window.draw(*planet.getSprite());
+                } else {
+                    sf::CircleShape planetShape(8.f);
+                    planetShape.setFillColor(sf::Color(150, 150, 150));
+                    planetShape.setOrigin({8.f, 8.f});
+                    planetShape.setPosition({x, y});
+                    window.draw(planetShape);
+                }
+            }
+
             if (!planets.empty()) {
                 planetNameText.setString(planets[selectedPlanetIndex].getName());
                 uiPlanetSprite.setFillColor(sf::Color::Cyan); 
@@ -501,6 +533,6 @@ int main() {
 
         window.display();
     }
-
+    
     return 0;
 }
