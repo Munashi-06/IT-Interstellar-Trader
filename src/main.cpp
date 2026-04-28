@@ -14,6 +14,7 @@
 #include <optional>
 #include <SFML/Audio.hpp>
 #include <ctime>
+#include <cmath> // Necesario para atan2 y sqrt
 
 GameConfig mainConfig;
 
@@ -161,7 +162,6 @@ int main() {
     sf::Text adminShipText(font, "ADMINISTRAR NAVE");
     adminShipText.setCharacterSize(16);
     adminShipText.setFillColor(sf::Color::White);
-    // Centrar texto en el botón
     sf::FloatRect textRect = adminShipText.getLocalBounds();
     adminShipText.setOrigin({textRect.size.x / 2.f, textRect.size.y / 2.f});
     adminShipText.setPosition({ 1150.f, 80.f });
@@ -183,15 +183,12 @@ int main() {
     optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
     optionsText.setPosition({640.f, 400.f});
 
-    //////////////////////////////////////
-    // --- ELEMENTOS DEL MENÚ DE NAVE ---
     sf::Texture shipMenuTexture;
     if (!shipMenuTexture.loadFromFile("assets/player.png")) {
         std::cerr << "Error cargando textura de previsualización" << std::endl;
     }
 
     sf::RectangleShape shipMenuBg({640.f, 400.f});
-    // Fondo transparente (Alfa: 180)
     shipMenuBg.setFillColor(sf::Color(15, 15, 25, 180));
     shipMenuBg.setOutlineThickness(3);
     shipMenuBg.setOutlineColor(sf::Color::Cyan);
@@ -203,7 +200,7 @@ int main() {
     shipMenuTitle.setFillColor(sf::Color::Cyan);
     shipMenuTitle.setPosition({480.f, 180.f});
 
-  sf::Sprite shipPreview(shipMenuTexture); // Ahora usamos la textura cargada aquí
+    sf::Sprite shipPreview(shipMenuTexture); 
     shipPreview.setScale({2.f, 2.f});
     shipPreview.setPosition({210.f, 120.f});
 
@@ -216,9 +213,10 @@ int main() {
     sf::FloatRect upRect = upgradeText.getLocalBounds();
     upgradeText.setOrigin({upRect.size.x / 2.f, upRect.size.y / 2.f});
     upgradeText.setPosition({750.f, 340.f}); 
-    /////////////////////////////////////
 
     int selectedPlanetIndex = 0;
+    sf::Vector2f targetPosition(640.f, 360.f); 
+    float travelSpeed = 400.f; // Velocidad de la nave
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -439,11 +437,33 @@ int main() {
                     planetShape.setFillColor(sf::Color::Cyan); 
                     planetShape.setOutlineThickness(2);
                     planetShape.setOutlineColor(sf::Color::White);
-                    player.setPosition({x, y}); 
+                    targetPosition = {x, y}; // Actualización dinámica del objetivo
                 } else {
                     planetShape.setFillColor(sf::Color(150, 150, 150));
                 }
                 window.draw(planetShape);
+            }
+
+            // --- MOVIMIENTO SUAVE Y ROTACIÓN (CORREGIDO) ---
+            sf::Vector2f currentPos = player.getPosition();
+            sf::Vector2f direction = targetPosition - currentPos;
+            float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+            if (dist > 1.5f) {
+                float angleRadians = std::atan2(direction.y, direction.x);
+                float angleDegrees = angleRadians * 180.f / 3.14159265f;
+                player.setRotation(angleDegrees + 90.f);
+
+                direction /= dist; // Normalizar
+                float moveDistance = travelSpeed * dt;
+
+                if (moveDistance > dist) {
+                    player.setPosition(targetPosition);
+                } else {
+                    player.setPosition(currentPos + direction * moveDistance);
+                }
+            } else {
+                player.setPosition(targetPosition);
             }
 
             if (!planets.empty()) {
@@ -453,7 +473,7 @@ int main() {
                 uiPlanetSprite.setOutlineColor(sf::Color::White);
             }
 
-            player.update(world.getDeltaTime());
+            player.update(dt);
             player.draw(window);
             window.draw(uiPlanetSprite);
             window.draw(planetNameText);
@@ -462,7 +482,6 @@ int main() {
             window.draw(adminShipBtn);
             window.draw(adminShipText);
 
-            // Capa de Confirmación de Viaje
             if (currentState == State::TravelConfirmation) {
                 confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
                 confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
@@ -472,7 +491,6 @@ int main() {
                 window.draw(optionsText);
             }
 
-            // Capa de Menú de Nave
             if (currentState == State::ShipMenu) {
                 window.draw(shipMenuBg);
                 window.draw(shipMenuTitle);

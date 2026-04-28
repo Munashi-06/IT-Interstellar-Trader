@@ -4,6 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include "Item.hpp"
+#include <SFML/Graphics.hpp>
 
 static int MAX_STOCK = 100; // Cantidad máxima total de items que un planeta puede tener en su mercado
 

@@ -46,6 +46,12 @@ void Player::draw(sf::RenderWindow& window) {
     window.draw(*sprite);
 }
 
+void Player::setRotation(float angle) {
+    if (sprite) {
+        sprite->setRotation(sf::degrees(angle)); 
+    }
+}
+
 void Player::update(float deltaTime) {
     if (!sprite) return;
 
