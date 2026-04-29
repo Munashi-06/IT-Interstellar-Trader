@@ -7,16 +7,6 @@ typedef bool (*Cmp)(const Planet&, const Planet&);
 
 inline bool cmp(const Planet& a, const Planet& b) // Función de comparación para ordenar los planetas en el heap
 {
-/*
-    Aun sigo pensando como se podrian hacer las comparaciones pero se podrian comparar por
-    el evento que esta ocurriendo en el planeta, la duracion y el nivel tecnologico,
-    medico, de seguridad... etc. dependiendo del evento se compararia por diferentes atributos
-    para ver cual es el que tiene mayor descuento o el que es mas urgente visitar.
-
-    Comparar por atributos tambien ayuda a mantener el Heap ordenado a pesar de no tener eventos,
-    ya que el jugador puede decidir visitar un planeta sin eventos pero con un nivel tecnologico alto
-    para comprar tecnologia, o un planeta con alta abundancia de recursos para comprar comida, etc.
-*/
     if (a.getEvent() == PlanetEvent::None && b.getEvent() != PlanetEvent::None) {
         return false; // b tiene evento, a no, así que b es más prioritario
     }
@@ -27,34 +17,38 @@ inline bool cmp(const Planet& a, const Planet& b) // Función de comparación pa
     float scoreB = 0.0f;
 
     // Sumamos modificadores (puedes usar los atributos que ya tienes)
+
+    // -- PLANETA A --
     if(a.getEvent() == PlanetEvent::War) { // Guerra
         scoreA = 50.0f;
-        scoreA += a.getSecurityLevel() * 2.0f; // Más inseguro = más prioridad
+        scoreA += (10.0f - a.getSecurityLevel()) * 2.0f; // Más inseguro = más prioridad
     }
     else if(a.getEvent() == PlanetEvent::Famine) { // Hambruna
         scoreA = 45.0f;
-        scoreA += a.getResourceAbundance() * 1.75f; // Menos recursos = más prioridad
+        scoreA += (10.0f - a.getResourceAbundance()) * 1.75f; // Menos recursos = más prioridad
     }
     else if(a.getEvent() == PlanetEvent::Plague) { // Peste
         scoreA = 40.0f;
-        scoreA += a.getMedicalTech() * 1.5f; // Mejor tecnología médica = más prioridad
+        scoreA += (10.0f - a.getMedicalTech()) * 1.5f; // Menor tecnología médica = más prioridad
     }
     else if(a.getEvent() == PlanetEvent::TechBoom) { // Auge Tecnológico
         scoreA = 30.0f;
         scoreA += a.getTechLevel() * 1.25f; // Más tecnológico = más prioridad
     }
 
+
+    // -- PLANETA B --
     if(b.getEvent() == PlanetEvent::War) { // Guerra
         scoreB = 50.0f;
-        scoreB += b.getSecurityLevel() * 2.0f; // Más inseguro = más prioridad
+        scoreB += (10.0f - b.getSecurityLevel()) * 2.0f; // Más inseguro = más prioridad
     }
     else if(b.getEvent() == PlanetEvent::Famine) { // Hambruna
         scoreB = 45.0f;
-        scoreB += b.getResourceAbundance() * 1.75f; // Menos recursos = más prioridad
+        scoreB += (10.0f - b.getResourceAbundance()) * 1.75f; // Menos recursos = más prioridad
     }
     else if(b.getEvent() == PlanetEvent::Plague) { // Peste
         scoreB = 40.0f;
-        scoreB += b.getMedicalTech() * 1.5f; // Mejor tecnología médica = más prioridad
+        scoreB += (10.0f - b.getMedicalTech()) * 1.5f; // Menor tecnología médica = más prioridad
     }
     else if(b.getEvent() == PlanetEvent::TechBoom) { // Auge Tecnológico
         scoreB = 30.0f;

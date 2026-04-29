@@ -34,3 +34,7 @@ void Inventory::display() const {
                     << slot.item->getPrice() << " cdt." << std::endl;
     }
 }
+
+void Inventory::setCapacity(int a) noexcept {
+    capacity = a;
+}

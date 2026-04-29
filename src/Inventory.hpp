@@ -16,4 +16,5 @@ public:
     bool addItem(std::unique_ptr<Item> item, int quantity);
     void removeItem(const std::string& itemName, int quantity);
     void display() const;
+    void setCapacity(int a) noexcept;
 };

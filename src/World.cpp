@@ -5,7 +5,7 @@ bool World::update() {
     // Aquí podrías actualizar el estado del mundo, como avanzar eventos activos, manejar misiones, etc.
     
     // Solo si algo cambió realmente en los eventos, actualizamos el radar
-    // Esto evita recalcular el heap cada frame si no es necesario, lo que mejora el rendimiento
+    // Esto evita recalcular el heap cada frame, lo que mejora el rendimiento
     bool huboCambio = stateManager.update(deltaTime, solarSystem);
     
     if (huboCambio) {

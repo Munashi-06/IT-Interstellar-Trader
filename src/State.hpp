@@ -1,5 +1,7 @@
 #pragma once
 
+
+// enum para los cambios de estado
 enum class State {
     Menu,
     DifficultySelection,

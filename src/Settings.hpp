@@ -14,7 +14,7 @@ struct GameConfig{
     bool vsync = true;
     int fpsLimit = 60;
 
-    void saveToFile(const std::string& filename) {//funcion para guardar las opciones modificadas
+    void saveToFile(const std::string& filename) { //funcion para guardar las opciones modificadas
         std::ofstream file(filename);
         if (file.is_open()){
             file << musicVolume << "\n";
