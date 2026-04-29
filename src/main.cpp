@@ -148,10 +148,6 @@ int main() {
     planetNameText.setOutlineThickness(1);
     planetNameText.setPosition({ 30.f, 660.f });
 
-    sf::CircleShape uiPlanetSprite(40.f); 
-    uiPlanetSprite.setOrigin({20.f, 20.f});
-    uiPlanetSprite.setPosition({ 55.f, 580.f }); 
-
     sf::RectangleShape adminShipBtn({200.f, 50.f});
     adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
     adminShipBtn.setOutlineThickness(2);
@@ -480,14 +476,22 @@ int main() {
 
             if (!planets.empty()) {
                 planetNameText.setString(planets[selectedPlanetIndex].getName());
-                uiPlanetSprite.setFillColor(sf::Color::Cyan); 
-                uiPlanetSprite.setOutlineThickness(2);
-                uiPlanetSprite.setOutlineColor(sf::Color::White);
+                auto& selectedPlanet = world.getPlanets()[selectedPlanetIndex];
+
+                if (selectedPlanet.hasSprite()){
+                    sf::Sprite uiSprite = *selectedPlanet.getSprite();
+                    auto texSize = selectedPlanet.getSprite()->getTexture().getSize();
+                    float uiScale = 150.f/std::max(texSize.x, texSize.y);
+                    uiSprite.setScale({uiScale, uiScale});
+                    uiSprite.setPosition({85.f, 590.f});
+
+                    window.draw(uiSprite);
+
+                }
             }
 
             player.update(world.getDeltaTime());
             player.draw(window);
-            window.draw(uiPlanetSprite);
             window.draw(planetNameText);
             if (alertTimer > 0) window.draw(alertSprite);
             radarUI.draw(window);
