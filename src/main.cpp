@@ -149,10 +149,6 @@ int main() {
     planetNameText.setOutlineThickness(1);
     planetNameText.setPosition({ 30.f, 660.f });
 
-    sf::CircleShape uiPlanetSprite(40.f); 
-    uiPlanetSprite.setOrigin({20.f, 20.f});
-    uiPlanetSprite.setPosition({ 55.f, 580.f }); 
-
     sf::RectangleShape adminShipBtn({200.f, 50.f});
     adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
     adminShipBtn.setOutlineThickness(2);
@@ -446,37 +442,77 @@ int main() {
                 window.draw(planetShape);
             }
 
-            sf::Vector2f currentPos = player.getPosition();
-            sf::Vector2f direction = targetPosition - currentPos;
-            float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+            for(auto& planet : world.getPlanets()){
+                float distance = planet.getOrbit() * 33.f + 33.f;
+                float speed = 0.5f / (planet.getOrbit() * 0.2f);
+                float x = center.x + std::cos(time * speed) * distance;
+                float y = center.y + std::sin(time * speed) * distance;
 
-            if (dist > 1.5f) {
-                float angleRadians = std::atan2(direction.y, direction.x);
-                float angleDegrees = angleRadians * 180.f / 3.14159265f;
-                player.setRotation(angleDegrees + 90.f);
-
-                direction /= dist; 
-                float moveDistance = travelSpeed * dt;
-
-                if (moveDistance > dist) {
-                    player.setPosition(targetPosition);
+                if(planet.hasSprite()){
+                    planet.getSprite()->setPosition({x, y});
+        
+                    // Detección de proximidad
+                    sf::Vector2f planetPos(x, y);
+                    sf::Vector2f playerPos = player.getPosition();
+        
+                    if (planet.isPointNear(playerPos, planetPos)) {
+                        planet.setHighlighted(true);
+                    } else {
+                        planet.setHighlighted(false);
+                    }
+        
+                // Actualizar escala suave
+                planet.updateScale(dt);
+        
+                window.draw(*planet.getSprite());
                 } else {
-                    player.setPosition(currentPos + direction * moveDistance);
+                    sf::CircleShape planetShape(8.f);
+                    planetShape.setFillColor(sf::Color(150, 150, 150));
+                    planetShape.setOrigin({8.f, 8.f});
+                    planetShape.setPosition({x, y});
+                    window.draw(planetShape);
                 }
-            } else {
-                player.setPosition(targetPosition);
             }
+
+            // sf::Vector2f currentPos = player.getPosition();
+            // sf::Vector2f direction = targetPosition - currentPos;
+            // float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+            // if (dist > 1.5f) {
+            //     float angleRadians = std::atan2(direction.y, direction.x);
+            //     float angleDegrees = angleRadians * 180.f / 3.14159265f;
+            //     player.setRotation(angleDegrees + 90.f);
+
+            //     direction /= dist; 
+            //     float moveDistance = travelSpeed * dt;
+
+            //     if (moveDistance > dist) {
+            //         player.setPosition(targetPosition);
+            //     } else {
+            //         player.setPosition(currentPos + direction * moveDistance);
+            //     }
+            // } else {
+            //     player.setPosition(targetPosition);
+            // }
 
             if (!planets.empty()) {
                 planetNameText.setString(planets[selectedPlanetIndex].getName());
-                uiPlanetSprite.setFillColor(sf::Color::Cyan); 
-                uiPlanetSprite.setOutlineThickness(2);
-                uiPlanetSprite.setOutlineColor(sf::Color::White);
+                auto& selectedPlanet = world.getPlanets()[selectedPlanetIndex];
+
+                if (selectedPlanet.hasSprite()){
+                    sf::Sprite uiSprite = *selectedPlanet.getSprite();
+                    auto texSize = selectedPlanet.getSprite()->getTexture().getSize();
+                    float uiScale = 150.f/std::max(texSize.x, texSize.y);
+                    uiSprite.setScale({uiScale, uiScale});
+                    uiSprite.setPosition({85.f, 590.f});
+
+                    window.draw(uiSprite);
+
+                }
             }
 
             player.update(dt);
             player.draw(window);
-            window.draw(uiPlanetSprite);
             window.draw(planetNameText);
             if (alertTimer > 0) window.draw(alertSprite);
             radarUI.draw(window);
@@ -540,6 +576,6 @@ int main() {
 
         window.display();
     }
-
+    
     return 0;
 }

@@ -30,6 +30,7 @@ public:
     std::unique_ptr<Heap>& getRadar() { return radar; }
     void setDeltaTime(float dt) { deltaTime = dt; }
     float getDeltaTime() const { return deltaTime; }
+    std::vector<Planet>& getPlanets() { return solarSystem; }
     const std::vector<Planet>& getPlanets() const { return solarSystem; }
     const std::unordered_map<std::string, std::unique_ptr<Item>>& getGlobalCatalog() const { return globalCatalog; }
     void updateRadar(Planet& plnt) noexcept; // Actualiza el heap de radar
