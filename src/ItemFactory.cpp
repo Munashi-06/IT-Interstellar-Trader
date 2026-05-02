@@ -15,13 +15,13 @@ std::unordered_map<std::string, std::unique_ptr<Item>> ItemFactory::loadDatabase
         std::getline(ss, rareS, ';');
 
         double price = std::stod(priceS);
-        ItemCategory cat = static_cast<ItemCategory>(std::stoi(catS));
+        ItemCategory category = static_cast<ItemCategory>(std::stoi(catS));
         Rarity rare = static_cast<Rarity>(std::stoi(rareS));
 
         // Creamos el objeto según la categoría
-        if (cat == ItemCategory::Resource) 
+        if (category == ItemCategory::Resource) 
             db[name] = std::make_unique<Resource>(name, price, rare);
-        else if (cat == ItemCategory::Food)
+        else if (category == ItemCategory::Food)
             db[name] = std::make_unique<Food>(name, price, rare);
         // ... (repetir para Medical, Technology, etc.)
     }

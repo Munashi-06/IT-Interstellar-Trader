@@ -1,40 +1,52 @@
 #include "Inventory.hpp"
 
-bool Inventory::addItem(std::unique_ptr<Item> newItem, int qty) {
-    if (slots.count(newItem->getName())) {
-        slots[newItem->getName()].quantity += qty;
-        return true;
-    }
-    else {
-        if (slots.size() < capacity) {
-            slots[newItem->getName()] = { std::move(newItem), qty };
+// Usamos el catálogo para validar el item, pero solo guardamos el ID
+bool Inventory::addItem(const std::string& itemID, int qty, int maxStack) {
+    // Intentar apilar en slots existentes
+    for (auto& slot : slots) {
+        if (slot.has_value() && slot->itemID == itemID) {
+            slot->quantity += qty;
             return true;
         }
-        else {
-            std::cout << "¡Inventario lleno!" << std::endl;
-            return false;
+    }
+
+    // Si no se pudo apilar, buscar un slot vacío (nullopt)
+    for (auto& slot : slots) {
+        if (!slot.has_value()) {
+            slot = ItemStack{ itemID, qty, maxStack };
+            return true;
+        }
+    }
+
+    std::cout << "¡No hay espacio en la bodega!" << std::endl;
+    return false;
+}
+
+void Inventory::removeItem(const std::string& itemID, int qty) {
+    for (auto& slot : slots) {
+        if (slot.has_value() && slot->itemID == itemID) {
+            slot->quantity -= qty;
+            if (slot->quantity <= 0) {
+                slot = std::nullopt; // Libera el slot
+            }
+            return;
         }
     }
 }
 
-// Elimina cantidad. Si llega a 0, borra la entrada de la tabla.
-void Inventory::removeItem(const std::string& name, int qty) {
-    if (slots.count(name)) {
-        slots[name].quantity -= qty;
-        if (slots[name].quantity <= 0) {
-            slots.erase(name);
+void Inventory::display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const {
+    for (size_t i = 0; i < slots.size(); ++i) {
+        if (slots[i].has_value()) {
+            // Buscamos la info real del item en el catálogo global
+            const auto& itemInfo = catalog.at(slots[i]->itemID);
+            std::cout << "Slot " << i << ": " << itemInfo->getName() 
+                      << " x" << slots[i]->quantity << std::endl;
+        } else {
+            std::cout << "Slot " << i << ": [ VACÍO ]" << std::endl;
         }
     }
 }
 
-void Inventory::display() const {
-    std::cout << "\n--- INVENTARIO DE LA NAVE ---" << std::endl;
-    for (auto const& [name, slot] : slots) {
-        std::cout << "- " << name << " [x" << slot.quantity << "] | Precio: " 
-                    << slot.item->getPrice() << " cdt." << std::endl;
-    }
-}
-
-void Inventory::setCapacity(int a) noexcept {
-    capacity = a;
+void Inventory::upgradeStorage(int extraSlots) noexcept {
+    slots.resize(slots.size() + extraSlots, std::nullopt);
 }

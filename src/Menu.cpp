@@ -1,5 +1,39 @@
 #include "Menu.hpp"
 
+Button::Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font)
+    : text(font, label, 35) // Corregimos C2512 aquí
+{
+    shape.setSize(size);
+    shape.setPosition(pos);
+    shape.setFillColor(sf::Color::Transparent); // Invisible por defecto
+    shape.setOutlineColor(selectedColor);
+    shape.setOutlineThickness(2);
+
+    text.setFillColor(unselectedColor);
+    
+    // Centrar texto en la caja
+    sf::FloatRect bounds = text.getLocalBounds();
+    text.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f + 12.f});
+    text.setPosition({pos.x + size.x / 2.f, pos.y + size.y / 2.f});
+}
+
+void Button::setAlignmentLeft(float margin = 15.f){
+    sf::FloatRect bounds = text.getLocalBounds();
+    text.setOrigin({0.f, bounds.size.y / 2.f + 12.f});
+    text.setPosition({shape.getPosition().x + margin, shape.getPosition().y + shape.getSize().y / 2.f});
+}
+
+void Button::draw(sf::RenderWindow& window) {
+    if (selected) {
+        window.draw(shape); // Solo dibujamos la caja si está seleccionado
+        text.setFillColor(selectedColor);
+    }
+    else {
+        text.setFillColor(unselectedColor);
+    }
+    window.draw(text);
+}
+
 Menu::Menu(float width, float height)
     : title(font, "", 70)
 {

@@ -20,39 +20,12 @@ struct Button {
     sf::Text text;
     bool selected = false; // Nueva variable para controlar la "cajita"
 
-    Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font) 
-        : text(font, label, 35) // Corregimos C2512 aquí
-    {
-        shape.setSize(size);
-        shape.setPosition(pos);
-        shape.setFillColor(sf::Color::Transparent); // Invisible por defecto
-        shape.setOutlineColor(selectedColor);
-        shape.setOutlineThickness(2);
+    Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font);
 
-        text.setFillColor(unselectedColor);
-        
-        // Centrar texto en la caja
-        sf::FloatRect bounds = text.getLocalBounds();
-        text.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f + 12.f});
-        text.setPosition({pos.x + size.x / 2.f, pos.y + size.y / 2.f});
-    }
     //esto es para alinear las opciones
-    void setAlignmentLeft(float margin = 15.f){
-        sf::FloatRect bounds = text.getLocalBounds();
-        text.setOrigin({0.f, bounds.size.y / 2.f + 12.f});
-        text.setPosition({shape.getPosition().x + margin, shape.getPosition().y + shape.getSize().y / 2.f});
-    }
+    void setAlignmentLeft(float margin = 15.f);
 
-    void draw(sf::RenderWindow& window) {
-        if (selected) {
-            window.draw(shape); // Solo dibujamos la caja si está seleccionado
-            text.setFillColor(selectedColor);
-        }
-        else {
-            text.setFillColor(unselectedColor);
-        }
-        window.draw(text);
-    }
+    void draw(sf::RenderWindow& window);
 };
 
 class Menu {

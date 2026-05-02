@@ -6,12 +6,12 @@ bool World::update() {
     
     // Solo si algo cambió realmente en los eventos, actualizamos el radar
     // Esto evita recalcular el heap cada frame, lo que mejora el rendimiento
-    bool huboCambio = stateManager.update(deltaTime, solarSystem);
+    bool hasChanged = stateManager.update(deltaTime, solarSystem);
     
-    if (huboCambio) {
+    if (hasChanged) {
         forceRadarUpdate();
     }
-    return huboCambio; // Devuelve si hubo cambios al main para que pueda actualizar la interfaz si es necesario
+    return hasChanged; // Devuelve si hubo cambios al main para que pueda actualizar la interfaz si es necesario
 }
 
 void World::updateRadar(Planet& plnt) noexcept {
@@ -21,19 +21,19 @@ void World::updateRadar(Planet& plnt) noexcept {
 }
 
 void World::forceRadarUpdate() {
-    std::vector<Planet> paraMostrar;
+    std::vector<Planet> display;
     
     // 1. Obtenemos los planetas del sistema solar
     for (const auto& p : solarSystem) {
-        paraMostrar.push_back(p);
+        display.push_back(p);
     }
 
     // 2. Ordenamos el vector completo usando tu función cmp
     // Esto garantiza un orden lineal perfecto para la UI
-    std::sort(paraMostrar.begin(), paraMostrar.end(), cmp);
+    std::sort(display.begin(), display.end(), cmp);
 
     // 3. Pasamos este vector ordenado al Radar
     // Nota: El radar ahora recibirá un vector ordenado del 0 al N, 
     // así que ajusta el bucle del RadarUI para empezar en i=0
-    radar->setHeapArray(paraMostrar);
+    radar->setHeapArray(display);
 }

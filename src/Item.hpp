@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <optional>
 
 enum class ItemCategory { Resource, Technology, Luxury, Illegal, Food, Medical, Quest };
 enum class Rarity { Common, Rare, Exotic, Legendary, Quest };

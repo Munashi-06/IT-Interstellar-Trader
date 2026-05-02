@@ -105,8 +105,6 @@ int main() {
     }
     sf::Sprite settingsBackgroundSprite(settingsBackgroundTexture);
 
-    // RadarUI radarUI(font); // Creamos la interfaz usando la fuente que ya cargaste
-
     State currentState = State::Menu;
 
     Player player(640.f, 360.f, "assets/player.png");
@@ -118,25 +116,25 @@ int main() {
     // --- LÓGICA DE INICIALIZACIÓN DEL MUNDO ---
 
     // 1. Cargamos el vector base de planetas
-    std::vector<Planet> planetasBase = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
+    std::vector<Planet> basePlanets = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
 
-    if (planetasBase.empty()) {
+    if (basePlanets.empty()) {
         std::cout << "[ERROR] No se cargaron planetas." << std::endl;
         return -1; // Error de carga
     }
 
     // 2. Creamos el Heap. 
     // IMPORTANTE: Pasamos una COPIA del primer planeta para no romper el vector planetasBase
-    auto radarInicial = std::make_unique<Heap>(Planet(planetasBase[0]));
+    auto radar = std::make_unique<Heap>(Planet(basePlanets[0]));
 
     // 3. Llenamos el heap con el resto (también copias)
-    for (size_t i = 1; i < planetasBase.size(); ++i) {
-        radarInicial->insert(Planet(planetasBase[i]), radarInicial->getHeapArray(), cmp);
+    for (size_t i = 1; i < basePlanets.size(); ++i) {
+        radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
     }
 
     // 4. Inicializamos el mundo con TODO
     // Usamos std::move para pasarle la propiedad de los objetos al World
-    World world(0.0f, std::move(radarInicial), std::move(planetasBase));
+    World world(0.0f, std::move(radar), std::move(basePlanets));
 
     // --- FIN DE LA LÓGICA DE INICIALIZACIÓN ---
 
@@ -180,8 +178,9 @@ int main() {
 
     float alertTimer = 0.f; // Para que la imagen desaparezca después de unos segundos
     
-    // Usamos la misma fuente que ya tienes cargada para los menús
+    // Radar de Prioridad con la misma fuente cargada
     RadarUI radarUI(font);
+
 #pragma region Bucle principal
 
     int musicPlaying = 0; // Controla cuando se reproduce la musica del menu (da problemas, revisar)
@@ -307,17 +306,17 @@ int main() {
             
             else if(currentState == State::DifficultySelection) {
             // Aquí iría la lógica de input para el submenu de selección de dificultad
-            if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                // Permitir volver al menú con Escape
-                if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                    currentState = State::Menu;
+                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    // Permitir volver al menú con Escape
+                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Menu;
+                    }
+                    
+                    if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                        // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
+                        currentState = State::Playing; // Temporal, para probar el cambio de estados
+                    }
                 }
-                
-                if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                    // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
-                    currentState = State::Playing; // Temporal, para probar el cambio de estados
-                }
-            }
             }
 
             music.setVolume((float)settingsMenu.getTempMusicVolume());
