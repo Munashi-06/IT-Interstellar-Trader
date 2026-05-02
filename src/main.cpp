@@ -20,13 +20,34 @@ GameConfig mainConfig;
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
-        state = State::Playing; 
+        // state = State::DifficultySelection; // Submenu del Menu Principal
+        state = State::Playing; // Temporal, para probar el cambio de estados
     } else if (option == "SETTINGS") {
         state = State::Options;
     } else if (option == "EXIT") {
         window.close();
     }
 }
+
+/*
+        EJEMPLO DE USO DE LA CLASE ITEM, INVENTARIO Y FACTORY
+        (ESTO NO VA EN EL MAIN, SOLO ES UN EJEMPLO DE CÓMO USARLAS
+        REALMENTE IRIA EN LA CLASE WORLD O EN LA LÓGICA DE NEGOCIO DEL JUEGO,
+        DEPENDIENDO DE CÓMO ORGANICEMOS EL CÓDIGO)
+
+// 1. Cargamos el catálogo global
+auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
+
+// 2. El jugador compra "Agua Purificada"
+std::string itemABuscar = "Agua Purificada";
+
+if (galaxyItems.count(itemABuscar)) {
+    // IMPORTANTE: Creamos una COPIA para el inventario del jugador
+    // (Podrías implementar un método virtual clone() en Item para esto)
+    auto& prototipo = galaxyItems[itemABuscar];
+    playerInventory.addItem(std::make_unique<Resource>(prototipo->getName(), prototipo->getPrice()), 1);
+}
+*/
 
 int main() {
     bool state = false;
@@ -36,7 +57,7 @@ int main() {
 
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
-        window.setFramerateLimit(0); 
+        window.setFramerateLimit(0); // Desactivar límite de FPS para que VSync controle la tasa de refresco
     }
     else{
         window.setVerticalSyncEnabled(false);
@@ -48,7 +69,8 @@ int main() {
     }
 
     sf::Music music;
-    if (!music.openFromFile("assets/audio/undertale_dogsong.ogg")){ 
+    // Música de fondo del menu para probar la funcionalidad de volumen en settings
+    if (!music.openFromFile("assets/audio/undertale_dogsong.ogg")){
         std::cerr << "Error cargando la música" << std::endl;
     }
     music.setLooping(true);
@@ -86,15 +108,15 @@ int main() {
     }
     sf::Sprite settingsBackgroundSprite(settingsBackgroundTexture);
 
-    State currentState = State::Menu;
+    State currentState = State::Menu; // Estado inicial del juego, muestra el menú principal
 
-    Player spaceShip(640.f, 360.f, "assets/player.png");
+    Player spaceShip(640.f, 360.f, "assets/player.png"); // El jugador controla una nave espacial, que se inicializa en el centro de la pantalla con una textura específica
 
-    Inventory shipInventory;
+    Inventory shipInventory; // Inventario de la nave del jugador
 
-    sf::Clock clock; 
+    sf::Clock clock; // Para medir el tiempo entre frames
 
-    sf::Vector2f mousePos;
+    sf::Vector2f mousePos; // Para almacenar la posición del mouse en coordenadas del mundo, útil para interacciones con el menú y el mundo de juego
 
     // --- LÓGICA DE INICIALIZACIÓN DEL MUNDO ---
 
@@ -240,6 +262,7 @@ int main() {
         float dt = clock.restart().asSeconds(); 
         world.setDeltaTime(dt);
 
+        // --- LÓGICA DE EVENTOS ---
         if (currentState == State::Playing) {
             if (world.update()) {
                 std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
@@ -247,22 +270,24 @@ int main() {
                 radarUI.update(world.getRadar()->getHeapArray());
             }
             if (alertTimer > 0) alertTimer -= dt;
-        }
 
-        if (currentState == State::Playing) {
             if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
                 adminShipBtn.setFillColor(sf::Color(80, 80, 80, 255));
                 adminShipBtn.setOutlineColor(sf::Color::Cyan);
-            } else {
+            } 
+            else {
                 adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
                 adminShipBtn.setOutlineColor(sf::Color::White);
             }
         }
+
+        // --- INPUT (Depende del estado) ---
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
 
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    // Soporte para Flechas + WASD
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
                         mainMenu.moveUp();
                         hoverSound.play();
@@ -271,6 +296,8 @@ int main() {
                         mainMenu.moveDown();
                         hoverSound.play();
                     }
+
+                    // Confirmar con Enter o Espacio
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
                         clickSound.play();
@@ -279,18 +306,21 @@ int main() {
                 else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
                     sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
                     if(mainMenu.updateHover(mPos)){
-                        hoverSound.stop();
+                        hoverSound.stop(); // Detiene el sonido anterior si se cambia de opción rápidamente
                         hoverSound.play();
                     }
                 }
                 else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
+                        // Si el mouse está sobre el botón actual (actualizado por updateHover)
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
                         clickSound.play();
                     }
                 }
             }
             else if (currentState == State::Options){
+                if (event->is<sf::Event::Closed>()) window.close();
+                
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
                     if(keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up){
                         settingsMenu.moveUp();
@@ -305,10 +335,10 @@ int main() {
                         settingsMenu.handleAction(currentState, window, mainConfig);
                         clickSound.play();
                     } else if (keyPressed->code == sf::Keyboard::Key::D || keyPressed->code == sf::Keyboard::Key::Right){
-                        settingsMenu.changeValue(1); 
+                        settingsMenu.changeValue(1); // Cambia el valor en 5 unidades, ajustar según sea necesario
                         hoverSound.play();
                     } else if (keyPressed->code == sf::Keyboard::Key::A || keyPressed->code == sf::Keyboard::Key::Left){
-                        settingsMenu.changeValue(-1); 
+                        settingsMenu.changeValue(-1); // Cambia el valor en -5 unidades, ajustar según sea necesario
                         hoverSound.play();
                     }
                 }
@@ -333,14 +363,28 @@ int main() {
                 else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()){
                     sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
                     if(settingsMenu.updateHover(mPos)){
-                        hoverSound.stop();
-                        hoverSound.play();
+                        hoverSound.stop(); // Detiene el sonido anterior si se cambia de opción rápidamente
+                            hoverSound.play();
                     }
                     settingsMenu.handleMouseMove(mPos);
                 }
                 music.setVolume((float)settingsMenu.getTempMusicVolume());
                 hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
                 clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
+            }
+            else if(currentState == State::DifficultySelection) {
+            // Aquí iría la lógica de input para el submenu de selección de dificultad
+                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    // Permitir volver al menú con Escape
+                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Menu;
+                    }
+                    
+                    if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                        // Aquí iría la lógica para confirmar la selección de dificultad y pasar a jugar
+                        currentState = State::Playing; // Temporal, para probar el cambio de estados
+                    }
+                }
             }
             else if (currentState == State::Playing) {
                 if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
@@ -352,6 +396,7 @@ int main() {
                     }
                 }
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    // Permitir volver al menú con Escape (Borrar despues, esto es para probar el cambio de estados)
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Menu;
                     }
@@ -410,6 +455,7 @@ int main() {
             }
         }
 
+        // --- UPDATE & DRAW (Depende del estado) ---
         window.clear();
         
         if (currentState == State::Menu) {
@@ -428,7 +474,7 @@ int main() {
             if(musicPlaying == 0 || musicPlaying == 2){
                 musicPlaying = 1;
             }
-            
+
             window.clear(sf::Color(0, 0, 15));
 
             sf::Vector2f playerPos = spaceShip.getPosition();
@@ -452,6 +498,7 @@ int main() {
             const auto& planets = world.getPlanets();
 
             for (size_t i = 0; i < planets.size(); ++i) {
+                // Definimos la distancia según la órbita (ej: órbita 1 = 80px, órbita 10 = 350px)
                 float distance = planets[i].getOrbit() * 33.f + 33.f;
                 float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
                 float x = center.x + std::cos(time * speed) * distance;
@@ -550,14 +597,19 @@ int main() {
             }
 
             window.draw(planetNameText);
+
             if (alertTimer > 0) window.draw(alertSprite);
+
+            window.draw(adminShipBtn);
+            window.draw(adminShipText);
+
+            // Dibujamos el Radar encima de todo (siempre va al final para que se dibuje
+            // encima de los demás elementos)
             if(aux) {
                 radarUI.update(world.getRadar()->getHeapArray());
                 aux = false; // Solo actualizar el radar la primera vez para mostrarlo al inicio
             }
             radarUI.draw(window);
-            window.draw(adminShipBtn);
-            window.draw(adminShipText);
 
             if (currentState == State::TravelConfirmation) {
                 confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
@@ -575,7 +627,8 @@ int main() {
                 
                 if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
                     upgradeBtn.setFillColor(sf::Color(0, 200, 0));
-                } else {
+                }
+                else {
                     upgradeBtn.setFillColor(sf::Color(0, 150, 0));
                 }
                 window.draw(upgradeBtn);
@@ -613,7 +666,8 @@ int main() {
             escMsg.setPosition({640.f, 650.f});
             window.draw(escMsg);
         }
-         
+        
+        // Control de música
         if(musicPlaying == 0){
             music.play();
             musicPlaying = 2;
