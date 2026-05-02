@@ -1,4 +1,6 @@
 #include "Player.hpp"
+#include <cmath>
+
 
 Player::Player(float x, float y, const std::string& texturePath) 
     : hitbox({30.f, 35.f})
@@ -42,6 +44,12 @@ Player::Player(float x, float y, const std::string& texturePath)
 void Player::draw(sf::RenderWindow& window) {
     window.draw(hitbox); // Dibuja el hitbox para depuración (quitar en producción)
     window.draw(*sprite);
+}
+
+void Player::setRotation(float angle) {
+    if (sprite) {
+        sprite->setRotation(sf::degrees(angle)); 
+    }
 }
 
 void Player::update(float deltaTime) {
