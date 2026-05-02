@@ -1,20 +1,17 @@
 #pragma once
 #include "Item.hpp"
 
-struct ItemStack {
-    std::string itemID; // ID para buscar en el catálogo global (Tabla Hash del mundo)
-    int quantity;
-    int maxStackSize;   // Ejemplo: Medicinas se apilan hasta 20, Motores solo 1
-};
-
 class Inventory {
 private:
+    int capacity = 20; // Capacidad inicial de la bodega (20 slots)
     // El inventario se maneja como un mapa de nombre de item a su slot (item + cantidad)
     std::vector<std::optional<ItemStack>> slots;
-    int capacity = 20;
 
 public:
-    bool addItem(const std::string& itemID, int qty, int maxStack);
+    Inventory() noexcept : slots(capacity, std::nullopt) {
+        // Empty
+    }
+    bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
     void removeItem(const std::string& itemID, int qty);
     void display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const;
     void upgradeStorage(int extraSlots) noexcept;
@@ -28,7 +25,7 @@ public:
 
 // 2. Proceso de compra
 std::string id = "plutonio_01";
-if (nave.getInventory().addItem(id, 5, 20)) {
+if (nave.getInventory().addItem(id, 5, 20, 100.0f)) {
     std::cout << "Compra exitosa." << std::endl;
 }
 

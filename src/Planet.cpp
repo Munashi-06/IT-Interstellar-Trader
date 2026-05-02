@@ -151,51 +151,125 @@ int Planet::getMedicalTech() const {
 }
 
 void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
-    // 1. Calcular ocupación actual
-    int currentTotal = 0;
-    for (auto const& [name, qty] : localStock) currentTotal += qty;
-    if (currentTotal >= MAX_STOCK) return; // Límite de almacén planetario
+    // 1. Asegurar que el vector tenga exactamente 100 slots (solo la primera vez)
+    if (localStock.size() != 100) {
+        localStock.resize(100, std::nullopt);
+    }
 
-    // 2. Producción basada en especialización
-    for (auto const& [name, item] : catalog) {
-        bool canProduce = false;
-
-        // Filtros de Especialidad
-        if (item->isFood() && this->resourceAbundance > 6) {
-            // Si hay hambruna, la producción de comida cae a 0
-            if (this->currentEvent != PlanetEvent::Famine) canProduce = true;
-        }
-        if (item->isTechnology() && this->techLevel > 7) canProduce = true;
-        if (item->isMedic() && this->medicalTech > 7) canProduce = true;
-
-        if (canProduce) {
-            // Probabilidad según rareza (más común = más probable)
-            int chance = (item->getRarity() == Rarity::Common) ? 40 : (item->getRarity() == Rarity::Rare) ? 25 : (item->getRarity() == Rarity::Exotic) ? 10 : 5;
-            if (rand() % 100 < chance) {
-                localStock[name] = std::min(localStock[name] + 1, 10); 
+    // 2. Paso de "Producción": Aumentar cantidad de items que YA están en los slots
+    for (auto& slot : localStock) {
+        if (slot.has_value()) {
+            // Buscamos el objeto en el catálogo para ver su rareza/tipo
+            const auto& itemData = catalog.at(slot->itemID);
+            
+            // Lógica de probabilidad (ejemplo: 20% de que llegue stock nuevo del mismo item)
+            if (rand() % 100 < 20) {
+                int boost = (itemData->getRarity() == Rarity::Common) ? 5 : 1;
+                slot->quantity = std::min(slot->quantity + boost, slot->maxStackSize);
             }
         }
     }
 
-    // 3. Eventos que afectan el mercado
-    // Esto lo trabajaran ustedes muchachos yo ya me frite el cerebro con esto, pero podrían hacer algo como:
-    // Si hay guerra, reducir stock de lujo y tecnología
-    // Si hay peste, reducir stock de comida y medicina
-    // Si hay auge tecnológico, aumentar stock de tecnología
-    // etc... De nuevo, esto es solo un ejemplo de cómo podrían implementar la influencia de eventos en el mercado,
-    // no es algo que tengan que hacer sí o sí... Suerte, Angel.
+    // 3. Paso de "Nuevas Mercancías": Si hay slots vacíos (nullopt), intentar llenarlos
+    for (auto& slot : localStock) {
+        if (!slot.has_value()) {
+            // Elegimos un item al azar del catálogo global
+            auto it = catalog.begin();
+            std::advance(it, rand() % catalog.size());
+            const auto& [id, itemPtr] = *it;
+
+            // Probabilidad de que este planeta decida vender este nuevo item
+            if (this->canBuyItem(*itemPtr) && (rand() % 100 < 10)) {
+                slot = ItemStack{ id, 1, itemPtr->getMaxStackSize(), itemPtr->getBasePrice() }; // Aparece con 1 unidad, stack max 20
+            }
+        }
+    }
+}
+
+float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) {
+    const auto& item = globalCatalog.at(itemID);
+    float price = item->getBasePrice();
+    float modifier = 1.0f;
+
+    // --- Influencia de Atributos del Planeta ---
+    if (item->isTechnology()) {
+        // A más nivel tecnológico, más oferta, precio más bajo (-20% máximo)
+        modifier -= (this->techLevel / 50.0f); 
+    }
+    if (item->isFood() && this->resourceAbundance > 7) {
+        modifier -= 0.15f; // Comida barata en planetas agrícolas
+    }
+    if (item->isLuxury()) {
+        // Alta demanda de lujo sube el precio
+        modifier += (this->luxuryDemand / 20.0f);
+    }
+
+    // --- Influencia de Eventos ---
+    switch (this->currentEvent) {
+        case PlanetEvent::War:
+            if (item->isMedical()) modifier += 1.5f;   // Medicina sube
+            if (item->isTechnology()) modifier += 0.5f; // Componentes suben
+            break;
+        case PlanetEvent::Plague:
+            if (item->isMedical()) modifier += 2.0f;
+            if (item->isFood()) modifier += 0.4f;
+            break;
+        case PlanetEvent::Famine:
+            if (item->isFood()) modifier += 2.5f;
+            break;
+        case PlanetEvent::TechBoom:
+            if (item->isTechnology()) modifier -= 0.3f; // Exceso de oferta
+            break;
+        default: break;
+    }
+
+    return price * std::max(0.1f, modifier); // Nunca precio negativo o 0
 }
 
 bool Planet::canBuyItem(const Item& item) const {
     // Si yo soy Tech 10 y me vendes Tech vieja (Common/Rare)
     if (item.isTechnology() && this->techLevel > 8 && item.getRarity() < Rarity::Exotic) {
-        return false; // "No me interesa tu basura antigua, viajero"
+        // Probabilidad minima de que un planeta avanzado quiera tecnología obsoleta, pero no imposible
+        return (rand() % 100) < 9; // 9% de chance de que la compre
     }
 
     // Un planeta muy seguro no compra contrabando
     if (item.isIllegal() && this->securityLevel > 8) {
-        return false; // "Aquí respetamos la ley"
+        // Probabilidad mínima de que un planeta con alta seguridad quiera items ilegales, pero no imposible
+        return (rand() % 100) < 5; // 5% de chance de que la compre
     }
 
     return true; 
+}
+
+void Planet::setHighlighted(bool h) { 
+        highlighted = h;
+    }
+
+bool Planet::isPointNear(const sf::Vector2f& point, const sf::Vector2f& planetPos) const{
+    float distance = std::sqrt(std::pow(point.x - planetPos.x, 2)+(std::pow(point.y - planetPos.y, 2)));
+    return distance < 50.0f;
+}
+
+void Planet::updateScale(float deltaTime){
+    if (!sprite || !texture) return;
+
+    sf::Vector2u texSize = texture->getSize();
+    float targetScale = highlighted ? 60.f : 40.f;
+    targetScale = targetScale / std::max(texSize.x, texSize.y);
+    float currentScale = sprite->getScale().x;
+
+    if(std::abs(currentScale - targetScale) < 0.001f){
+        sprite->setScale({targetScale, targetScale});
+        return;
+    }
+
+    float speed = 10.0f;
+    float newScale = currentScale + (targetScale - currentScale) * speed * deltaTime;
+
+    if (highlighted){
+        newScale = std::min(newScale, targetScale);
+    } else {
+        newScale = std::max(newScale, targetScale);
+    }
 }

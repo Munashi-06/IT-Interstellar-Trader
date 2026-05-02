@@ -11,10 +11,20 @@
 enum class ItemCategory { Resource, Technology, Luxury, Illegal, Food, Medical, Quest };
 enum class Rarity { Common, Rare, Exotic, Legendary, Quest };
 
+static int basicStackSize = 64; // Tamaño de stack por defecto, puede variar según el item
+static int singleStackSize = 1; // Para items que no se apilan, como tecnología o maquinaria
+
+struct ItemStack {
+    std::string itemID; // ID para buscar en el catálogo global (Tabla Hash del mundo)
+    int quantity;
+    int maxStackSize; // Ejemplo: Medicinas se apilan hasta 20, Motores solo 1
+    float buyPrice; // Precio al que se compró, para calcular ganancias al vender
+};
+
 // Clase base para los items
 class Item {
 public:
-    Item(std::string name, double basePrice, ItemCategory cat, Rarity rare);
+    Item(std::string name, float basePrice, ItemCategory cat, Rarity rare);
 
     virtual ~Item() = default;
 
@@ -22,54 +32,57 @@ public:
     std::string getName() const { return name; }
     ItemCategory getCategory() const { return category; }
     Rarity getRarity() const { return rarity; }
+    float getBasePrice() const { return basePrice; }
     bool isIllegal() const { return category == ItemCategory::Illegal; }
     bool isQuestItem() const { return category == ItemCategory::Quest; }
     bool isLuxury() const { return category == ItemCategory::Luxury; }
     bool isResource() const { return category == ItemCategory::Resource; }
     bool isTechnology() const { return category == ItemCategory::Technology; }
     bool isFood() const { return category == ItemCategory::Food; }
-    bool isMedic() const { return category == ItemCategory::Medical; }
+    bool isMedical() const { return category == ItemCategory::Medical; }
+    int getMaxStackSize() const { return maxStackSize; }
     
     // El precio podría variar según el planeta, por eso es virtual
-    virtual double getPrice() const { return basePrice; }
+    virtual float getPrice() const { return basePrice; }
 
 protected:
     std::string name;
-    double basePrice;
+    float basePrice;
     ItemCategory category;
     Rarity rarity;
+    int maxStackSize; // Determina cuántas unidades de este item pueden apilarse
 };
 
 // Clases derivadas para cada categoría de item
 #pragma region ClasesDerivadas
 class Resource : public Item {
 public:
-    Resource(std::string n, double p, Rarity r);
+    Resource(std::string n, float p, Rarity r);
 };
 
 class Technology : public Item {
 public:
-    Technology(std::string n, double p, Rarity r);
+    Technology(std::string n, float p, Rarity r);
 };
 
 class Luxury : public Item {
 public:
-    Luxury(std::string n, double p, Rarity r);
+    Luxury(std::string n, float p, Rarity r);
 };
 
 class Illegal : public Item {
 public:
-    Illegal(std::string n, double p, Rarity r);
+    Illegal(std::string n, float p, Rarity r);
 };
 
 class Food : public Item {
 public:
-    Food(std::string n, double p, Rarity r);
+    Food(std::string n, float p, Rarity r);
 };
 
 class Medic : public Item {
 public:
-    Medic(std::string n, double p, Rarity r);
+    Medic(std::string n, float p, Rarity r);
 };
 
 class QuestItem : public Item {
@@ -78,7 +91,7 @@ private:
 public:
     QuestItem(std::string n, std::string id);
 
-    double getPrice() const override;
+    float getPrice() const override;
     
     std::string getQuestID() const;
 };

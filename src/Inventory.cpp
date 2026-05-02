@@ -1,7 +1,7 @@
 #include "Inventory.hpp"
 
 // Usamos el catálogo para validar el item, pero solo guardamos el ID
-bool Inventory::addItem(const std::string& itemID, int qty, int maxStack) {
+bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice) {
     // Intentar apilar en slots existentes
     for (auto& slot : slots) {
         if (slot.has_value() && slot->itemID == itemID) {
@@ -13,7 +13,7 @@ bool Inventory::addItem(const std::string& itemID, int qty, int maxStack) {
     // Si no se pudo apilar, buscar un slot vacío (nullopt)
     for (auto& slot : slots) {
         if (!slot.has_value()) {
-            slot = ItemStack{ itemID, qty, maxStack };
+            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice };
             return true;
         }
     }

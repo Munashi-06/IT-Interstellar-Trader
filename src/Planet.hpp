@@ -1,11 +1,11 @@
 #pragma once
+#include "Item.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <SFML/Graphics.hpp>
-#include "Item.hpp"
-#include <SFML/Graphics.hpp>
+
 
 static int MAX_STOCK = 100; // Cantidad máxima total de items que un planeta puede tener en su mercado
 
@@ -17,7 +17,7 @@ private:
     std::string description;
     PlanetEvent currentEvent = PlanetEvent::None;
     int EVENT_DURATION;
-    std::unordered_map<std::string, int> localStock; // ItemName -> Cantidad
+    std::vector<std::optional<ItemStack>> localStock; // Stock local del planeta, mapeado por ID de item
     int orbit; // Representa la orbita del planeta, entre 1 y 10 (1 es el más cercano a la estrella, 10 el más lejano)
     int techLevel; // Nivel tecnológico del planeta, podría influir en los precios y tipos de items disponibles
     int securityLevel; // Nivel de seguridad del planeta, podría influir en la presencia de items ilegales y su precio
@@ -53,44 +53,18 @@ public:
     int getMoonCount() const;
     int getMedicalTech() const;
 
-    void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Actualiza el stock local basado en la especialización del planeta y eventos actuales
     bool canBuyItem(const Item& item) const; // Lógica de "necesito esto?"
+    float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog); // Calcula el precio de un item basado en la oferta/demanda y eventos actuales
     // Metodos para calcular la influencia de sus atributos
+
+
     void loadTexture();
-    sf::Sprite* getSprite() {return sprite.get(); }
+    sf::Sprite* getSprite() { return sprite.get(); }
     const sf::Sprite* getSprite() const { return sprite.get(); }
     bool hasSprite() const { return sprite != nullptr; }
-
-    void setHighlighted(bool h) { 
-        highlighted = h;
-    }
+    void setHighlighted(bool h);
     bool isHighlighted() const { return highlighted; }
-
-    bool isPointNear(const sf::Vector2f& point, const sf::Vector2f& planetPos) const{
-        float distance = std::sqrt(std::pow(point.x - planetPos.x, 2)+(std::pow(point.y - planetPos.y, 2)));
-        return distance < 50.0f;
-    }
-
-    void updateScale(float deltaTime){
-        if (!sprite || !texture) return;
-
-        sf::Vector2u texSize = texture->getSize();
-        float targetScale = highlighted ? 60.f : 40.f;
-        targetScale = targetScale / std::max(texSize.x, texSize.y);
-        float currentScale = sprite->getScale().x;
-
-        if(std::abs(currentScale - targetScale) < 0.001f){
-            sprite->setScale({targetScale, targetScale});
-            return;
-        }
-
-        float speed = 10.0f;
-        float newScale = currentScale + (targetScale - currentScale) * speed * deltaTime;
-
-        if (highlighted){
-            newScale = std::min(newScale, targetScale);
-        } else {
-            newScale = std::max(newScale, targetScale);
-        }
-    }
+    bool isPointNear(const sf::Vector2f& point, const sf::Vector2f& planetPos) const;
+    void updateScale(float deltaTime);
 };

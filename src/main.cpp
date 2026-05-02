@@ -29,7 +29,7 @@ void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
 }
 
 int main() {
-    bool estado = false;
+    bool state = false;
     mainConfig.loadFromSavedFile("config.txt");
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
     sf::Clock worldClock;
@@ -88,7 +88,9 @@ int main() {
 
     State currentState = State::Menu;
 
-    Player player(640.f, 360.f, "assets/player.png");
+    Player spaceShip(640.f, 360.f, "assets/player.png");
+
+    Inventory shipInventory;
 
     sf::Clock clock; 
 
@@ -421,12 +423,15 @@ int main() {
             window.draw(settingsBackgroundSprite);
             settingsMenu.draw(window);
         }
-        else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation) {
+        else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation)
+        {
             if(musicPlaying == 0 || musicPlaying == 2){
                 musicPlaying = 1;
             }
+            
             window.clear(sf::Color(0, 0, 15));
-            sf::Vector2f playerPos = player.getPosition();
+
+            sf::Vector2f playerPos = spaceShip.getPosition();
             sf::RenderStates states;
 
             sf::Transform tFar; tFar.translate(-playerPos*0.2f);
@@ -460,7 +465,7 @@ int main() {
                     planetShape.setFillColor(sf::Color::Cyan); 
                     planetShape.setOutlineThickness(2);
                     planetShape.setOutlineColor(sf::Color::White);
-                    targetPosition = {x, y}; 
+                    targetPosition = {x, y};
                 } else {
                     planetShape.setFillColor(sf::Color(150, 150, 150));
                 }
@@ -478,7 +483,7 @@ int main() {
         
                     // Detección de proximidad
                     sf::Vector2f planetPos(x, y);
-                    sf::Vector2f playerPos = player.getPosition();
+                    sf::Vector2f playerPos = spaceShip.getPosition();
         
                     if (planet.isPointNear(playerPos, planetPos)) {
                         planet.setHighlighted(true);
@@ -499,26 +504,27 @@ int main() {
                 }
             }
 
-            // sf::Vector2f currentPos = player.getPosition();
-            // sf::Vector2f direction = targetPosition - currentPos;
-            // float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+            sf::Vector2f currentPos = spaceShip.getPosition();
+            sf::Vector2f direction = targetPosition - currentPos;
+            float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-            // if (dist > 1.5f) {
-            //     float angleRadians = std::atan2(direction.y, direction.x);
-            //     float angleDegrees = angleRadians * 180.f / 3.14159265f;
-            //     player.setRotation(angleDegrees + 90.f);
+            if (dist > 1.5f) {
+                float angleRadians = std::atan2(direction.y, direction.x);
+                float angleDegrees = angleRadians * 180.f / 3.14159265f;
+                spaceShip.setRotation(angleDegrees + 90.f);
 
-            //     direction /= dist; 
-            //     float moveDistance = travelSpeed * dt;
+                direction /= dist; 
+                float moveDistance = travelSpeed * dt;
 
-            //     if (moveDistance > dist) {
-            //         player.setPosition(targetPosition);
-            //     } else {
-            //         player.setPosition(currentPos + direction * moveDistance);
-            //     }
-            // } else {
-            //     player.setPosition(targetPosition);
-            // }
+                if (moveDistance > dist) {
+                    spaceShip.setPosition(targetPosition);
+                }
+                else {
+                    spaceShip.setPosition(currentPos + direction * moveDistance);
+                }
+            } else {
+                spaceShip.setPosition(targetPosition);
+            }
 
             if (!planets.empty()) {
                 planetNameText.setString(planets[selectedPlanetIndex].getName());
@@ -536,52 +542,13 @@ int main() {
                 }
             }
 
-            player.update(dt);
-            player.draw(window);
+            spaceShip.update(dt);
+            spaceShip.draw(window);
 
             if (alertTimer > 0) {
                 window.draw(alertSprite);
             }
 
-            // sf::Vector2f currentPos = player.getPosition();
-            // sf::Vector2f direction = targetPosition - currentPos;
-            // float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-
-            // if (dist > 1.5f) {
-            //     float angleRadians = std::atan2(direction.y, direction.x);
-            //     float angleDegrees = angleRadians * 180.f / 3.14159265f;
-            //     player.setRotation(angleDegrees + 90.f);
-
-            //     direction /= dist; 
-            //     float moveDistance = travelSpeed * dt;
-
-            //     if (moveDistance > dist) {
-            //         player.setPosition(targetPosition);
-            //     } else {
-            //         player.setPosition(currentPos + direction * moveDistance);
-            //     }
-            // } else {
-            //     player.setPosition(targetPosition);
-            // }
-
-            if (!planets.empty()) {
-                planetNameText.setString(planets[selectedPlanetIndex].getName());
-                auto& selectedPlanet = world.getPlanets()[selectedPlanetIndex];
-
-                if (selectedPlanet.hasSprite()){
-                    sf::Sprite uiSprite = *selectedPlanet.getSprite();
-                    auto texSize = selectedPlanet.getSprite()->getTexture().getSize();
-                    float uiScale = 150.f/std::max(texSize.x, texSize.y);
-                    uiSprite.setScale({uiScale, uiScale});
-                    uiSprite.setPosition({85.f, 590.f});
-
-                    window.draw(uiSprite);
-
-                }
-            }
-
-            player.update(dt);
-            player.draw(window);
             window.draw(planetNameText);
             if (alertTimer > 0) window.draw(alertSprite);
             if(aux) {
@@ -626,13 +593,13 @@ int main() {
             shipAnimX += 400.f * dt; // Velocidad de la animación
             if (shipAnimX > 1380.f) shipAnimX = -100.f;
 
-            sf::Vector2f originalPos = player.getPosition();
+            sf::Vector2f originalPos = spaceShip.getPosition();
             
-            player.setPosition({shipAnimX, 500.f}); 
-            player.setRotation(90.f); // Mirando a la derecha
-            player.draw(window);
-            player.setPosition(originalPos);
-            player.setRotation(0.f); 
+            spaceShip.setPosition({shipAnimX, 500.f}); 
+            spaceShip.setRotation(90.f); // Mirando a la derecha
+            spaceShip.draw(window);
+            spaceShip.setPosition(originalPos);
+            spaceShip.setRotation(0.f); 
             // -----------------------
 
             sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());

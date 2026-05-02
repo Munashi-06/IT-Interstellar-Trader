@@ -36,7 +36,7 @@ double Economy::calculatePrice(const Item& item, const Planet& planet) {
             break;
 
         case PlanetEvent::Plague:
-            if (item.isMedic()) modifier *= 3.0; // Las medicinas se disparan
+            if (item.isMedical()) modifier *= 3.0; // Las medicinas se disparan
             if (item.isFood()) modifier *= 1.5;
             break;
 
