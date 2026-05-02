@@ -23,7 +23,7 @@ struct Button {
     Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font);
 
     //esto es para alinear las opciones
-    void setAlignmentLeft(float margin = 15.f);
+    void setAlignmentLeft(float margin);
 
     void draw(sf::RenderWindow& window);
 };
