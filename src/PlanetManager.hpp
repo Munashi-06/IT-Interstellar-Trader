@@ -5,12 +5,13 @@
 #include <map>
 #include <random>
 
-inline void insertionSort(std::vector<Planet> &a) {
+template <typename T, typename Cmp = std::less<>>
+inline void insertionSort(std::vector<T> &a, Cmp&& cmp) {
     for(int i = 1; i < a.size(); i++) {
-        Planet key = std::move(a[i]); 
+        T key = std::move(a[i]); 
         int j = i - 1;
 
-        while(j >= 0 && a[j].getOrbit() > key.getOrbit()) {
+        while(j >= 0 && cmp(key, a[j])) {
             a[j + 1] = std::move(a[j]);
             j--;
         }

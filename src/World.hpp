@@ -36,4 +36,5 @@ public:
     void updateRadar(Planet& plnt) noexcept; // Actualiza el heap de radar
     float getTime() const {return worldClock.getElapsedTime().asSeconds();}
     void forceRadarUpdate();
+    std::unordered_map<std::string, std::unique_ptr<Item>>& getCatalog() { return globalCatalog; }
 };

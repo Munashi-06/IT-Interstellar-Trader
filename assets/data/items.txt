@@ -1,38 +1,38 @@
 Raciones de Supervivencia;20;4;0
 Sintetizador de Nutrientes;150;4;1
 Fruta de Kepler;300;4;2
-Botiquín Básico;50;5;0
+Botiquin Basico;50;5;0
 Suero Antidoto;200;5;1
 Nanobots Curativos;1200;5;2
 Regenerador Celular;4500;5;3
-Hierro Galáctico;15;0;0
+Hierro Galactico;15;0;0
 Hielo de Cometa;10;0;0
 Cobre Estelar;45;0;0
 Cristales de Silicio;80;0;1
 Titanio Refinado;150;0;1
 Gas de Nebulosa;200;0;2
-Isótopos de Uranio;400;0;2
+Isotopos de Uranio;400;0;2
 Materia Oscura Estable;2500;0;3
 Celdas de Energía;60;1;0
-Módulos de Reparación;120;1;0
+Modulos de Reparación;120;1;0
 Microprocesadores;300;1;1
 Escudos de Plasma;850;1;1
 Computadora de Salto;1500;1;2
 Reactores Antimateria;3500;1;3
 Sensores de Largo Alcance;700;1;2
-Núcleo Cuántico;5000;1;3
+Nucleo Cuántico;5000;1;3
 Raciones de Lujo;100;2;1
 Seda Cuántica;450;2;2
 Joyas de Asteroides;900;2;2
 Arte de la Antigua Tierra;2500;2;3
 Especias de Orión;4000;2;3
 Software Encriptado;600;3;1
-Narcóticos Médicos;1100;3;2
+Narcoticos Medicos;1100;3;2
 Planos Robados;3000;3;3
-Barritas de Proteína;12;4;0
+Barritas de Proteina;12;4;0
 Algas Deshidratadas;25;4;0
 Carne de Laboratorio;80;4;1
-Néctar de Estrellas;1200;4;3
-Vino Sintético;180;4;1
+Nectar de Estrellas;1200;4;3
+Vino Sintetico;180;4;1
 Estimulantes de Adrenalina;350;5;1
 Vendas de Polímero;30;5;0

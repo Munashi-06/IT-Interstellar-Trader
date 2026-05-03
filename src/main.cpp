@@ -10,6 +10,7 @@
 #include "PlanetManager.hpp"
 #include "World.hpp"
 #include "RadarUI.hpp"
+#include "ShipMenuUI.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -114,9 +115,20 @@ int main() {
 
     Inventory shipInventory; // Inventario de la nave del jugador
 
+    // Para probar el inventario y la interfaz de la nave, le damos algunos ítems al jugador desde el catalogo global
+    auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
+    for (const auto& [id, itemPtr] : galaxyItems) {
+        shipInventory.addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
+    }
+
     sf::Clock clock; // Para medir el tiempo entre frames
 
     sf::Vector2f mousePos; // Para almacenar la posición del mouse en coordenadas del mundo, útil para interacciones con el menú y el mundo de juego
+
+    float alertTimer = 0.f; 
+    
+    // Radar de Prioridad con la misma fuente cargada
+    RadarUI radarUI(font);
 
     // --- LÓGICA DE INICIALIZACIÓN DEL MUNDO ---
 
@@ -174,12 +186,6 @@ int main() {
     sf::Sprite alertSprite(alertTexture);
     alertSprite.setPosition({1100.f, 600.f}); 
 
-    float alertTimer = 0.f; 
-    
-    // Radar de Prioridad con la misma fuente cargada
-    RadarUI radarUI(font);
-
-
     sf::Text planetNameText(font, "");
     planetNameText.setCharacterSize(22);
     planetNameText.setFillColor(sf::Color::White);
@@ -221,6 +227,8 @@ int main() {
     if (!shipMenuTexture.loadFromFile("assets/player.png")) {
         std::cerr << "Error cargando textura de previsualización" << std::endl;
     }
+
+    ShipMenuUI shipMenu(font, shipMenuTexture);
 
     sf::RectangleShape shipMenuBg({640.f, 400.f});
     shipMenuBg.setFillColor(sf::Color(15, 15, 25, 180));
@@ -281,7 +289,7 @@ int main() {
             }
         }
 
-        // --- INPUT (Depende del estado) ---
+// --- INPUT (Depende del estado) ---
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
 
@@ -439,23 +447,31 @@ int main() {
                 }
             }
             else if (currentState == State::ShipMenu) {
+                // if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                //     if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                //         currentState = State::Playing;
+                //     }
+                // }
+                // if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                //     if (mouseEvent->button == sf::Mouse::Button::Left) {
+                //         if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
+                //             clickSound.play();
+                //             std::cout << "Nivel de nave aumentado!" << std::endl;
+                //         }
+                //     }
+                // }
+
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Playing;
                     }
                 }
-                if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
-                    if (mouseEvent->button == sf::Mouse::Button::Left) {
-                        if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-                            clickSound.play();
-                            std::cout << "Nivel de nave aumentado!" << std::endl;
-                        }
-                    }
-                }
+                // Le pasamos el evento a la clase
+                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog());
             }
         }
 
-        // --- UPDATE & DRAW (Depende del estado) ---
+// --- UPDATE & DRAW (Depende del estado) ---
         window.clear();
         
         if (currentState == State::Menu) {
@@ -621,23 +637,9 @@ int main() {
             }
 
             if (currentState == State::ShipMenu) {
-                window.draw(shipMenuBg);
-                window.draw(shipMenuTitle);
-                window.draw(shipPreview);
-                
-                if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-                    upgradeBtn.setFillColor(sf::Color(0, 200, 0));
-                }
-                else {
-                    upgradeBtn.setFillColor(sf::Color(0, 150, 0));
-                }
-                window.draw(upgradeBtn);
-                window.draw(upgradeText);
-                
-                sf::Text backMsg(font, "ESC para volver");
-                backMsg.setCharacterSize(14);
-                backMsg.setPosition({580.f, 530.f});
-                window.draw(backMsg);
+                shipMenu.update(mousePos);
+                // Le pasas el inventario y el catálogo global
+                shipMenu.draw(window, shipInventory, world.getGlobalCatalog());
             }
         }
         else if (currentState == State::InPlanet) {

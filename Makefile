@@ -21,6 +21,9 @@ build:
 run:
 	cd $(BUILD_DIR)/Debug && .\$(EXE_NAME)
 
+# Compilar y ejecutar en un solo paso
+test: build run
+
 # 4. Limpiar la compilación
 clean:
 	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)

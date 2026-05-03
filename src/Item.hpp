@@ -41,7 +41,10 @@ public:
     bool isFood() const { return category == ItemCategory::Food; }
     bool isMedical() const { return category == ItemCategory::Medical; }
     int getMaxStackSize() const { return maxStackSize; }
-    
+    std::string getCategoryString() const;
+    std::string getRarityString() const;
+    int getQuality() const;
+
     // El precio podría variar según el planeta, por eso es virtual
     virtual float getPrice() const { return basePrice; }
 

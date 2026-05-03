@@ -4,6 +4,42 @@ Item::Item(std::string n, float p, ItemCategory cat, Rarity r)
     : name(n), basePrice(p), category(cat), rarity(r)
 {}
 
+std::string Item::getCategoryString() const {
+    switch (category) {
+        case ItemCategory::Illegal: return "Ilegal";
+        case ItemCategory::Luxury: return "Lujo";
+        case ItemCategory::Resource: return "Recurso";
+        case ItemCategory::Technology: return "Tecnologia";
+        case ItemCategory::Food: return "Comida";
+        case ItemCategory::Medical: return "Medicina";
+        case ItemCategory::Quest: return "Mision";
+        default: return "Desconocida";
+    }
+}
+
+std::string Item::getRarityString() const {
+    switch (rarity) {
+        case Rarity::Common: return "Comun";
+        case Rarity::Rare: return "Raro";
+        case Rarity::Exotic: return "Exotico";
+        case Rarity::Legendary: return "Legendario";
+        case Rarity::Quest: return "Mision";
+        default: return "Desconocida";
+    }
+}
+
+int Item::getQuality() const {
+    // Asignamos un valor numérico a la calidad para facilitar comparaciones
+    switch (rarity) {
+        case Rarity::Common: return 1;
+        case Rarity::Rare: return 2;
+        case Rarity::Exotic: return 3;
+        case Rarity::Legendary: return 4;
+        case Rarity::Quest: return 5; // Los items de misión podrían considerarse de máxima calidad
+        default: return 0;
+    }
+}
+
 Resource::Resource(std::string n, float p, Rarity r)
     : Item(n, p, ItemCategory::Resource, r)
 {}

@@ -77,6 +77,8 @@ std::vector<Planet> PlanetManager::loadUniqueOrbitPlanets(const std::string& fil
     }
     std::vector<int> availableOrbits;
 
-    insertionSort(selectedPlanets);
+    insertionSort(selectedPlanets, [](const Planet& a, const Planet& b) {
+        return a.getOrbit() < b.getOrbit();
+    });
     return selectedPlanets;
 }
