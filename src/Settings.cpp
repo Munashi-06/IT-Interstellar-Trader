@@ -1,6 +1,9 @@
 #include "Settings.hpp"
 #include "State.hpp"
+#include "AudioManager.hpp"
 #include <algorithm>
+
+extern AudioManager g_Audio;
 
 Settings::Settings(float width, float height, const sf::Font& font) : font(font), saveMessage(font, "") {
     std::vector<std::string> labels = {"Music", "SFX", "VSync", "FPS Limit", "APPLY", "BACK"};
@@ -164,7 +167,7 @@ void Settings::resetTempConfig(const GameConfig& globalConfig){
     updateLabels();
 }
 
-void Settings::applySettings(sf::RenderWindow& window, GameConfig& globalConfig){
+void Settings::applySettings(sf::RenderWindow& window, GameConfig& globalConfig, AudioManager& audio){
     globalConfig = tempConfig;
     if(globalConfig.vsync){
         window.setVerticalSyncEnabled(true);
@@ -173,19 +176,20 @@ void Settings::applySettings(sf::RenderWindow& window, GameConfig& globalConfig)
         window.setVerticalSyncEnabled(false);
         window.setFramerateLimit(globalConfig.fpsLimit);
     }
+    audio.updateVolumesFromConfig(globalConfig.musicVolume, globalConfig.sfxVolume);
     globalConfig.saveToFile("config.txt");
     showSaveMessage = true;
     saveMsgClock.restart();
 }
 
-void Settings::handleAction(State& currentState, sf::RenderWindow& window, GameConfig& globalConfig){
+void Settings::handleAction(State& currentState, sf::RenderWindow& window, GameConfig& globalConfig, AudioManager& audio){
     if (selectedIndex < 0 || selectedIndex >= (int)options.size()) return;
     std::string option = options[selectedIndex].text.getString();
     if (selectedIndex == 2){
         tempConfig.vsync = !tempConfig.vsync;
         updateLabels();
     } else if (selectedIndex == 4){
-        applySettings(window, globalConfig);
+        applySettings(window, globalConfig, audio);
     } else if (selectedIndex == 5){
         resetTempConfig(globalConfig);
         currentState = State::Menu;

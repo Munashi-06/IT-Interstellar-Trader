@@ -11,6 +11,7 @@
 #include "World.hpp"
 #include "RadarUI.hpp"
 #include "ShipMenuUI.hpp"
+#include "AudioManager.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -55,6 +56,12 @@ int main() {
     mainConfig.loadFromSavedFile("config.txt");
     sf::RenderWindow window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader");
     sf::Clock worldClock;
+    
+    AudioManager audio;
+    audio.loadMusic("assets/audio/undertale_dogsong.ogg");
+    audio.loadSFX("assets/audio/hover_sound.ogg", "assets/audio/option_selection_sound.ogg");
+    audio.updateVolumesFromConfig(mainConfig.musicVolume, mainConfig.sfxVolume);
+    audio.playMusic();
 
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
@@ -68,25 +75,6 @@ int main() {
     if(!font.openFromFile("assets/fonts/04B_03__.TTF")) {
         std::cerr << "Error cargando la fuente" << std::endl;
     }
-
-    sf::Music music;
-    // Música de fondo del menu para probar la funcionalidad de volumen en settings
-    if (!music.openFromFile("assets/audio/undertale_dogsong.ogg")){
-        std::cerr << "Error cargando la música" << std::endl;
-    }
-    music.setLooping(true);
-    music.setVolume((float)mainConfig.musicVolume);
-
-    sf::SoundBuffer hoverBuffer, clickBuffer;
-    if (!hoverBuffer.loadFromFile("assets/audio/hover_sound.ogg") || !clickBuffer.loadFromFile("assets/audio/option_selection_sound.ogg")){
-        std::cerr << "Error cargando los efectos de sonido" << std::endl;
-    }
-
-    sf::Sound hoverSound(hoverBuffer);
-    sf::Sound clickSound(clickBuffer);
-
-    hoverSound.setVolume((float)mainConfig.sfxVolume);
-    clickSound.setVolume((float)mainConfig.sfxVolume);
 
     Menu mainMenu(1280.f, 720.f);
     Settings settingsMenu(1280.f, 720.f, font);
@@ -261,7 +249,6 @@ int main() {
     float travelSpeed = 400.f; 
     float shipAnimX = -100.f; // Variable para la animación horizontal
 
-    int musicPlaying = 0; // Controla cuando se reproduce la musica del menu (da problemas, revisar)
     bool showRadar = false; // Variable para controlar la visibilidad del radar
     bool aux = true; // Variable auxiliar para mostrar el radar solo una vez al inicio
 
@@ -298,31 +285,30 @@ int main() {
                     // Soporte para Flechas + WASD
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
                         mainMenu.moveUp();
-                        hoverSound.play();
+                        audio.playHover();
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
                         mainMenu.moveDown();
-                        hoverSound.play();
+                        audio.playHover();
                     }
 
                     // Confirmar con Enter o Espacio
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
-                        clickSound.play();
+                        audio.playClick();
                     }
                 }
                 else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
                     sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
                     if(mainMenu.updateHover(mPos)){
-                        hoverSound.stop(); // Detiene el sonido anterior si se cambia de opción rápidamente
-                        hoverSound.play();
+                        audio.playHover();
                     }
                 }
                 else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
                         // Si el mouse está sobre el botón actual (actualizado por updateHover)
                         ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
-                        clickSound.play();
+                        audio.playClick();
                     }
                 }
             }
@@ -332,32 +318,36 @@ int main() {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
                     if(keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up){
                         settingsMenu.moveUp();
-                        hoverSound.play();
+                        audio.playHover();
                     } else if(keyPressed->code == sf::Keyboard::Key::S || keyPressed->code == sf::Keyboard::Key::Down){
                         settingsMenu.moveDown();
-                        hoverSound.play();
+                        audio.playHover();
                     } else if (keyPressed->code == sf::Keyboard::Key::Escape){
                         settingsMenu.resetTempConfig(mainConfig);
                         currentState = State::Menu;
                     } else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space){
-                        settingsMenu.handleAction(currentState, window, mainConfig);
-                        clickSound.play();
+                        settingsMenu.handleAction(currentState, window, mainConfig, audio);
+                        audio.playClick();
                     } else if (keyPressed->code == sf::Keyboard::Key::D || keyPressed->code == sf::Keyboard::Key::Right){
                         settingsMenu.changeValue(1); // Cambia el valor en 5 unidades, ajustar según sea necesario
-                        hoverSound.play();
+                        audio.playHover();
+                        audio.setMusicVolume((float)settingsMenu.getTempMusicVolume());
+                        audio.setSFXVolume((float)settingsMenu.getTempSfxVolume());
                     } else if (keyPressed->code == sf::Keyboard::Key::A || keyPressed->code == sf::Keyboard::Key::Left){
                         settingsMenu.changeValue(-1); // Cambia el valor en -5 unidades, ajustar según sea necesario
-                        hoverSound.play();
+                        audio.playHover();
+                        audio.setMusicVolume((float)settingsMenu.getTempMusicVolume());
+                        audio.setSFXVolume((float)settingsMenu.getTempSfxVolume());
                     }
                 }
                 else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()){
                     if(mouseEvent->button == sf::Mouse::Button::Left){
                         sf::Vector2f mPos = window.mapPixelToCoords(mouseEvent->position);
-                        clickSound.play();
+                        audio.playClick();
                         settingsMenu.handleMouseClick(mPos);
                         std::string opt = settingsMenu.getSelectedOption();
                         if(opt == "APPLY"){
-                            settingsMenu.applySettings(window, mainConfig);
+                            settingsMenu.applySettings(window, mainConfig, audio);
                         }
                         else if(opt == "BACK"){
                             settingsMenu.resetTempConfig(mainConfig);
@@ -371,14 +361,13 @@ int main() {
                 else if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()){
                     sf::Vector2f mPos = window.mapPixelToCoords(mouseMoved->position);
                     if(settingsMenu.updateHover(mPos)){
-                        hoverSound.stop(); // Detiene el sonido anterior si se cambia de opción rápidamente
-                            hoverSound.play();
+                        audio.playHover();
                     }
                     settingsMenu.handleMouseMove(mPos);
+
+                    audio.setMusicVolume((float)settingsMenu.getTempMusicVolume());
+                    audio.setSFXVolume((float)settingsMenu.getTempSfxVolume());
                 }
-                music.setVolume((float)settingsMenu.getTempMusicVolume());
-                hoverSound.setVolume((float)settingsMenu.getTempSfxVolume());
-                clickSound.setVolume((float)settingsMenu.getTempSfxVolume());
             }
             else if(currentState == State::DifficultySelection) {
             // Aquí iría la lógica de input para el submenu de selección de dificultad
@@ -398,7 +387,7 @@ int main() {
                 if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
                         if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
-                            clickSound.play();
+                            audio.playClick();
                             currentState = State::ShipMenu; 
                         }
                     }
@@ -413,15 +402,15 @@ int main() {
                         if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D ||
                             keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
                             selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size();
-                            hoverSound.play();
+                            audio.playHover();
                         }
                         else if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A ||
                                 keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
                             selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size();
-                            hoverSound.play();
+                            audio.playHover();
                         }
                         else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                            clickSound.play();
+                            audio.playClick();
                             currentState = State::TravelConfirmation; 
                         }
                     }
@@ -442,7 +431,7 @@ int main() {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Playing; 
-                        hoverSound.play();             
+                        audio.playHover();             
                     }
                 }
             }
@@ -455,7 +444,7 @@ int main() {
                 // if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                 //     if (mouseEvent->button == sf::Mouse::Button::Left) {
                 //         if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-                //             clickSound.play();
+                //             audio.playClick();
                 //             std::cout << "Nivel de nave aumentado!" << std::endl;
                 //         }
                 //     }
@@ -475,9 +464,7 @@ int main() {
         window.clear();
         
         if (currentState == State::Menu) {
-            if(musicPlaying == 1 || musicPlaying == 3){
-                musicPlaying = 0;
-            }
+            audio.playMusic();
             window.draw(backgroundSprite);
             mainMenu.draw(window);
         } 
@@ -487,9 +474,7 @@ int main() {
         }
         else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation)
         {
-            if(musicPlaying == 0 || musicPlaying == 2){
-                musicPlaying = 1;
-            }
+            audio.stopMusic();
 
             window.clear(sf::Color(0, 0, 15));
 
@@ -667,16 +652,6 @@ int main() {
             escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
             escMsg.setPosition({640.f, 650.f});
             window.draw(escMsg);
-        }
-        
-        // Control de música
-        if(musicPlaying == 0){
-            music.play();
-            musicPlaying = 2;
-        }
-        else if(musicPlaying == 1){
-            music.stop();
-            musicPlaying = 3;
         }
         window.display();
     }

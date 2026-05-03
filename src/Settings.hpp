@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "State.hpp"
 #include "Menu.hpp"
+#include "AudioManager.hpp"
 #include <fstream>
 
 
@@ -66,12 +67,12 @@ class Settings{
         void moveUp();
         void moveDown();
         void changeValue(int delta);
-        void handleAction(State& currentState, sf::RenderWindow& window, GameConfig& globalConfig);
+        void handleAction(State& currentState, sf::RenderWindow& window, GameConfig& globalConfig, AudioManager& audio);
         void updateSlidersFromConfig();
         void resetTempConfig(const GameConfig& globalConfig); //descartar cambios si no se hace apply
         int getTempMusicVolume() const { return tempConfig.musicVolume; }
         int getTempSfxVolume() const { return tempConfig.sfxVolume; }
-        void applySettings(sf::RenderWindow& window, GameConfig& globalConfig);
+        void applySettings(sf::RenderWindow& window, GameConfig& globalConfig, AudioManager& audio);
         std::string getSelectedOption() const;
 
     private:
