@@ -10,5 +10,6 @@ enum class State {
     GameOver,
     TravelConfirmation,
     InPlanet,
-    ShipMenu
+    ShipMenu,
+    TradeMenu
 };

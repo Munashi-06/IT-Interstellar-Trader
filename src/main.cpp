@@ -11,6 +11,7 @@
 #include "World.hpp"
 #include "RadarUI.hpp"
 #include "ShipMenuUI.hpp"
+#include "TradeMenuUI.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -120,6 +121,8 @@ int main() {
     for (const auto& [id, itemPtr] : galaxyItems) {
         shipInventory.addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
     }
+
+    TradeMenuUI tradeMenu(font); // Interfaz del menú de comercio, que se inicializa con la fuente cargada para mostrar los textos
 
     sf::Clock clock; // Para medir el tiempo entre frames
 
@@ -444,7 +447,28 @@ int main() {
                         currentState = State::Playing; 
                         hoverSound.play();             
                     }
+                    else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::T) {
+                        // ¡IMPORTANTE! Refrescamos el mercado del planeta justo al entrar a la tienda
+                        world.getPlanets()[selectedPlanetIndex].refreshMarket(world.getCatalog());
+                        
+                        currentState = State::TradeMenu;
+                        hoverSound.play();
+                    }
                 }
+            }
+            else if (currentState == State::TradeMenu) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        if (tradeMenu.isInfoPopupOpen()) {
+                            tradeMenu.closeInfoPopup();
+                        }
+                        else {
+                            currentState = State::InPlanet; // Salimos de la tienda si no hay popups
+                        }
+                    }
+                }
+                // Le pasamos el evento a la clase
+                tradeMenu.handleInput(*event, mousePos, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip, world.getCatalog());
             }
             else if (currentState == State::ShipMenu) {
                 // if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -585,7 +609,8 @@ int main() {
                 else {
                     spaceShip.setPosition(currentPos + direction * moveDistance);
                 }
-            } else {
+            }
+            else {
                 spaceShip.setPosition(targetPosition);
             }
 
@@ -662,11 +687,14 @@ int main() {
             msg.setPosition({640.f, 300.f});
             window.draw(msg);
 
-            sf::Text escMsg(font, "Presiona ESC para despegar");
+            sf::Text escMsg(font, "Presiona ESC para regresar, ENTER o T para ir a la tienda");
             escMsg.setCharacterSize(15);
             escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
             escMsg.setPosition({640.f, 650.f});
             window.draw(escMsg);
+        }
+        else if (currentState == State::TradeMenu) {
+            tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog());
         }
         
         // Control de música

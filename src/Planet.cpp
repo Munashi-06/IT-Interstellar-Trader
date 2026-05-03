@@ -186,7 +186,7 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
     }
 }
 
-float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) {
+float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
     const auto& item = globalCatalog.at(itemID);
     float price = item->getBasePrice();
     float modifier = 1.0f;

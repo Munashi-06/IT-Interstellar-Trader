@@ -37,6 +37,7 @@ public:
     Planet(const Planet& other); // Constructor de copia
     Planet& operator=(const Planet& other); // Operador de asignación
 
+    // Getters y Setters
     std::string getName() const;
     std::string getDescription() const;
     PlanetEvent getEvent() const;
@@ -52,18 +53,17 @@ public:
     int getLuxuryDemand() const;
     int getMoonCount() const;
     int getMedicalTech() const;
+    const std::vector<std::optional<ItemStack>>& getLocalStock() const noexcept { return localStock; }
+    sf::Sprite* getSprite() { return sprite.get(); }
+    const sf::Sprite* getSprite() const { return sprite.get(); }
+    void setHighlighted(bool h);
 
     void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Actualiza el stock local basado en la especialización del planeta y eventos actuales
     bool canBuyItem(const Item& item) const; // Lógica de "necesito esto?"
-    float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog); // Calcula el precio de un item basado en la oferta/demanda y eventos actuales
-    // Metodos para calcular la influencia de sus atributos
-
+    float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const; // Calcula el precio de un item basado en la oferta/demanda y eventos actuales
 
     void loadTexture();
-    sf::Sprite* getSprite() { return sprite.get(); }
-    const sf::Sprite* getSprite() const { return sprite.get(); }
     bool hasSprite() const { return sprite != nullptr; }
-    void setHighlighted(bool h);
     bool isHighlighted() const { return highlighted; }
     bool isPointNear(const sf::Vector2f& point, const sf::Vector2f& planetPos) const;
     void updateScale(float deltaTime);

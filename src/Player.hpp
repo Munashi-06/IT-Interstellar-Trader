@@ -14,6 +14,8 @@ public:
     sf::Vector2f getPosition() const {return sprite->getPosition();}
     void setPosition(sf::Vector2f pos) { sprite->setPosition(pos); hitbox.setPosition(pos); }
     void setRotation(float angle);
+    float getMoney() const { return money; }
+    void addMoney(float amount) { money += amount; }
 private:
     std::unique_ptr<sf::Sprite> sprite; 
     sf::Texture texture;
@@ -26,4 +28,6 @@ private:
     
     float targetRotation = 0.f;
     float rotationSpeed = 4.f;  // Qué tan suave gira (más alto = más rápido)
+
+    float money = 50.f; // Dinero del jugador
 }; 
