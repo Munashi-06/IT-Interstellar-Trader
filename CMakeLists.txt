@@ -32,6 +32,7 @@ add_executable(IT-Interstellar-Trader
     src/RadarUI.hpp
     src/ShipMenuUI.cpp
     src/TradeMenuUI.cpp
+    src/AudioManager.cpp
 )
 
 add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD
