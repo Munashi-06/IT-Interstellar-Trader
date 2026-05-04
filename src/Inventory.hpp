@@ -22,6 +22,7 @@ public:
     void sortByCategory(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     void sortByQuality(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     void sortByPrice(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void sortByQuantity(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
 };
 
 /*

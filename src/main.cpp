@@ -633,6 +633,7 @@ int main() {
             window.draw(generalBackground); // Dibujamos el fondo oscuro para resaltar los elementos del juego
             bgStars.draw(window, spaceShip.getPosition());
             tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog());
+            tradeMenu.update(mousePos);
         }
         window.display();
     }

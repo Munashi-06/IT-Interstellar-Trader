@@ -308,6 +308,26 @@ void Planet::removeItem(const std::string& itemID, int qty) {
     }
 }
 
+void Planet::sortByName(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+    StockSorter::sortByName(localStock, ascending, catalog);
+}
+
+void Planet::sortByCategory(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+    StockSorter::sortByCategory(localStock, ascending, catalog);
+}
+
+void Planet::sortByQuality(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+    StockSorter::sortByQuality(localStock, ascending, catalog);
+}
+
+void Planet::sortByPrice(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+    StockSorter::sortByPrice(localStock, ascending, catalog);
+}
+
+void Planet::sortByQuantity(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+    StockSorter::sortByQuantity(localStock, ascending, catalog);
+}
+
 bool Planet::canBuyItem(const Item& item) const {
     // Si yo soy Tech 10 y me vendes Tech vieja (Common/Rare)
     if (item.isTechnology() && this->techLevel > 8 && item.getRarity() < Rarity::Exotic) {

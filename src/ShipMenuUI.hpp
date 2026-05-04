@@ -6,7 +6,7 @@
 #include <string>
 
 // Enum para saber por qué columna estamos ordenando
-enum class SortColumn { Name, Category, Quality, Price };
+enum class SortColumn { Name, Category, Quality, Price, Quantity };
 
 class ShipMenuUI {
 private:

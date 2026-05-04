@@ -34,9 +34,13 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
       ctxBtnCancel(f, "Cancelar"),
       infoPopupText(f, ""),
       infoPopupEscText(f, "Presione Esc. para cerrar"),
-      infoInputText(f, "Use el Scroll del Mouse para navegar por los objetos, RMB para mas informacion, LMB para seleccionar, Esc. para salir"),
+      infoInputText(f, "Use el Scroll del Mouse para navegar por los objetos, RMB para mas informacion, LMB para seleccionar, Esc. para salir."),
       playerActionBtnText(f, "VENDER"),
-      planetActionBtnText(f, "COMPRAR")
+      planetActionBtnText(f, "COMPRAR"),
+      headerPlayerCategory(f, "CATEGORIA"),
+      headerPlayerQuality(f, "CALIDAD"),
+      headerPlanetCategory(f, "CATEGORIA"),
+      headerPlanetQuality(f, "CALIDAD")
 {
 // --- LAYOUT CONSTANTS (Ajustes visuales) ---
     sf::Vector2f panelSize(560.f, 550.f);
@@ -76,10 +80,36 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     playerMoneyText.setFillColor(sf::Color::Yellow);
     playerMoneyText.setPosition({ leftPanelX + 380.f, topY + 22.f });
 
-    headerPlayerName.setFont(font);    headerPlayerName.setString("ITEM");     headerPlayerName.setCharacterSize(headerSize); headerPlayerName.setFillColor(cyanOutline); headerPlayerName.setPosition({ leftPanelX + 20.f, headerY });
-    headerPlayerQty.setFont(font);     headerPlayerQty.setString("CANT.");      headerPlayerQty.setCharacterSize(headerSize); headerPlayerQty.setFillColor(cyanOutline); headerPlayerQty.setPosition({ leftPanelX + 310.f, headerY });
-    headerPlayerSellPrice.setFont(font); headerPlayerSellPrice.setString("VENTA"); headerPlayerSellPrice.setCharacterSize(headerSize); headerPlayerSellPrice.setFillColor(cyanOutline); headerPlayerSellPrice.setPosition({ leftPanelX + 430.f, headerY });
+    // Ajuste de posiciones X relativas a leftPanelX para acomodar más columnas
+    headerPlayerName.setFont(font);
+    headerPlayerName.setString("ITEM");
+    headerPlayerName.setCharacterSize(16);
+    headerPlayerName.setFillColor(cyanOutline);
+    headerPlayerName.setPosition({ leftPanelX + 10.f, headerY });
 
+    headerPlayerCategory.setFont(font);
+    headerPlayerCategory.setString("CAT.");
+    headerPlayerCategory.setCharacterSize(16);
+    headerPlayerCategory.setFillColor(cyanOutline);
+    headerPlayerCategory.setPosition({ leftPanelX + 225.f, headerY });
+
+    headerPlayerQuality.setFont(font);
+    headerPlayerQuality.setString("CAL.");
+    headerPlayerQuality.setCharacterSize(16);
+    headerPlayerQuality.setFillColor(cyanOutline);
+    headerPlayerQuality.setPosition({ leftPanelX + 330.f, headerY });
+
+    headerPlayerQty.setFont(font);
+    headerPlayerQty.setString("CANT.");
+    headerPlayerQty.setCharacterSize(16);
+    headerPlayerQty.setFillColor(cyanOutline);
+    headerPlayerQty.setPosition({ leftPanelX + 400.f, headerY });
+
+    headerPlayerSellPrice.setFont(font);
+    headerPlayerSellPrice.setString("VENTA");
+    headerPlayerSellPrice.setCharacterSize(16);
+    headerPlayerSellPrice.setFillColor(cyanOutline);
+    headerPlayerSellPrice.setPosition({ leftPanelX + 470.f, headerY });
 
 // --- SECCIÓN DERECHA: PLANETA ---
     float rightPanelX = 670.f;
@@ -96,10 +126,37 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     planetNameText.setFillColor(sf::Color::Cyan);
     planetNameText.setPosition({ rightPanelX + 20.f, topY + 15.f });
 
-    headerPlanetName.setFont(font);    headerPlanetName.setString("ITEM");     headerPlanetName.setCharacterSize(headerSize); headerPlanetName.setFillColor(cyanOutline); headerPlanetName.setPosition({ rightPanelX + 20.f, headerY });
-    headerPlanetQty.setFont(font);     headerPlanetQty.setString("CANT.");      headerPlanetQty.setCharacterSize(headerSize); headerPlanetQty.setFillColor(cyanOutline); headerPlanetQty.setPosition({ rightPanelX + 310.f, headerY });
-    headerPlanetBuyPrice.setFont(font); headerPlanetBuyPrice.setString("COMPRA"); headerPlanetBuyPrice.setCharacterSize(headerSize); headerPlanetBuyPrice.setFillColor(cyanOutline); headerPlanetBuyPrice.setPosition({ rightPanelX + 430.f, headerY });
+    // Ajuste de posiciones X relativas a rightPanelX
+    headerPlanetName.setFont(font);
+    headerPlanetName.setString("ITEM");
+    headerPlanetName.setCharacterSize(16);
+    headerPlanetName.setFillColor(cyanOutline);
+    headerPlanetName.setPosition({ rightPanelX + 10.f, headerY });
 
+    headerPlanetCategory.setFont(font);
+    headerPlanetCategory.setString("CAT.");
+    headerPlanetCategory.setCharacterSize(16);
+    headerPlanetCategory.setFillColor(cyanOutline);
+    headerPlanetCategory.setPosition({ rightPanelX + 225.f, headerY });
+
+    headerPlanetQuality.setFont(font);
+    headerPlanetQuality.setString("CAL.");
+    headerPlanetQuality.setCharacterSize(16);
+    headerPlanetQuality.setFillColor(cyanOutline);
+    headerPlanetQuality.setPosition({ rightPanelX + 330.f, headerY });
+
+    headerPlanetQty.setFont(font);
+    headerPlanetQty.setString("CANT.");
+    headerPlanetQty.setCharacterSize(16);
+    headerPlanetQty.setFillColor(cyanOutline);
+    headerPlanetQty.setPosition({ rightPanelX + 400.f, headerY });
+
+    headerPlanetBuyPrice.setFont(font);
+    headerPlanetBuyPrice.setString("COMPRA");
+    headerPlanetBuyPrice.setCharacterSize(16);
+    headerPlanetBuyPrice.setFillColor(cyanOutline);
+    headerPlanetBuyPrice.setPosition({ rightPanelX + 470.f, headerY });
+    
 // --- CONFIGURACIÓN DEL MENU CONTEXTUAL ---
     contextMenuBg.setSize({ 150.f, 100.f });
     contextMenuBg.setFillColor(sf::Color(20, 20, 30, 240)); // Muy opaco
@@ -200,6 +257,8 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
     window.draw(headerPlayerName);
     window.draw(headerPlayerQty);
     window.draw(headerPlayerSellPrice);
+    window.draw(headerPlayerCategory);
+    window.draw(headerPlayerQuality);
 
     // Actualizar Dinero del Jugador
     std::stringstream ss;
@@ -220,28 +279,58 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 const auto& itemData = catalog.at(slot->itemID);
                 float yPos = startY + (drawnCount * rowHeight);
 
-                // --- NUEVO: Dibujar el resaltado si este ítem está seleccionado ---
                 if (selectedItemID == slot->itemID && isPlayerItem) {
-                    selectionHighlight.setPosition({60.f, yPos}); // Ajustado a la tabla izquierda
+                    selectionHighlight.setPosition({60.f, yPos});
                     window.draw(selectionHighlight);
                 }
 
-                // Dibujamos Nombre
-                sf::Text nameT(font, itemData->getName()); nameT.setCharacterSize(16); nameT.setFillColor(sf::Color::White); nameT.setPosition({ 70.f, yPos }); window.draw(nameT);
-                // Dibujamos Cantidad
-                sf::Text qtyT(font, std::to_string(slot->quantity)); qtyT.setCharacterSize(16); qtyT.setFillColor(sf::Color::White); qtyT.setPosition({ 360.f, yPos }); window.draw(qtyT);
+                // Obtener color de rareza
+                sf::Color rarityColor;
+                switch (itemData->getRarity()) {
+                    case Rarity::Common: rarityColor = sf::Color::White; break;
+                    case Rarity::Rare: rarityColor = sf::Color::Green; break;
+                    case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
+                    case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break;
+                    case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
+                }
+
+                sf::Text nameT(font, itemData->getName());
+                nameT.setCharacterSize(14);
+                nameT.setFillColor(sf::Color::White);
+                nameT.setPosition({ 60.f, yPos });
+                window.draw(nameT);
                 
-                // Dibujamos Precio Venta (Usamos el Market Price del planeta)
+                sf::Text catT(font, itemData->getCategoryString().substr(0, 8)); // Truncamos si es muy largo
+                catT.setCharacterSize(14);
+                catT.setFillColor(sf::Color::White);
+                catT.setPosition({ 275.f, yPos });
+                window.draw(catT);
+                
+                sf::Text qualT(font, itemData->getRarityString().substr(0, 3)); // Truncamos ("Com", "Rar")
+                qualT.setCharacterSize(14);
+                qualT.setFillColor(rarityColor);
+                qualT.setPosition({ 380.f, yPos });
+                window.draw(qualT);
+
+                sf::Text qtyT(font, std::to_string(slot->quantity));
+                qtyT.setCharacterSize(14);
+                qtyT.setFillColor(sf::Color::White);
+                qtyT.setPosition({ 450.f, yPos });
+                window.draw(qtyT);
+                
                 float sellPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                ss.str(""); ss << "Bs. " << std::fixed << std::setprecision(2) << sellPrice;
-                sf::Text priceT(font, ss.str()); priceT.setCharacterSize(16); priceT.setFillColor(sf::Color::White); priceT.setPosition({ 480.f, yPos }); window.draw(priceT);
+                ss.str(""); ss << "Bs." << std::fixed << std::setprecision(0) << sellPrice; // Quitamos decimales por espacio
+                sf::Text priceT(font, ss.str());
+                priceT.setCharacterSize(14);
+                priceT.setFillColor(sf::Color::White);
+                priceT.setPosition({ 520.f, yPos });
+                window.draw(priceT);
 
                 drawnCount++;
             }
             currentSlotIndex++;
         }
     }
-
 
     // --- DIBUJAR PLANETA (Derecha) ---
     window.draw(planetTableBg);
@@ -252,6 +341,8 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
     window.draw(headerPlanetName);
     window.draw(headerPlanetQty);
     window.draw(headerPlanetBuyPrice);
+    window.draw(headerPlanetCategory);
+    window.draw(headerPlanetQuality);
 
     // Dibujar ítems del Planeta (Mercado local)
     const auto& planetSlots = currentPlanet.getLocalStock(); 
@@ -264,21 +355,50 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 const auto& itemData = catalog.at(slot->itemID);
                 float yPos = startY + (drawnCount * rowHeight);
 
-                // --- NUEVO: Dibujar el resaltado si este ítem está seleccionado ---
                 if (selectedItemID == slot->itemID && !isPlayerItem) {
-                    selectionHighlight.setPosition({680.f, yPos}); // Ajustado a la tabla derecha
+                    selectionHighlight.setPosition({680.f, yPos});
                     window.draw(selectionHighlight);
                 }
 
-                // Dibujamos Nombre
-                sf::Text nameT(font, itemData->getName()); nameT.setCharacterSize(16); nameT.setFillColor(sf::Color::White); nameT.setPosition({ 690.f, yPos }); window.draw(nameT);
-                // Dibujamos Cantidad
-                sf::Text qtyT(font, std::to_string(slot->quantity)); qtyT.setCharacterSize(16); qtyT.setFillColor(sf::Color::White); qtyT.setPosition({ 980.f, yPos }); window.draw(qtyT);
+                sf::Color rarityColor;
+                switch (itemData->getRarity()) {
+                    case Rarity::Common: rarityColor = sf::Color::White; break;
+                    case Rarity::Rare: rarityColor = sf::Color::Green; break;
+                    case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
+                    case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break;
+                    case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
+                }
+
+                sf::Text nameT(font, itemData->getName());
+                nameT.setCharacterSize(14);
+                nameT.setFillColor(sf::Color::White);
+                nameT.setPosition({ 680.f, yPos });
+                window.draw(nameT);
                 
-                // Dibujamos Precio Compra (Usamos el Market Price del planeta)
+                sf::Text catT(font, itemData->getCategoryString().substr(0, 8)); 
+                catT.setCharacterSize(14);
+                catT.setFillColor(sf::Color::White);
+                catT.setPosition({ 895.f, yPos });
+                window.draw(catT);
+                
+                sf::Text qualT(font, itemData->getRarityString().substr(0, 3)); 
+                qualT.setCharacterSize(14);
+                qualT.setFillColor(rarityColor);
+                qualT.setPosition({ 1000.f, yPos });
+                window.draw(qualT);
+
+                sf::Text qtyT(font, std::to_string(slot->quantity));
+                qtyT.setCharacterSize(14); qtyT.setFillColor(sf::Color::White);
+                qtyT.setPosition({ 1070.f, yPos });
+                window.draw(qtyT);
+                
                 float buyPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                ss.str(""); ss << "Bs. " << std::fixed << std::setprecision(2) << buyPrice;
-                sf::Text priceT(font, ss.str()); priceT.setCharacterSize(16); priceT.setFillColor(sf::Color::White); priceT.setPosition({ 1100.f, yPos }); window.draw(priceT);
+                ss.str(""); ss << "Bs." << std::fixed << std::setprecision(0) << buyPrice;
+                sf::Text priceT(font, ss.str());
+                priceT.setCharacterSize(14);
+                priceT.setFillColor(sf::Color::White);
+                priceT.setPosition({ 1140.f, yPos });
+                window.draw(priceT);
 
                 drawnCount++;
             }
@@ -325,6 +445,48 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
         window.draw(infoPopupEscText);
     }
 }
+
+void TradeMenuUI::update(const sf::Vector2f& mousePos) {
+    // Si el popup de info está abierto, no queremos que las cosas del fondo se iluminen
+    if (showInfoPopup) return;
+
+    // Colores para el hover
+    sf::Color normalColor = sf::Color::Cyan;
+    sf::Color hoverColor = sf::Color::Yellow;
+
+    // --- HOVER CABECERAS JUGADOR ---
+    if (headerPlayerName.getGlobalBounds().contains(mousePos)) headerPlayerName.setFillColor(hoverColor);
+    else headerPlayerName.setFillColor(normalColor);
+
+    if (headerPlayerCategory.getGlobalBounds().contains(mousePos)) headerPlayerCategory.setFillColor(hoverColor);
+    else headerPlayerCategory.setFillColor(normalColor);
+
+    if (headerPlayerQuality.getGlobalBounds().contains(mousePos)) headerPlayerQuality.setFillColor(hoverColor);
+    else headerPlayerQuality.setFillColor(normalColor);
+
+    if (headerPlayerSellPrice.getGlobalBounds().contains(mousePos)) headerPlayerSellPrice.setFillColor(hoverColor);
+    else headerPlayerSellPrice.setFillColor(normalColor);
+
+    if (headerPlayerQty.getGlobalBounds().contains(mousePos)) headerPlayerQty.setFillColor(hoverColor);
+    else headerPlayerQty.setFillColor(normalColor);
+
+    // --- HOVER CABECERAS PLANETA ---
+    if (headerPlanetName.getGlobalBounds().contains(mousePos)) headerPlanetName.setFillColor(hoverColor);
+    else headerPlanetName.setFillColor(normalColor);
+
+    if (headerPlanetCategory.getGlobalBounds().contains(mousePos)) headerPlanetCategory.setFillColor(hoverColor);
+    else headerPlanetCategory.setFillColor(normalColor);
+
+    if (headerPlanetQuality.getGlobalBounds().contains(mousePos)) headerPlanetQuality.setFillColor(hoverColor);
+    else headerPlanetQuality.setFillColor(normalColor);
+
+    if (headerPlanetBuyPrice.getGlobalBounds().contains(mousePos)) headerPlanetBuyPrice.setFillColor(hoverColor);
+    else headerPlanetBuyPrice.setFillColor(normalColor);
+
+    if (headerPlanetQty.getGlobalBounds().contains(mousePos)) headerPlanetQty.setFillColor(hoverColor);
+    else headerPlanetQty.setFillColor(normalColor);
+}
+
 void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
     
     // --- DETECCIÓN DE SCROLL ---
@@ -344,7 +506,6 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
     }
 
     // --- FUNCIÓN AUXILIAR MAGICA ---
-    // Esta función mapea la fila visual en la que hiciste clic, con el slot real en el inventario saltando los vacíos.
     auto getClickedItemID = [](const std::vector<std::optional<ItemStack>>& slots, int startIndex, int clickedRow) -> std::string {
         int validCount = 0;
         int targetIndex = startIndex + clickedRow;
@@ -369,7 +530,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
             if (mousePos.y >= startY && mousePos.y < startY + (maxVisibleRows * rowHeight)) {
                 int clickedRow = static_cast<int>((mousePos.y - startY) / rowHeight);
 
-                // Clic en Jugador
+                // Click en Jugador
                 if (mousePos.x >= 50.f && mousePos.x <= 610.f) {
                     std::string foundID = getClickedItemID(playerInv.getSlots(), playerStartIndex, clickedRow);
                     if (foundID != "") {
@@ -400,7 +561,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                         showInfoPopup = true;
                     }
                 }
-                // Clic en Planeta
+                // Click en Planeta
                 else if (mousePos.x >= 670.f && mousePos.x <= 1230.f) {
                     std::string foundID = getClickedItemID(currentPlanet.getLocalStock(), planetStartIndex, clickedRow);
                     if (foundID != "") {
@@ -434,7 +595,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
             }
         }
 
-        // --- CLIC IZQUIERDO (Seleccionar o Actuar) ---
+        // --- CLIC IZQUIERDO (Seleccionar, Ordenar o Actuar) ---
         else if (mouseBtn->button == sf::Mouse::Button::Left) {
             
             if (showInfoPopup) {
@@ -442,7 +603,71 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 return; // Cerramos el popup y no hacemos nada más este frame
             }
 
-            // 1. Verificar clic en los botones de acción
+            // 1. VERIFICAR CLIC EN CABECERAS DEL JUGADOR (Para Ordenar)
+            if (headerPlayerName.getGlobalBounds().contains(mousePos)) {
+                if (playerCurrentSort == SortColumn::Name) playerSortAscending = !playerSortAscending;
+                else { playerCurrentSort = SortColumn::Name; playerSortAscending = true; }
+                playerInv.sortByName(playerSortAscending, catalog);
+                return;
+            }
+            else if (headerPlayerCategory.getGlobalBounds().contains(mousePos)) {
+                if (playerCurrentSort == SortColumn::Category) playerSortAscending = !playerSortAscending;
+                else { playerCurrentSort = SortColumn::Category; playerSortAscending = true; }
+                playerInv.sortByCategory(playerSortAscending, catalog);
+                return;
+            }
+            else if (headerPlayerQuality.getGlobalBounds().contains(mousePos)) {
+                if (playerCurrentSort == SortColumn::Quality) playerSortAscending = !playerSortAscending;
+                else { playerCurrentSort = SortColumn::Quality; playerSortAscending = true; }
+                playerInv.sortByQuality(playerSortAscending, catalog);
+                return;
+            }
+            else if (headerPlayerSellPrice.getGlobalBounds().contains(mousePos)) {
+                if (playerCurrentSort == SortColumn::Price) playerSortAscending = !playerSortAscending;
+                else { playerCurrentSort = SortColumn::Price; playerSortAscending = true; }
+                playerInv.sortByPrice(playerSortAscending, catalog);
+                return;
+            }
+            else if (headerPlayerQty.getGlobalBounds().contains(mousePos)) {
+                if (playerCurrentSort == SortColumn::Quantity) playerSortAscending = !playerSortAscending;
+                else { playerCurrentSort = SortColumn::Quantity; playerSortAscending = true; }
+                playerInv.sortByQuantity(playerSortAscending, catalog);
+                return;
+            }
+
+            // 2. VERIFICAR CLIC EN CABECERAS DEL PLANETA (Para Ordenar)
+            if (headerPlanetName.getGlobalBounds().contains(mousePos)) {
+                if (planetCurrentSort == SortColumn::Name) planetSortAscending = !planetSortAscending;
+                else { planetCurrentSort = SortColumn::Name; planetSortAscending = true; }
+                currentPlanet.sortByName(planetSortAscending, catalog); 
+                return;
+            }
+            else if (headerPlanetCategory.getGlobalBounds().contains(mousePos)) {
+                if (planetCurrentSort == SortColumn::Category) planetSortAscending = !planetSortAscending;
+                else { planetCurrentSort = SortColumn::Category; planetSortAscending = true; }
+                currentPlanet.sortByCategory(planetSortAscending, catalog);
+                return;
+            }
+            else if (headerPlanetQuality.getGlobalBounds().contains(mousePos)) {
+                if (planetCurrentSort == SortColumn::Quality) planetSortAscending = !planetSortAscending;
+                else { planetCurrentSort = SortColumn::Quality; planetSortAscending = true; }
+                currentPlanet.sortByQuality(planetSortAscending, catalog);
+                return;
+            }
+            else if (headerPlanetBuyPrice.getGlobalBounds().contains(mousePos)) {
+                if (planetCurrentSort == SortColumn::Price) planetSortAscending = !planetSortAscending;
+                else { planetCurrentSort = SortColumn::Price; planetSortAscending = true; }
+                currentPlanet.sortByPrice(planetSortAscending, catalog);
+                return;
+            }
+            else if (headerPlanetQty.getGlobalBounds().contains(mousePos)) {
+                if (planetCurrentSort == SortColumn::Quantity) planetSortAscending = !planetSortAscending;
+                else { planetCurrentSort = SortColumn::Quantity; planetSortAscending = true; }
+                currentPlanet.sortByQuantity(planetSortAscending, catalog);
+                return;
+            }
+
+            // 3. VERIFICAR CLIC EN LOS BOTONES DE ACCIÓN (Comprar/Vender)
             if (selectedItemID != "") {
                 if (isPlayerItem && playerActionBtnBg.getGlobalBounds().contains(mousePos)) {
                     // Clic en VENDER
@@ -456,7 +681,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 }
             }
 
-            // 2. Verificar selección en las listas
+            // 4. VERIFICAR SELECCIÓN EN LAS LISTAS
             bool clickedOnItem = false;
             if (mousePos.y >= startY && mousePos.y < startY + (maxVisibleRows * rowHeight)) {
                 int clickedRow = static_cast<int>((mousePos.y - startY) / rowHeight);

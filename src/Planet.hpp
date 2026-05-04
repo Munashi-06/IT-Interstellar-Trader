@@ -1,9 +1,6 @@
 #pragma once
 #include "Item.hpp"
-#include <iostream>
-#include <string>
-#include <vector>
-#include <unordered_map>
+#include "StockSorter.hpp"
 #include <SFML/Graphics.hpp>
 
 
@@ -63,6 +60,11 @@ public:
     float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const; // Calcula el precio de un item basado en la oferta/demanda y eventos actuales
     bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
     void removeItem(const std::string& itemID, int qty);
+    void sortByName(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void sortByCategory(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void sortByQuality(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void sortByPrice(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void sortByQuantity(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
 
     void loadTexture();
     bool hasSprite() const { return sprite != nullptr; }

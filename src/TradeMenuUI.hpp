@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "TradeManager.hpp"
+#include "ShipMenuUI.hpp" // Para usar SortColumn
 
 class TradeMenuUI {
 private:
@@ -12,6 +13,8 @@ private:
     sf::RectangleShape playerTableBg;
     sf::Text playerSectionTitle;
     sf::Text playerMoneyText;
+    sf::Text headerPlayerCategory;
+    sf::Text headerPlayerQuality;   
     
     // Cabeceras de la tabla del jugador
     sf::Text headerPlayerName;
@@ -19,10 +22,24 @@ private:
     sf::Text headerPlayerSellPrice;
     
     int playerStartIndex = 0; // Para el scroll de la tabla del jugador
+    SortColumn playerCurrentSort = SortColumn::Name;
+    bool playerSortAscending = true;
 
 // --- LADO DEL PLANETA (Derecha) ---
     sf::RectangleShape planetTableBg;
     sf::Text planetNameText;
+    sf::Text headerPlanetCategory;
+    sf::Text headerPlanetQuality;
+    
+    // Cabeceras de la tabla del planeta
+    sf::Text headerPlanetName;
+    sf::Text headerPlanetQty;
+    sf::Text headerPlanetBuyPrice;
+    
+    int planetStartIndex = 0; // Para el scroll de la tabla del planeta
+    SortColumn planetCurrentSort = SortColumn::Name; // NUEVO
+    bool planetSortAscending = true;
+
 
 // --- VARIABLES DE SELECCIÓN Y BOTONES ---
     sf::RectangleShape selectionHighlight; // El rectángulo que dibuja el "resaltado" sobre la fila seleccionada
@@ -33,12 +50,6 @@ private:
     
     sf::RectangleShape planetActionBtnBg;
     sf::Text planetActionBtnText; // "COMPRAR"
-    
-    // Cabeceras de la tabla del planeta
-    sf::Text headerPlanetName;
-    sf::Text headerPlanetQty;
-    sf::Text headerPlanetBuyPrice;
-
 // --- MENU CONTEXTUAL (Clic Derecho) ---
     bool showContextMenu = false;
     sf::Vector2f contextMenuPos;
@@ -55,8 +66,7 @@ private:
     sf::RectangleShape infoPopupBg;
     sf::Text infoPopupText;
     sf::Text infoPopupEscText;
-    
-    int planetStartIndex = 0; // Para el scroll de la tabla del planeta
+
     sf::Text infoInputText; // Para decirle al jugador que teclas se pueden usar en el mercado
 
     const sf::Font& font;
@@ -69,6 +79,8 @@ public:
     
     // Aquí es donde procesaremos el clic para "Vender" o "Comprar"
     void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+
+    void update(const sf::Vector2f& mousePos);
 
     bool isInfoPopupOpen() const { return showInfoPopup; }
     void closeInfoPopup() { showInfoPopup = false; }
