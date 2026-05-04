@@ -65,7 +65,7 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
 
     headerCategory.setFont(font);
     headerCategory.setString("CATEGORIA");
-    headerCategory.setPosition({tableStartX + 220.f, headerY});
+    headerCategory.setPosition({tableStartX + 250.f, headerY});
     headerCategory.setCharacterSize(fontSize);
 
     headerQuality.setFont(font);
@@ -125,7 +125,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
             if (currentItemIndex >= startIndex && itemsDrawn < maxVisibleItems) {
                 const auto& itemData = catalog.at(slot->itemID);
 
-                sf::Text rowText(font, itemData->getName());
+                sf::Text rowText(font, itemData->getName() + " x " + std::to_string(slot->quantity));
                 sf::Text categoryText(font, itemData->getCategoryString());
                 sf::Text qualityText(font, itemData->getRarityString());
                 
@@ -157,7 +157,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
                 rowText.setPosition({450.f, yPos});
                 window.draw(rowText);
 
-                categoryText.setPosition({450.f + 220.f, yPos});
+                categoryText.setPosition({480.f + 220.f, yPos});
                 window.draw(categoryText);
 
                 qualityText.setPosition({450.f + 370.f, yPos});
@@ -214,7 +214,7 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
                 inventory.sortByName(sortAscending, catalog);
             }
             
-            // Clic en cabecera CATEGORIAsa
+            // Clic en cabecera CATEGORIA
             else if (headerCategory.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Category) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Category; sortAscending = true; }

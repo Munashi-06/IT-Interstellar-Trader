@@ -1,13 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include "Inventory.hpp"
-#include "Planet.hpp"
-#include "Player.hpp"
+#include "TradeManager.hpp"
 
 class TradeMenuUI {
 private:
 // --- VARIABLES GENERALES ---
-    sf::RectangleShape generalBackground;
     sf::Text titleText;
     int maxVisibleRows = 10; // Límite de ítems a mostrar en las tablas
     

@@ -15,7 +15,7 @@ public:
     void setPosition(sf::Vector2f pos) { sprite->setPosition(pos); hitbox.setPosition(pos); }
     void setRotation(float angle);
     float getMoney() const { return money; }
-    void addMoney(float amount) { money += amount; }
+    void setMoney(float amount) { money = amount; }
 private:
     std::unique_ptr<sf::Sprite> sprite; 
     sf::Texture texture;

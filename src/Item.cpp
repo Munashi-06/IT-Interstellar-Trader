@@ -1,7 +1,7 @@
 #include "Item.hpp"
 
-Item::Item(std::string n, float p, ItemCategory cat, Rarity r)
-    : name(n), basePrice(p), category(cat), rarity(r)
+Item::Item(std::string n, float p, ItemCategory cat, Rarity r, int maxStack)
+    : name(n), basePrice(p), category(cat), rarity(r), maxStackSize(maxStack)
 {}
 
 std::string Item::getCategoryString() const {
@@ -41,31 +41,31 @@ int Item::getQuality() const {
 }
 
 Resource::Resource(std::string n, float p, Rarity r)
-    : Item(n, p, ItemCategory::Resource, r)
+    : Item(n, p, ItemCategory::Resource, r, 100)
 {}
 
 Technology::Technology(std::string n, float p, Rarity r)
-    : Item(n, p, ItemCategory::Technology, r)
+    : Item(n, p, ItemCategory::Technology, r, 70)
 {}
 
 Luxury::Luxury(std::string n, float p, Rarity r)
-    : Item(n, p, ItemCategory::Luxury, r)
+    : Item(n, p, ItemCategory::Luxury, r, 50)
 {}
 
 Illegal::Illegal(std::string n, float p, Rarity r)
-    : Item(n, p, ItemCategory::Illegal, r)
+    : Item(n, p, ItemCategory::Illegal, r, 20)
 {}
 
 Food::Food(std::string n, float p, Rarity r)
-    : Item(n, p, ItemCategory::Food, r)
+    : Item(n, p, ItemCategory::Food, r, 100)
 {}
 
 Medic::Medic(std::string n, float p, Rarity r)
-    : Item(n, p, ItemCategory::Medical, r)
+    : Item(n, p, ItemCategory::Medical, r, 40)
 {}
 
 QuestItem::QuestItem(std::string n, std::string id)
-    : Item(n, 0.0, ItemCategory::Quest, Rarity::Quest), questID(id)
+    : Item(n, 0.0, ItemCategory::Quest, Rarity::Quest, 1), questID(id)
 {}
 
 float QuestItem::getPrice() const {

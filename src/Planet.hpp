@@ -61,6 +61,8 @@ public:
     void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Actualiza el stock local basado en la especialización del planeta y eventos actuales
     bool canBuyItem(const Item& item) const; // Lógica de "necesito esto?"
     float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const; // Calcula el precio de un item basado en la oferta/demanda y eventos actuales
+    bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
+    void removeItem(const std::string& itemID, int qty);
 
     void loadTexture();
     bool hasSprite() const { return sprite != nullptr; }

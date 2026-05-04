@@ -44,11 +44,7 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     sf::Color cyanOutline(sf::Color::Cyan);
     int headerSize = 20;
 
-    // 1. Fondo Oscuro Translucido General (Fullscreen)
-    generalBackground.setSize({ 1280.f, 720.f });
-    generalBackground.setFillColor(sf::Color(0, 0, 15)); // Oscurecemos la escena de fondo
-
-    // 2. Título General
+    // Título General
     titleText.setFont(font);
     titleText.setString("MENU DE COMERCIO");
     titleText.setCharacterSize(30);
@@ -140,7 +136,7 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
 
 // --- CONFIGURACIÓN DE LOS BOTONES DE ACCIÓN ---
     sf::Vector2f btnSize(150.f, 40.f);
-    float btnY = topY + 450.f; // Posición Y en la parte inferior de la tabla
+    float btnY = topY + 500.f; // Posición Y en la parte inferior de la tabla
 
     // Botón Jugador (Vender)
     playerActionBtnBg.setSize(btnSize);
@@ -167,7 +163,7 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
 
 void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
 // CAPA 1: Fondo Oscuro Translucido General
-    window.draw(generalBackground);
+    // window.draw(generalBackground);
 
 // CAPA 2: Planeta Masivo Prominente y Estrella de Fondo (si el planeta tiene sprite)
     if (currentPlanet.hasSprite()) {
@@ -297,14 +293,16 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
     // Si hay un item del jugador seleccionado, activamos (pintamos de verde) el botón de Venta
     if (selectedItemID != "" && isPlayerItem) {
         playerActionBtnBg.setFillColor(sf::Color(0, 150, 0)); // Verde
-    } else {
+    }
+    else {
         playerActionBtnBg.setFillColor(sf::Color(100, 100, 100)); // Gris
     }
     
     // Si hay un item del planeta seleccionado, activamos (pintamos de verde) el botón de Compra
     if (selectedItemID != "" && !isPlayerItem) {
         planetActionBtnBg.setFillColor(sf::Color(0, 150, 0)); // Verde
-    } else {
+    }
+    else {
         planetActionBtnBg.setFillColor(sf::Color(100, 100, 100)); // Gris
     }
 
@@ -332,27 +330,34 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
     // --- DETECCIÓN DE SCROLL ---
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
-            
             // Verificamos si el mouse está sobre la tabla del jugador (Izquierda)
             if (playerTableBg.getGlobalBounds().contains(mousePos)) {
-                if (mouseWheel->delta > 0) {
-                    playerStartIndex = std::max(0, playerStartIndex - 1);
-                }
-                else if (mouseWheel->delta < 0) {
-                    playerStartIndex++;
-                } // Luego le pondremos límite máximo
+                if (mouseWheel->delta > 0) playerStartIndex = std::max(0, playerStartIndex - 1);
+                else if (mouseWheel->delta < 0) playerStartIndex++;
             }
             // Verificamos si el mouse está sobre la tabla del planeta (Derecha)
             else if (planetTableBg.getGlobalBounds().contains(mousePos)) {
-                if (mouseWheel->delta > 0) {
-                    planetStartIndex = std::max(0, planetStartIndex - 1);
-                }
-                else if (mouseWheel->delta < 0) {
-                    planetStartIndex++;
-                } // Luego le pondremos límite máximo
+                if (mouseWheel->delta > 0) planetStartIndex = std::max(0, planetStartIndex - 1);
+                else if (mouseWheel->delta < 0) planetStartIndex++;
             }
         }
     }
+
+    // --- FUNCIÓN AUXILIAR MAGICA ---
+    // Esta función mapea la fila visual en la que hiciste clic, con el slot real en el inventario saltando los vacíos.
+    auto getClickedItemID = [](const std::vector<std::optional<ItemStack>>& slots, int startIndex, int clickedRow) -> std::string {
+        int validCount = 0;
+        int targetIndex = startIndex + clickedRow;
+        for (const auto& slot : slots) {
+            if (slot.has_value()) {
+                if (validCount == targetIndex) {
+                    return slot->itemID;
+                }
+                validCount++;
+            }
+        }
+        return "";
+    };
 
     // --- DETECCIÓN DE CLICS ---
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
@@ -366,12 +371,11 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
 
                 // Clic en Jugador
                 if (mousePos.x >= 50.f && mousePos.x <= 610.f) {
-                    int actualIndex = playerStartIndex + clickedRow;
-                    const auto& slots = playerInv.getSlots();
-                    if (actualIndex < slots.size() && slots[actualIndex].has_value()) {
-                        selectedItemID = slots[actualIndex]->itemID;
-                        // Ya no usamos el menu contextual pequeño, abrimos directo el popup de info
-                        // (Copia aquí la lógica de armado de string que tenías antes para la info)
+                    std::string foundID = getClickedItemID(playerInv.getSlots(), playerStartIndex, clickedRow);
+                    if (foundID != "") {
+                        selectedItemID = foundID;
+                        isPlayerItem = true;
+                        
                         const auto& itemData = catalog.at(selectedItemID);
                         std::stringstream ss;
                         ss << "NOMBRE: " << itemData->getName() << "\n\n"
@@ -380,7 +384,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                            << "PRECIO VENTA: Bs. " << std::fixed << std::setprecision(2) << currentPlanet.getItemPrice(selectedItemID, catalog);
                         
                         infoPopupText.setString(ss.str());
-                        // Lógica de centrado del popup que ya tienes... (calculo dinamico)
+                        
                         sf::FloatRect textBounds = infoPopupText.getLocalBounds();
                         float newWidth = std::max(350.f, textBounds.size.x + 60.f); 
                         float newHeight = 250.f;
@@ -398,10 +402,11 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 }
                 // Clic en Planeta
                 else if (mousePos.x >= 670.f && mousePos.x <= 1230.f) {
-                    int actualIndex = planetStartIndex + clickedRow;
-                    const auto& slots = currentPlanet.getLocalStock();
-                    if (actualIndex < slots.size() && slots[actualIndex].has_value()) {
-                        selectedItemID = slots[actualIndex]->itemID;
+                    std::string foundID = getClickedItemID(currentPlanet.getLocalStock(), planetStartIndex, clickedRow);
+                    if (foundID != "") {
+                        selectedItemID = foundID;
+                        isPlayerItem = false;
+
                         const auto& itemData = catalog.at(selectedItemID);
                         std::stringstream ss;
                         ss << "NOMBRE: " << itemData->getName() << "\n\n"
@@ -410,7 +415,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                            << "PRECIO COMPRA: Bs. " << std::fixed << std::setprecision(2) << currentPlanet.getItemPrice(selectedItemID, catalog);
                         
                         infoPopupText.setString(ss.str());
-                        // Lógica de centrado...
+                        
                         sf::FloatRect textBounds = infoPopupText.getLocalBounds();
                         float newWidth = std::max(350.f, textBounds.size.x + 60.f); 
                         float newHeight = 250.f;
@@ -434,19 +439,19 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
             
             if (showInfoPopup) {
                 showInfoPopup = false;
-                return;
+                return; // Cerramos el popup y no hacemos nada más este frame
             }
 
             // 1. Verificar clic en los botones de acción
             if (selectedItemID != "") {
                 if (isPlayerItem && playerActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                    std::cout << "Vendiendo: " << selectedItemID << std::endl;
-                    // Lógica de venta
-                    return; // Importante para no deseleccionar justo después
+                    // Clic en VENDER
+                    TradeManager::sellItem(selectedItemID, player, playerInv, currentPlanet, catalog);
+                    return; 
                 }
                 else if (!isPlayerItem && planetActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                    std::cout << "Comprando: " << selectedItemID << std::endl;
-                    // Lógica de compra
+                    // Clic en COMPRAR
+                    TradeManager::buyItem(selectedItemID, player, playerInv, currentPlanet, catalog);
                     return;
                 }
             }
@@ -458,14 +463,13 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
 
                 // Clic en Jugador
                 if (mousePos.x >= 50.f && mousePos.x <= 610.f) {
-                    int actualIndex = playerStartIndex + clickedRow;
-                    const auto& slots = playerInv.getSlots();
-                    if (actualIndex < slots.size() && slots[actualIndex].has_value()) {
+                    std::string foundID = getClickedItemID(playerInv.getSlots(), playerStartIndex, clickedRow);
+                    if (foundID != "") {
                         // Si clicamos el mismo, lo deseleccionamos
-                        if (selectedItemID == slots[actualIndex]->itemID && isPlayerItem) {
+                        if (selectedItemID == foundID && isPlayerItem) {
                             selectedItemID = "";
                         } else {
-                            selectedItemID = slots[actualIndex]->itemID;
+                            selectedItemID = foundID;
                             isPlayerItem = true;
                         }
                         clickedOnItem = true;
@@ -473,13 +477,12 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 }
                 // Clic en Planeta
                 else if (mousePos.x >= 670.f && mousePos.x <= 1230.f) {
-                    int actualIndex = planetStartIndex + clickedRow;
-                    const auto& slots = currentPlanet.getLocalStock();
-                    if (actualIndex < slots.size() && slots[actualIndex].has_value()) {
-                         if (selectedItemID == slots[actualIndex]->itemID && !isPlayerItem) {
+                    std::string foundID = getClickedItemID(currentPlanet.getLocalStock(), planetStartIndex, clickedRow);
+                    if (foundID != "") {
+                        if (selectedItemID == foundID && !isPlayerItem) {
                             selectedItemID = "";
                         } else {
-                            selectedItemID = slots[actualIndex]->itemID;
+                            selectedItemID = foundID;
                             isPlayerItem = false;
                         }
                         clickedOnItem = true;

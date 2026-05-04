@@ -11,9 +11,6 @@
 enum class ItemCategory { Resource, Technology, Luxury, Illegal, Food, Medical, Quest };
 enum class Rarity { Common, Rare, Exotic, Legendary, Quest };
 
-static int basicStackSize = 64; // Tamaño de stack por defecto, puede variar según el item
-static int singleStackSize = 1; // Para items que no se apilan, como tecnología o maquinaria
-
 struct ItemStack {
     std::string itemID; // ID para buscar en el catálogo global (Tabla Hash del mundo)
     int quantity;
@@ -24,7 +21,7 @@ struct ItemStack {
 // Clase base para los items
 class Item {
 public:
-    Item(std::string name, float basePrice, ItemCategory cat, Rarity rare);
+    Item(std::string name, float basePrice, ItemCategory cat, Rarity rare, int maxStack);
 
     virtual ~Item() = default;
 

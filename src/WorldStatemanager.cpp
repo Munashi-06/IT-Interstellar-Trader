@@ -36,7 +36,14 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
         std::cout << "[ERROR] El sistema solar no tiene planetas cargados." << std::endl;
         return false;
     }
-
+    // Contar eventos activos
+    int activeEvents = 0;
+    for (const auto& p : planets) {
+        if (p.getEvent() != PlanetEvent::None) activeEvents++;
+    }
+    if (activeEvents >= maxActiveEvents) {
+        return false; // No se genera un nuevo evento si ya hay demasiados activos
+    }
     // 1. Seleccionar un planeta al azar
     Planet& target = planets[rand() % planets.size()];
     // Si ya tiene un evento, no le damos otro para no solapar
@@ -48,33 +55,25 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets) {
     // Piratería: Más probable si securityLevel es bajo (< 4)
     if (target.getSecurityLevel() < 4 && roll < 40) {
         target.setEvent(PlanetEvent::Piracy);
-        target.setEventDuration(5 + rand() % 5); 
-        std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-                 << target.getEventName() << " con duracion de " << target.getEventDuration() << " seg." << std::endl;
+        target.setEventDuration(40 + rand() % 40); // duracion minima de 40segundos, max 80segundos
         return true;
     }
     // Hambruna: Más probable si resourceAbundance es bajo (< 3)
     else if (target.getResourceAbundance() < 3 && roll < 30) {
         target.setEvent(PlanetEvent::Famine);
-        target.setEventDuration(7 + rand() % 4);
-        std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-              << target.getEventName() << " con duración de " << target.getEventDuration() << " seg." << std::endl;
+        target.setEventDuration(60 + rand() % 60); // duracion minima de 60 segundos, max 120 segundos
         return true;
     }
     // Plaga: Más probable si medicalTech es bajo (< 4)
     else if (target.getMedicalTech() < 4 && roll < 25) {
         target.setEvent(PlanetEvent::Plague);
-        target.setEventDuration(4 + rand() % 6);
-        std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-              << target.getEventName() << " con duración de " << target.getEventDuration() << " seg." << std::endl;
+        target.setEventDuration(50 + rand() % 60); // duracion minima de 50 segundos, max 110 segundos
         return true;
     }
     // Auge Tecnológico: Más probable si techLevel es alto (> 7)
     else if (target.getTechLevel() > 7 && roll < 15) {
         target.setEvent(PlanetEvent::TechBoom);
-        target.setEventDuration(3 + rand() % 3);
-        std::cout << "[EVENTO] En el planeta " << target.getName() << " ha ocurrido un evento: " 
-              << target.getEventName() << " con duración de " << target.getEventDuration() << " seg." << std::endl;
+        target.setEventDuration(30 + rand() % 60); // duracion minima de 30 segundos, max 90 segundos
     
         return true;
     }

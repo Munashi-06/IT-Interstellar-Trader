@@ -13,6 +13,7 @@
 #include "ShipMenuUI.hpp"
 #include "TradeMenuUI.hpp"
 #include "AudioManager.hpp"
+#include "BackgroundStars.hpp"
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -31,26 +32,6 @@ void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
         window.close();
     }
 }
-
-/*
-        EJEMPLO DE USO DE LA CLASE ITEM, INVENTARIO Y FACTORY
-        (ESTO NO VA EN EL MAIN, SOLO ES UN EJEMPLO DE CÓMO USARLAS
-        REALMENTE IRIA EN LA CLASE WORLD O EN LA LÓGICA DE NEGOCIO DEL JUEGO,
-        DEPENDIENDO DE CÓMO ORGANICEMOS EL CÓDIGO)
-
-// 1. Cargamos el catálogo global
-auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
-
-// 2. El jugador compra "Agua Purificada"
-std::string itemABuscar = "Agua Purificada";
-
-if (galaxyItems.count(itemABuscar)) {
-    // IMPORTANTE: Creamos una COPIA para el inventario del jugador
-    // (Podrías implementar un método virtual clone() en Item para esto)
-    auto& prototipo = galaxyItems[itemABuscar];
-    playerInventory.addItem(std::make_unique<Resource>(prototipo->getName(), prototipo->getPrice()), 1);
-}
-*/
 
 int main() {
     bool state = false;
@@ -86,6 +67,10 @@ int main() {
         std::cerr << "Error cargando la imagen de fondo" << std::endl;
     }
     sf::Sprite backgroundSprite(backgroundTexture);
+    
+    sf::RectangleShape generalBackground;
+    generalBackground.setSize({ 1280.f, 720.f });
+    generalBackground.setFillColor(sf::Color(0, 0, 15)); // Oscurecemos la escena de fondo
 
     sf::Vector2u textureSize = backgroundTexture.getSize();
     float scaleX = 1280 / static_cast<float>(textureSize.x);
@@ -121,9 +106,7 @@ int main() {
     // Radar de Prioridad con la misma fuente cargada
     RadarUI radarUI(font);
 
-    // --- LÓGICA DE INICIALIZACIÓN DEL MUNDO ---
-
-    // 1. Cargamos el vector base de planetas
+    // Cargamos el vector base de planetas
     std::vector<Planet> basePlanets = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
 
     if (basePlanets.empty()) {
@@ -131,44 +114,27 @@ int main() {
         return -1; 
     }
 
-    // 2. Creamos el Heap. 
+    // Creamos el Heap. 
     // IMPORTANTE: Pasamos una COPIA del primer planeta para no romper el vector planetasBase
     auto radar = std::make_unique<Heap>(Planet(basePlanets[0]));
 
-    // 3. Llenamos el heap con el resto (también copias)
+    // Llenamos el heap con el resto (también copias)
     for (size_t i = 1; i < basePlanets.size(); ++i) {
         radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
     }
 
-    // 4. Inicializamos el mundo con TODO
+    // Inicializamos el mundo con TODO
     // Usamos std::move para pasarle la propiedad de los objetos al World
     World world(0.0f, std::move(radar), std::move(basePlanets));
 
-    // --- FIN DE LA LÓGICA DE INICIALIZACIÓN ---
+    // --- Generar stock inicial para todos los planetas ---
+    for (auto& planet : world.getPlanets()) {
+        planet.refreshMarket(world.getCatalog());
+    }
 
     // Ahora 'world' tiene el control de los planetas y el radar
     
-
-    sf::VertexArray starsFar(sf::PrimitiveType::Points, 800);
-    for (int i = 0; i < 800; i++) {
-        starsFar[i].position = {(float)(rand()%2000), (float)(rand()%2000)};
-        int c = 60 + (rand()% 40);
-        starsFar[i].color = sf::Color(c, c, c);
-    }
-
-    sf::VertexArray starsMid(sf::PrimitiveType::Points, 400);
-    for (int i = 0; i < 400; i++) {
-        starsMid[i].position = {(float)(rand()%2000), (float)(rand()%2000)};
-        int c = 120 + (rand()% 60);
-        starsMid[i].color = sf::Color(c, c, c);
-    }
-
-    sf::VertexArray starsNear(sf::PrimitiveType::Points, 200);
-    for (int i = 0; i < 200; i++) {
-        starsNear[i].position = {(float)(rand()%2000), (float)(rand()%2000)};
-        int c = 200 + (rand()% 55);
-        starsNear[i].color = sf::Color(c, c, c);
-    }
+    BackgroundStars bgStars;
     
     sf::Texture alertTexture;
     if (!alertTexture.loadFromFile("assets/alert_icon.png")) {
@@ -442,9 +408,6 @@ int main() {
                         audio.playHover();             
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::T) {
-                        // ¡IMPORTANTE! Refrescamos el mercado del planeta justo al entrar a la tienda
-                        world.getPlanets()[selectedPlanetIndex].refreshMarket(world.getCatalog());
-                        
                         currentState = State::TradeMenu;
                         audio.playHover();
                     }
@@ -465,20 +428,6 @@ int main() {
                 tradeMenu.handleInput(*event, mousePos, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip, world.getCatalog());
             }
             else if (currentState == State::ShipMenu) {
-                // if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                //     if (keyPressed->code == sf::Keyboard::Key::Escape) {
-                //         currentState = State::Playing;
-                //     }
-                // }
-                // if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
-                //     if (mouseEvent->button == sf::Mouse::Button::Left) {
-                //         if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-                //             audio.playClick();
-                //             std::cout << "Nivel de nave aumentado!" << std::endl;
-                //         }
-                //     }
-                // }
-
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Playing;
@@ -505,19 +454,12 @@ int main() {
         {
             audio.stopMusic();
 
-            window.clear(sf::Color(0, 0, 15));
+            // window.clear(backgroundSprite.getColor()); // Limpiamos con un color sólido para evitar que el fondo parpadee al redimensionar
+            window.draw(generalBackground); // Dibujamos el fondo oscuro para resaltar los elementos del juego
 
             sf::Vector2f playerPos = spaceShip.getPosition();
-            sf::RenderStates states;
-
-            sf::Transform tFar; tFar.translate(-playerPos*0.2f);
-            states.transform = tFar; window.draw(starsFar, states);
-
-            sf::Transform tMid; tMid.translate(-playerPos*0.4f);
-            states.transform = tMid; window.draw(starsMid, states);
-
-            sf::Transform tNear; tNear.translate(-playerPos*0.7f);
-            states.transform = tNear; window.draw(starsNear, states);
+            
+            bgStars.draw(window, spaceShip.getPosition());
 
             sf::Vector2f center(640.f, 360.f);
             sf::CircleShape sun(15.f); sun.setFillColor(sf::Color::White);
@@ -543,7 +485,8 @@ int main() {
                     planetShape.setOutlineThickness(2);
                     planetShape.setOutlineColor(sf::Color::White);
                     targetPosition = {x, y};
-                } else {
+                }
+                else {
                     planetShape.setFillColor(sf::Color(150, 150, 150));
                 }
                 window.draw(planetShape);
@@ -658,7 +601,8 @@ int main() {
             }
         }
         else if (currentState == State::InPlanet) {
-            window.clear(sf::Color::Black); 
+            window.clear(backgroundSprite.getColor());
+            window.draw(generalBackground);
             
             shipAnimX += 400.f * dt; // Velocidad de la animación
             if (shipAnimX > 1380.f) shipAnimX = -100.f;
@@ -682,8 +626,12 @@ int main() {
             escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
             escMsg.setPosition({640.f, 650.f});
             window.draw(escMsg);
+            bgStars.draw(window, spaceShip.getPosition());
         }
         else if (currentState == State::TradeMenu) {
+            window.clear(backgroundSprite.getColor()); // Limpiamos con un color sólido para evitar que el fondo parpadee al redimensionar
+            window.draw(generalBackground); // Dibujamos el fondo oscuro para resaltar los elementos del juego
+            bgStars.draw(window, spaceShip.getPosition());
             tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog());
         }
         window.display();
