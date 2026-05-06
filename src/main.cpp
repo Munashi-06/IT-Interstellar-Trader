@@ -470,56 +470,47 @@ int main() {
             const auto& planets = world.getPlanets();
 
             for (size_t i = 0; i < planets.size(); ++i) {
-                // Definimos la distancia según la órbita (ej: órbita 1 = 80px, órbita 10 = 350px)
+                auto& planet = world.getPlanets()[i];
+                
                 float distance = planets[i].getOrbit() * 33.f + 33.f;
                 float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
                 float x = center.x + std::cos(time * speed) * distance;
                 float y = center.y + std::sin(time * speed) * distance;
 
-                sf::CircleShape planetShape(8.f);
-                planetShape.setOrigin({8.f, 8.f});
-                planetShape.setPosition({x, y});
-
-                if (i == (size_t)selectedPlanetIndex) {
-                    planetShape.setFillColor(sf::Color::Cyan); 
-                    planetShape.setOutlineThickness(2);
-                    planetShape.setOutlineColor(sf::Color::White);
-                    targetPosition = {x, y};
-                }
-                else {
-                    planetShape.setFillColor(sf::Color(150, 150, 150));
-                }
-                window.draw(planetShape);
-            }
-
-            for(auto& planet : world.getPlanets()){
-                float distance = planet.getOrbit() * 33.f + 33.f;
-                float speed = 0.5f / (planet.getOrbit() * 0.2f);
-                float x = center.x + std::cos(time * speed) * distance;
-                float y = center.y + std::sin(time * speed) * distance;
-
-                if(planet.hasSprite()){
+                if (planet.hasSprite()) {
+                    // Posicionar el sprite
                     planet.getSprite()->setPosition({x, y});
-        
-                    // Detección de proximidad
-                    sf::Vector2f planetPos(x, y);
-                    sf::Vector2f playerPos = spaceShip.getPosition();
-        
-                    if (planet.isPointNear(playerPos, planetPos)) {
+                    
+                    // --- LÓGICA DE AGRANDAR ---
+                    if (i == (size_t)selectedPlanetIndex) {
+                        // Este es el planeta seleccionado: AGRANDAR
                         planet.setHighlighted(true);
+                        targetPosition = {x, y};
                     } else {
+                        // No es el seleccionado: tamaño normal
                         planet.setHighlighted(false);
                     }
-        
-                // Actualizar escala suave
-                planet.updateScale(dt);
-        
-                window.draw(*planet.getSprite());
+                    
+                    // Actualizar escala suave
+                    planet.updateScale(dt);
+                    
+                    // Dibujar el sprite
+                    window.draw(*planet.getSprite());
+                    
                 } else {
+                    // Fallback: dibujar círculo si no hay sprite
                     sf::CircleShape planetShape(8.f);
-                    planetShape.setFillColor(sf::Color(150, 150, 150));
                     planetShape.setOrigin({8.f, 8.f});
                     planetShape.setPosition({x, y});
+                    
+                    if (i == (size_t)selectedPlanetIndex) {
+                        planetShape.setFillColor(sf::Color::Cyan);
+                        planetShape.setOutlineThickness(2);
+                        planetShape.setOutlineColor(sf::Color::White);
+                        targetPosition = {x, y};
+                    } else {
+                        planetShape.setFillColor(sf::Color(150, 150, 150));
+                    }
                     window.draw(planetShape);
                 }
             }

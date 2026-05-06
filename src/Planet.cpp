@@ -374,4 +374,5 @@ void Planet::updateScale(float deltaTime){
     } else {
         newScale = std::max(newScale, targetScale);
     }
+    sprite->setScale({newScale, newScale});
 }
