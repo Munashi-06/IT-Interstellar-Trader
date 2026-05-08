@@ -29,11 +29,18 @@ Sigue estos pasos en tu terminal (PowerShell en Windows o Bash en Linux) dentro 
    - Linux:
       - ./IT-Interstellar-Trader
 
-
 ## Estructura del Proyecto
-- src/: Archivos fuente (.cpp, .hpp).
-- assets/: Imágenes, sonidos y fuentes del juego.
-- CMakeLists.txt: Configuración de construcción y dependencias.
+El código está separado en archivos de cabecera (`.hpp`) y de implementación (`.cpp`), organizados internamente por módulos para mantener una arquitectura limpia a medida que el juego escala:
+
+- `include/`: Contiene todos los archivos de cabecera (`.hpp`).
+- `src/`: Contiene todos los archivos de código fuente (`.cpp`).
+  - **Core/**: El núcleo del motor (Game Loop, inicialización, administrador de estados globales).
+  - **Entities/**: Los actores concretos del universo (Player, Planet, Item).
+  - **Systems/**: La lógica del juego y el procesamiento de entidades (Economy, TradeManager, Inventory).
+  - **Interface/**: La capa visual y los menús con los que interactúa el jugador.
+  - **Utils/**: Estructuras de datos puras y algoritmos de soporte (como los montículos, árboles binarios o futuras tablas hash).
+- `assets/`: Imágenes, sonidos y fuentes del juego.
+- `CMakeLists.txt`: Configuración de construcción y dependencias.
 
 ## Equipo (Grupo de 3)
 - Angel Garcia
