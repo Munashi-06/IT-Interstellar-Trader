@@ -1,0 +1,35 @@
+name: Build and Release Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Compilar para Windows
+    runs-on: windows-latest
+
+    steps:
+    - name: Descargar el código del repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar CMake
+      run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+    - name: Compilar el proyecto
+      run: cmake --build build --config Release
+
+    - name: Empaquetar el ejecutable y los assets
+      run: |
+        mkdir release_folder
+        copy build\Release\IT-Interstellar-Trader.exe release_folder\
+        xcopy assets release_folder\assets\ /E /I
+        Compress-Archive -Path release_folder\* -DestinationPath IT-Interstellar-Trader-Windows.zip
+
+    - name: Subir a GitHub Releases
+      uses: softprops/action-gh-release@v2
+      with:
+        files: IT-Interstellar-Trader-Windows.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

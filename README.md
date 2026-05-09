@@ -2,19 +2,33 @@
 
 Proyecto de videojuego para **Programación 3** desarrollado en C++ utilizando la librería **SFML**.
 
-## Requisitos Previos
-Antes de clonar y compilar, asegúrate de tener instalado:
+---
 
-### Windows
-1. **Visual Studio Build Tools 2022/2026**: Instalar el paquete "Desarrollo para el escritorio con C++" (incluye MSVC y CMake).
-2. **CMake**: Asegúrate de que esté en el PATH del sistema.
+## Cómo Jugar (Solo Ejecutar)
+Si solo quieres probar el juego sin instalar herramientas de programación, busca la última versión en la pestaña **Releases** de este repositorio y descarga el archivo comprimido.
 
-### Linux (Ubuntu/Debian)
-Ejecuta el siguiente comando para instalar las dependencias necesarias de SFML y herramientas de compilación:
-- sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev
+### Solución de problemas comunes (Windows):
+Si al hacer doble clic en `IT-Interstellar-Trader.exe` el juego no abre o lanza un error indicando que faltan archivos `.dll` (como `VCRUNTIME140.dll` o similares), significa que tu PC necesita las librerías base de C++. 
+* **Solución:** Descarga e instala el [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) (oficial de Microsoft) y vuelve a abrir el juego.
 
-## Cómo Compilar y Ejecutar
-Sigue estos pasos en tu terminal (PowerShell en Windows o Bash en Linux) dentro de la carpeta del proyecto:
+---
+
+## Desarrollo (Cómo compilar el código)
+Si deseas clonar el repositorio y compilar el código fuente por tu cuenta, sigue estas instrucciones:
+
+### Requisitos Previos
+
+**Windows**
+1. **Visual Studio Build Tools**: Instalar el paquete "Desarrollo para el escritorio con C++" (incluye el compilador MSVC y CMake).
+2. **CMake**: Asegúrate de que esté agregado al PATH del sistema.
+
+**Linux (Ubuntu/Debian)**
+Ejecuta el siguiente comando para instalar el compilador, CMake y todas las dependencias multimedia que requiere SFML:
+
+- sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev libfreetype6-dev
+
+### Pasos para Compilar
+Ejecuta estos comandos en tu terminal (PowerShell en Windows o Bash en Linux) dentro de la carpeta raíz del proyecto:
 1. **Crear carpeta de compilación:**
    - mkdir build
    - cd build
@@ -29,6 +43,8 @@ Sigue estos pasos en tu terminal (PowerShell en Windows o Bash en Linux) dentro 
    - Linux:
       - ./IT-Interstellar-Trader
 
+---
+
 ## Estructura del Proyecto
 El código está separado en archivos de cabecera (`.hpp`) y de implementación (`.cpp`), organizados internamente por módulos para mantener una arquitectura limpia a medida que el juego escala:
 
@@ -42,7 +58,9 @@ El código está separado en archivos de cabecera (`.hpp`) y de implementación 
 - `assets/`: Imágenes, sonidos y fuentes del juego.
 - `CMakeLists.txt`: Configuración de construcción y dependencias.
 
-## Equipo (Grupo de 3)
+---
+
+## Equipo
 - Angel Garcia
 - Reinier Manrique
 - Abraham Vergara
