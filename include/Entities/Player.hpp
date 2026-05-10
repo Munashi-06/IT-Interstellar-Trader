@@ -16,6 +16,10 @@ public:
     void setRotation(float angle);
     float getMoney() const { return money; }
     void setMoney(float amount) { money = amount; }
+
+    int getShipLevel() const { return shipLevel; }
+    bool upgradeShip();
+    int getUpgradeCost() const;
 private:
     std::unique_ptr<sf::Sprite> sprite; 
     sf::Texture texture;
@@ -30,4 +34,6 @@ private:
     float rotationSpeed = 4.f;  // Qué tan suave gira (más alto = más rápido)
 
     float money = 50.f; // Dinero del jugador
+    int shipLevel = 1; // Nivel de la nave
+    static constexpr int MAX_SHIP_LEVEL = 3;
 }; 
