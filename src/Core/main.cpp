@@ -430,7 +430,7 @@ int main() {
                     }
                 }
                 // Le pasamos el evento a la clase
-                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog());
+                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog(), spaceShip);
             }
         }
 
@@ -610,7 +610,7 @@ int main() {
             window.clear(backgroundSprite.getColor()); // Limpiamos con un color sólido para evitar que el fondo parpadee al redimensionar
             window.draw(generalBackground); // Dibujamos el fondo oscuro para resaltar los elementos del juego
             bgStars.draw(window, spaceShip.getPosition());
-            tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog());
+            tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip.getShipLevel());
             tradeMenu.update(mousePos);
         }
         window.display();
