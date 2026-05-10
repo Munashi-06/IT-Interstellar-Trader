@@ -14,15 +14,15 @@ private:
     std::string description;
     PlanetEvent currentEvent = PlanetEvent::None;
     int EVENT_DURATION;
-    std::vector<std::optional<ItemStack>> localStock; // Stock local del planeta, mapeado por ID de item
-    int orbit; // Representa la orbita del planeta, entre 1 y 10 (1 es el más cercano a la estrella, 10 el más lejano)
-    int techLevel; // Nivel tecnológico del planeta, podría influir en los precios y tipos de items disponibles
-    int securityLevel; // Nivel de seguridad del planeta, podría influir en la presencia de items ilegales y su precio
-    int resourceAbundance; // Abundancia de recursos naturales, podría influir en la oferta de items de categoría Resource
-    int luxuryDemand; // Demanda de bienes de lujo, podría influir en la oferta y precio de items de categoría Luxury
-    int moonCount; // Número de lunas, podría influir en la presencia de estaciones espaciales y su oferta de items
-    int medicalTech; // Nivel de tecnología médica, podría influir en la oferta y precio de items de categoría Medical
+    std::vector<std::optional<ItemStack>> localStock; // Local stock of the planet, mapped by item ID
 
+    int orbit; // Represents the planet's orbit, between 1 and 10 (1 is closest to the star, 10 is farthest)
+    int techLevel; // Tech level of the planet, could influence the prices and types of items available
+    int securityLevel; // Security level of the planet, could influence the presence of illegal items and their price
+    int resourceAbundance; // Abundance of natural resources, could influence the supply of Resource category items
+    int luxuryDemand; // Demand for luxury goods, could influence the supply and price of Luxury category items
+    int moonCount; // Number of moons, could influence the presence of space stations and their item supply
+    int medicalTech; // Level of medical technology, could influence the supply and price of Medical category items
     std::unique_ptr<sf::Texture> texture; // Textura del planeta
     std::unique_ptr<sf::Sprite> sprite; // Sprite del planeta
     float baseScale = 1.0f;
@@ -31,8 +31,8 @@ private:
 public:
     Planet();
     Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med);
-    Planet(const Planet& other); // Constructor de copia
-    Planet& operator=(const Planet& other); // Operador de asignación
+    Planet(const Planet& other); // Constructor for copy
+    Planet& operator=(const Planet& other); // Assignment operator
 
     // Getters y Setters
     std::string getName() const;
@@ -55,9 +55,9 @@ public:
     const sf::Sprite* getSprite() const { return sprite.get(); }
     void setHighlighted(bool h);
 
-    void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Actualiza el stock local basado en la especialización del planeta y eventos actuales
+    void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Updates local stock based on planet specialization and current events
     bool canBuyItem(const Item& item) const; // Lógica de "necesito esto?"
-    float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const; // Calcula el precio de un item basado en la oferta/demanda y eventos actuales
+    float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const; // Calculates the price of an item based on supply/demand and current events
     bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
     void removeItem(const std::string& itemID, int qty);
     void sortByName(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);

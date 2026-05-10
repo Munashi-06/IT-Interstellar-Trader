@@ -3,13 +3,13 @@
 
 class Inventory {
 private:
-    int capacity = 20; // Capacidad inicial de la bodega (20 slots)
-    // El inventario se maneja como un mapa de nombre de item a su slot (item + cantidad)
+    int capacity = 20; // Initial cargo hold capacity (20 slots)
+    // The inventory is managed as a map of item name to its slot (item + quantity)
     std::vector<std::optional<ItemStack>> slots;
 
 public:
     Inventory() noexcept : capacity(20) {
-        slots.resize(capacity, std::nullopt); // Inicializamos con slots vacíos
+        slots.resize(capacity, std::nullopt); // Initialize with empty slots
     }
     bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
     void removeItem(const std::string& itemID, int qty);

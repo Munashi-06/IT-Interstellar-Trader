@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-// Clase Base para ABs
+// Base Class for ABS
 template <typename Key>
 class BinNode
 {

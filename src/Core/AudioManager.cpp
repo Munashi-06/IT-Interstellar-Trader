@@ -1,4 +1,5 @@
 #include "Core/AudioManager.hpp"
+#include <algorithm>
 
 AudioManager::AudioManager() : hoverSound(hoverBuffer), clickSound(clickBuffer) 
 {

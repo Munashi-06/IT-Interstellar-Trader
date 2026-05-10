@@ -12,13 +12,13 @@ enum class ItemCategory { Resource, Technology, Luxury, Illegal, Food, Medical, 
 enum class Rarity { Common, Rare, Exotic, Legendary, Quest };
 
 struct ItemStack {
-    std::string itemID; // ID para buscar en el catálogo global (Tabla Hash del mundo)
+    std::string itemID; // ID to search in the global catalog (World Hash Table)
     int quantity;
-    int maxStackSize; // Ejemplo: Medicinas se apilan hasta 20, Motores solo 1
-    float buyPrice; // Precio al que se compró, para calcular ganancias al vender
+    int maxStackSize;
+    float buyPrice; // Purchase price, used to calculate profit when selling
 };
 
-// Clase base para los items
+// Base class for items
 class Item {
 public:
     Item(std::string name, float basePrice, ItemCategory cat, Rarity rare, int maxStack);
@@ -42,7 +42,7 @@ public:
     std::string getRarityString() const;
     int getQuality() const;
 
-    // El precio podría variar según el planeta, por eso es virtual
+    // The price may vary depending on the planet, that's why it's virtual
     virtual float getPrice() const { return basePrice; }
 
 protected:
@@ -50,10 +50,10 @@ protected:
     float basePrice;
     ItemCategory category;
     Rarity rarity;
-    int maxStackSize; // Determina cuántas unidades de este item pueden apilarse
+    int maxStackSize; // Determines how many units of this item can be stacked
 };
 
-// Clases derivadas para cada categoría de item
+// Derived classes for each item category
 #pragma region ClasesDerivadas
 class Resource : public Item {
 public:

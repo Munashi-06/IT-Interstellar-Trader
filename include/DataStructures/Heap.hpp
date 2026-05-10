@@ -5,66 +5,66 @@
 
 typedef bool (*Cmp)(const Planet&, const Planet&);
 
-inline bool cmp(const Planet& a, const Planet& b) // Función de comparación para ordenar los planetas en el heap
+inline bool cmp(const Planet& a, const Planet& b) // Comparison function for sorting planets in the heap
 {
     if (a.getEvent() == PlanetEvent::None && b.getEvent() != PlanetEvent::None) {
-        return false; // b tiene evento, a no, así que b es más prioritario
+        return false; // b has an event, a does not, so b is more urgent
     }
     if (a.getEvent() != PlanetEvent::None && b.getEvent() == PlanetEvent::None) {
-        return true; // a tiene evento, b no, así que a es más prioritario
+        return true; // a has an event, b does not, so a is more urgent
     }
     float scoreA = 0.0f;    
     float scoreB = 0.0f;
 
-    // Sumamos modificadores (puedes usar los atributos que ya tienes)
+    // Add modifiers (you can use the attributes you already have)
 
-    // -- PLANETA A --
-    if(a.getEvent() == PlanetEvent::War) { // Guerra
+    // -- PLANET A --
+    if(a.getEvent() == PlanetEvent::War) { // War
         scoreA = 50.0f;
-        scoreA += (10.0f - a.getSecurityLevel()) * 2.0f; // Más inseguro = más prioridad
+        scoreA += (10.0f - a.getSecurityLevel()) * 2.0f; // More insecure = higher priority
     }
-    else if(a.getEvent() == PlanetEvent::Famine) { // Hambruna
+    else if(a.getEvent() == PlanetEvent::Famine) { // Famine
         scoreA = 45.0f;
-        scoreA += (10.0f - a.getResourceAbundance()) * 1.75f; // Menos recursos = más prioridad
+        scoreA += (10.0f - a.getResourceAbundance()) * 1.75f; // Fewer resources = higher priority
     }
-    else if(a.getEvent() == PlanetEvent::Plague) { // Peste
+    else if(a.getEvent() == PlanetEvent::Plague) { // Plague
         scoreA = 40.0f;
-        scoreA += (10.0f - a.getMedicalTech()) * 1.5f; // Menor tecnología médica = más prioridad
+        scoreA += (10.0f - a.getMedicalTech()) * 1.5f; // Lower medical technology = higher priority
     }
-    else if(a.getEvent() == PlanetEvent::TechBoom) { // Auge Tecnológico
+    else if(a.getEvent() == PlanetEvent::TechBoom) { // Tech Boom
         scoreA = 30.0f;
-        scoreA += a.getTechLevel() * 1.25f; // Más tecnológico = más prioridad
+        scoreA += a.getTechLevel() * 1.25f; // More technological = higher priority
     }
 
 
-    // -- PLANETA B --
-    if(b.getEvent() == PlanetEvent::War) { // Guerra
+    // -- PLANET B --
+    if(b.getEvent() == PlanetEvent::War) { // War
         scoreB = 50.0f;
-        scoreB += (10.0f - b.getSecurityLevel()) * 2.0f; // Más inseguro = más prioridad
+        scoreB += (10.0f - b.getSecurityLevel()) * 2.0f; // More insecure = higher priority
     }
-    else if(b.getEvent() == PlanetEvent::Famine) { // Hambruna
+    else if(b.getEvent() == PlanetEvent::Famine) { // Famine
         scoreB = 45.0f;
-        scoreB += (10.0f - b.getResourceAbundance()) * 1.75f; // Menos recursos = más prioridad
+        scoreB += (10.0f - b.getResourceAbundance()) * 1.75f; // Fewer resources = higher priority
     }
-    else if(b.getEvent() == PlanetEvent::Plague) { // Peste
+    else if(b.getEvent() == PlanetEvent::Plague) { // Plague
         scoreB = 40.0f;
-        scoreB += (10.0f - b.getMedicalTech()) * 1.5f; // Menor tecnología médica = más prioridad
+        scoreB += (10.0f - b.getMedicalTech()) * 1.5f; // Lower medical technology = higher priority
     }
-    else if(b.getEvent() == PlanetEvent::TechBoom) { // Auge Tecnológico
+    else if(b.getEvent() == PlanetEvent::TechBoom) { // Tech Boom
         scoreB = 30.0f;
-        scoreB += b.getTechLevel() * 1.25f; // Más tecnológico = más prioridad
+        scoreB += b.getTechLevel() * 1.25f; // More technological = higher priority
     }
 
-    return scoreA > scoreB; // Max-Heap: el mayor puntaje arriba
+    return scoreA > scoreB; // Max-Heap: highest score on top
 }
 
-// Max-Heap de Planetas basado en eventos y atributos
+// Max-Heap of Planets based on events and attributes
 class Heap : public BinNode<Planet>
 {
 private:
-    std::vector<Planet> heap_array; // Almacena los planetas en un arreglo para facilitar las operaciones de sift-up y sift-down
-    size_t n = 0; // Tamaño actual del heap
-    // Funciones auxiliares para mantener la propiedad del heap reciben como comparador la funcion cmp declarada arriba
+    std::vector<Planet> heap_array; // Stores planets in an array to facilitate sift-up and sift-down operations
+    size_t n = 0; // Current size of the heap
+    // Helper functions to maintain the heap property, using the cmp function declared above as comparator
     void sift_up(std::vector<Planet>& arr, size_t idx, bool (*cmp)(const Planet&, const Planet&));
     void sift_down(std::vector<Planet>& arr, size_t idx, bool (*cmp)(const Planet&, const Planet&));
 public:
@@ -76,9 +76,9 @@ public:
     void setN(size_t newN) noexcept { n = newN; }
 
     void insert(Planet&& p, std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
-    void insertArray(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&)); // Inserta un vector completo al heap (útil para la actualización completa del radar)
+    void insertArray(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&)); // Inserts an entire vector into the heap (useful for full radar updates)
     void remove(std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
 
-    // Actualizar el heap después de modificar un planeta (por ejemplo, después de que un evento termine)
+    // Update the heap after modifying a planet (for example, after an event ends)
     void update(Planet& modified, std::vector<Planet>& arr, bool (*cmp)(const Planet&, const Planet&));
 };

@@ -4,9 +4,9 @@
 
 namespace StockSorter {
 
-    constexpr int QS_THRESHOLD = 40; // Umbral
+    constexpr int QS_THRESHOLD = 40; // Threshold
 
-    // --- 1. INSERTION SORT (Para particiones pequeñas) ---
+    // --- 1. INSERTION SORT (For small partitions) ---
     template<typename Iterator, typename Compare>
     inline void insertionSort(Iterator begin, Iterator end, Compare comp) {
         if (begin == end) return;
@@ -21,10 +21,10 @@ namespace StockSorter {
         }
     }
 
-    // --- 2. SELECCIÓN DE MEDIANA (Segunda Mejora) ---
+    // --- 2. MEDIAN SELECTION (Second Improvement) ---
     template<typename Iterator, typename Compare>
     inline Iterator medianOfThree(Iterator l, Iterator mid, Iterator r, Compare comp) {
-        // Lógica para encontrar la mediana usando el comparador personalizado
+        // Logic to find the median using the custom comparator
         if (comp(*l, *mid)) {
             if (comp(*mid, *r)) return mid;
             else if (comp(*l, *r)) return r;
@@ -36,34 +36,34 @@ namespace StockSorter {
         }
     }
 
-    // --- 3. PARTICIÓN PARA QUICKSORT ---
+    // --- 3. PARTITION FOR QUICKSORT ---
     template<typename Iterator, typename Compare>
     inline Iterator customPartition(Iterator begin, Iterator end, Compare comp) {
-        // Segunda mejora: Seleccionar la mediana entre el primero, el medio y el último
+        // Second improvement: Select the median among the first, middle, and last
         Iterator mid = begin + (end - begin) / 2;
         Iterator pivotIt = medianOfThree(begin, mid, end - 1, comp);
         
-        // Movemos el pivote al final usando std::swap clásico
+        // Move the pivot to the end using classic std::swap
         std::swap(*pivotIt, *(end - 1));
         auto pivot = *(end - 1); 
 
         Iterator i = begin;
         for (Iterator j = begin; j != end - 1; ++j) {
             if (comp(*j, pivot)) {
-                std::swap(*i, *j); // Intercambio directo de valores
+                std::swap(*i, *j); // Direct swap of values
                 ++i;
             }
         }
-        std::swap(*i, *(end - 1)); // Colocamos el pivote en su posición final
+        std::swap(*i, *(end - 1)); // Place the pivot in its final position
         return i;
     }
 
-    // --- 4. ALGORITMO HÍBRIDO (Tercera Mejora) ---
+    // --- 4. HYBRID ALGORITHM (Third Improvement) ---
     template<typename Iterator, typename Compare>
     inline void hybridSort(Iterator begin, Iterator end, Compare comp) {
         auto size = std::distance(begin, end);
 
-        // Tercera mejora: llamar a insertion_sort cuando el tamaño es menor a QS_THRESHOLD[cite: 10, 11]
+        // Third improvement: call insertion_sort when the size is less than QS_THRESHOLD[cite: 10, 11]
         if (size < QS_THRESHOLD) {
             insertionSort(begin, end, comp);
             return;
@@ -71,7 +71,7 @@ namespace StockSorter {
 
         Iterator pivotIdx = customPartition(begin, end, comp);
         
-        // Ordenamos primero la partición más pequeña (Primera mejora aplicada a recursividad)[cite: 11]
+        // Sort the smaller partition first (First improvement applied to recursion)[cite: 11]
         if (std::distance(begin, pivotIdx) < std::distance(pivotIdx + 1, end)) {
             hybridSort(begin, pivotIdx, comp);
             hybridSort(pivotIdx + 1, end, comp);
@@ -82,7 +82,7 @@ namespace StockSorter {
     }
 
     // ==========================================
-    // TUS FUNCIONES GLOBALES DE ORDENAMIENTO
+    // YOUR GLOBAL SORTING FUNCTIONS
     // ==========================================
 
     inline void sortByName(std::vector<std::optional<ItemStack>>& stock, bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
@@ -142,7 +142,7 @@ namespace StockSorter {
             if (!a) return false;
             if (!b) return true;
             
-            // Si tienen la misma cantidad, desempatamos por el nombre del objeto
+            // If they have the same quantity, tie-break by the item name
             if (a->quantity == b->quantity) {
                 const auto& itemA = catalog.at(a->itemID);
                 const auto& itemB = catalog.at(b->itemID);

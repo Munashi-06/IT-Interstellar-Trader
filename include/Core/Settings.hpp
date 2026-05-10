@@ -15,7 +15,7 @@ struct GameConfig{
     bool vsync = true;
     int fpsLimit = 60;
 
-    void saveToFile(const std::string& filename) { //funcion para guardar las opciones modificadas
+    void saveToFile(const std::string& filename) { //function to save the modified options
         std::ofstream file(filename);
         if (file.is_open()){
             file << musicVolume << "\n";
@@ -26,7 +26,7 @@ struct GameConfig{
         }
     }
 
-    void loadFromSavedFile(const std::string& filename){ //funcion para cargar desde el disco
+    void loadFromSavedFile(const std::string& filename){ //function to load from disk
         std::ifstream file(filename);
         if(file.is_open()){
             file >> musicVolume;
@@ -69,7 +69,7 @@ class Settings{
         void changeValue(int delta);
         void handleAction(State& currentState, sf::RenderWindow& window, GameConfig& globalConfig, AudioManager& audio);
         void updateSlidersFromConfig();
-        void resetTempConfig(const GameConfig& globalConfig); //descartar cambios si no se hace apply
+        void resetTempConfig(const GameConfig& globalConfig); //Discard changes if no apply is applied
         int getTempMusicVolume() const { return tempConfig.musicVolume; }
         int getTempSfxVolume() const { return tempConfig.sfxVolume; }
         void applySettings(sf::RenderWindow& window, GameConfig& globalConfig, AudioManager& audio);
@@ -82,14 +82,14 @@ class Settings{
         sf::Text saveMessage;
         sf::Clock saveMsgClock;
         bool showSaveMessage = false;
-        //valores temporales antes de aplicar
+        //temporary values ​​before applying
         Slider musicSlider;
         Slider sfxSlider;
         Slider fpsSlider;
 
         GameConfig tempConfig;
-        void updateLabels(); // Para que el texto diga "Music 50%", etc.
-        bool isIndexValid() const{ //auxiliar para evitar out of range y validar indice
+        void updateLabels();
+        bool isIndexValid() const{
             return selectedIndex >= 0 && selectedIndex < (int)options.size(); 
         }
 };

@@ -11,8 +11,8 @@ private:
     sf::Font font;
     std::unique_ptr<sf::Text> title;
     sf::RectangleShape background;
-    // Vector para que guarde punteros únicos
-    // Esto evita CUALQUIER intento de copia prohibida por SFML 3
+    // Vector to store unique pointers
+    // This avoids ANY prohibited copy attempts by SFML 3
     std::vector<std::unique_ptr<sf::Text>> planetEntries;
 
 public:
@@ -23,7 +23,6 @@ public:
         background.setOutlineColor(sf::Color::Cyan);
         background.setPosition({50.f, 50.f});
 
-        // CORRECCIÓN: Pasamos los argumentos directamente a make_unique
         title = std::make_unique<sf::Text>(font, "RADAR DE PRIORIDAD", 20);
         title->setFillColor(sf::Color::Cyan);
         title->setPosition({60.f, 60.f});
@@ -38,7 +37,7 @@ public:
                 info += " (" + heapArray[i].getEventName() + ")";
             }
 
-            // Creamos el texto directamente como un puntero único dentro del vector
+            // Create the text directly as a unique pointer inside the vector
             auto entry = std::make_unique<sf::Text>(font, info, 16);
             
             entry->setPosition({65.f, 90.f + (i * 25.f)});

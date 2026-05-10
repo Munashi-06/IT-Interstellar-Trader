@@ -5,24 +5,24 @@
 #include <string>
 
 static sf::Color selectedColor = sf::Color(100, 100, 100);
-// lista de colores para los botones, puedes elegir el que más te guste
+// List of colors for the buttons, you can choose the one you like best
 /*
-sf::Color(200, 200, 200); // Gris claro
-sf::Color(255, 255, 255); // Blanco
-sf::Color(180, 180, 255); // Azul claro
-sf::Color(255, 180, 180); // Rojo claro
-sf::Color(180, 255, 180); // Verde claro
+sf::Color(200, 200, 200); // Light Gray
+sf::Color(255, 255, 255); // White
+sf::Color(180, 180, 255); // Light Blue
+sf::Color(255, 180, 180); // Light Red
+sf::Color(180, 255, 180); // Light Green
 */
 static sf::Color unselectedColor = sf::Color::White;
 
 struct Button {
     sf::RectangleShape shape;
     sf::Text text;
-    bool selected = false; // Nueva variable para controlar la "cajita"
+    bool selected = false; // New variable to control the "box"
 
     Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font);
 
-    //esto es para alinear las opciones
+    //This is to align the options
     void setAlignmentLeft(float margin);
 
     void draw(sf::RenderWindow& window);

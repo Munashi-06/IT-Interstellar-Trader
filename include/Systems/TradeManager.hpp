@@ -6,9 +6,9 @@
 
 class TradeManager {
 public:
-    // Retorna true si la compra fue exitosa, false si no hay dinero o espacio
+    // Returns true if the purchase was successful, false if there is not enough money or space
     static bool buyItem(const std::string& itemID, Player& player, Inventory& playerInv, Planet& planet, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
-    // Retorna true si la venta fue exitosa
+    // Returns true if the sale was successful
     static bool sellItem(const std::string& itemID, Player& player, Inventory& playerInv, Planet& planet, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
 };

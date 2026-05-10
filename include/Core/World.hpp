@@ -12,9 +12,9 @@ private:
     std::vector<Planet> solarSystem;
     WorldStateManager stateManager;
     int currentTurn;
-    float deltaTime; // Tiempo entre turnos, podría influir en la duración de eventos y otras mecánicas temporales
-    std::unordered_map<std::string, std::unique_ptr<Item>> globalCatalog; // Catálogo global de items para referencia en eventos y mercados
-    std::unique_ptr<Heap> radar; // Heap para gestionar planetas por prioridad de eventos
+    float deltaTime; // Time between turns could influence the duration of events and other time-based mechanics
+    std::unordered_map<std::string, std::unique_ptr<Item>> globalCatalog; // Global catalog of items for reference in events and markets
+    std::unique_ptr<Heap> radar; // Heap for managing planets by event priority
 public:
     World(float deltaT, std::unique_ptr<Heap> r, std::vector<Planet> planetas) 
         : currentTurn(0), 
@@ -33,7 +33,7 @@ public:
     std::vector<Planet>& getPlanets() { return solarSystem; }
     const std::vector<Planet>& getPlanets() const { return solarSystem; }
     const std::unordered_map<std::string, std::unique_ptr<Item>>& getGlobalCatalog() const { return globalCatalog; }
-    void updateRadar(Planet& plnt) noexcept; // Actualiza el heap de radar
+    void updateRadar(Planet& plnt) noexcept;// Update the radar heap
     float getTime() const {return worldClock.getElapsedTime().asSeconds();}
     void forceRadarUpdate();
     std::unordered_map<std::string, std::unique_ptr<Item>>& getCatalog() { return globalCatalog; }

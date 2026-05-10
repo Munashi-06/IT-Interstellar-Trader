@@ -1,4 +1,5 @@
 #include "Core/World.hpp"
+#include <algorithm>
 
 bool World::update() {
     // This is called in each frame of the main loop to handle time counters (such as event duration).

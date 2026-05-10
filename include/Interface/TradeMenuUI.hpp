@@ -1,83 +1,83 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Systems/TradeManager.hpp"
-#include "Interface/ShipMenuUI.hpp" // Para usar SortColumn
+#include "Interface/ShipMenuUI.hpp" // To use SortColumn
 
 class TradeMenuUI {
 private:
-// --- VARIABLES GENERALES ---
+// --- GENERAL VARIABLES ---
     sf::Text titleText;
-    int maxVisibleRows = 10; // Límite de ítems a mostrar en las tablas
+    int maxVisibleRows = 10; // Limit of items to display in the tables
     
-// --- LADO DEL JUGADOR (Izquierda) ---
+// --- PLAYER SIDE (Left) ---
     sf::RectangleShape playerTableBg;
     sf::Text playerSectionTitle;
     sf::Text playerMoneyText;
     sf::Text headerPlayerCategory;
     sf::Text headerPlayerQuality;   
     
-    // Cabeceras de la tabla del jugador
+    // Player table headers
     sf::Text headerPlayerName;
     sf::Text headerPlayerQty;
     sf::Text headerPlayerSellPrice;
     
-    int playerStartIndex = 0; // Para el scroll de la tabla del jugador
+    int playerStartIndex = 0; // For scrolling the player table
     SortColumn playerCurrentSort = SortColumn::Name;
     bool playerSortAscending = true;
 
-// --- LADO DEL PLANETA (Derecha) ---
+// --- PLANET SIDE (Right) ---
     sf::RectangleShape planetTableBg;
     sf::Text planetNameText;
     sf::Text headerPlanetCategory;
     sf::Text headerPlanetQuality;
     
-    // Cabeceras de la tabla del planeta
+    // Planet table headers
     sf::Text headerPlanetName;
     sf::Text headerPlanetQty;
     sf::Text headerPlanetBuyPrice;
     
-    int planetStartIndex = 0; // Para el scroll de la tabla del planeta
-    SortColumn planetCurrentSort = SortColumn::Name; // NUEVO
+    int planetStartIndex = 0; // For scrolling the planet table
+    SortColumn planetCurrentSort = SortColumn::Name; // NEW
     bool planetSortAscending = true;
 
 
-// --- VARIABLES DE SELECCIÓN Y BOTONES ---
-    sf::RectangleShape selectionHighlight; // El rectángulo que dibuja el "resaltado" sobre la fila seleccionada
+// --- SELECTION AND BUTTON VARIABLES ---
+    sf::RectangleShape selectionHighlight; // The rectangle that draws the "highlight" over the selected row
 
-    // Botones de acción principales
+    // Main action buttons
     sf::RectangleShape playerActionBtnBg;
-    sf::Text playerActionBtnText; // "VENDER"
+    sf::Text playerActionBtnText; // "SELL"
     
     sf::RectangleShape planetActionBtnBg;
-    sf::Text planetActionBtnText; // "COMPRAR"
-// --- MENU CONTEXTUAL (Clic Derecho) ---
+    sf::Text planetActionBtnText; // "BUY"
+// --- CONTEXT MENU (Right Click) ---
     bool showContextMenu = false;
     sf::Vector2f contextMenuPos;
     std::string selectedItemID = "";
-    bool isPlayerItem = true; // true = el clic fue en el inventario del jugador (Vender), false = en el mercado (Comprar)
+    bool isPlayerItem = true; // true = click was on player's inventory (Sell), false = on market (Buy)
 
     sf::RectangleShape contextMenuBg;
     sf::Text ctxBtnInfo;
-    sf::Text ctxBtnAction; // Dirá "Vender" o "Comprar"
+    sf::Text ctxBtnAction; // Will say "Sell" or "Buy"
     sf::Text ctxBtnCancel;
 
-// --- POPUP DE INFORMACIÓN ---
+// --- INFO POPUP ---
     bool showInfoPopup = false;
     sf::RectangleShape infoPopupBg;
     sf::Text infoPopupText;
     sf::Text infoPopupEscText;
 
-    sf::Text infoInputText; // Para decirle al jugador que teclas se pueden usar en el mercado
+    sf::Text infoInputText; // To tell the player which keys can be used in the market
 
     const sf::Font& font;
 
 public:
     TradeMenuUI(const sf::Font& f);
     
-    // El draw necesita conocer el inventario del jugador, el planeta actual y el catálogo global
+    // The draw method needs to know the player's inventory, the current planet, and the global catalog
     void draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
-    // Aquí es donde procesaremos el clic para "Vender" o "Comprar"
+    // This is where we will process clicks for "Sell" or "Buy"
     void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
 
     void update(const sf::Vector2f& mousePos);
