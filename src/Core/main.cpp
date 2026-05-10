@@ -170,7 +170,7 @@ int main() {
     animBtnText.setPosition({ 1150.f, 150.f });
 
     Interface::IntroAnimation intro(1280.f, 720.f);
-        if (!intro.loadAssets(font)) {
+        if (!intro.loadAssets(font)) { // <--- Pásale la variable 'font' que ya tienes cargada
             std::cerr << "Error cargando assets de la animación" << std::endl;
         }
 
@@ -384,58 +384,60 @@ int main() {
                     }
                 }
             }
-            else if (currentState == State::Playing) {/////////////
-    // --- 1. DETECCIÓN DE CLIC EN BOTONES ---
-    if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
-        if (mouseEvent->button == sf::Mouse::Button::Left) {
-            // Botón de Administrar Nave
-            if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
-                audio.playClick();
-                currentState = State::ShipMenu; 
-            }
-            // NUEVO: Botón de Animación
-            else if (animBtn.getGlobalBounds().contains(mousePos)) {
-                audio.playClick();
-                intro.reset(); // Reinicia la posición de la nave y estado interno
-                currentState = State::Animation1; 
-            }
-        }
-    }
+            else if (currentState == State::Playing) {
+                
+                if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseEvent->button == sf::Mouse::Button::Left) {
+                        if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
+                            audio.playClick();
+                            currentState = State::ShipMenu; 
+                        }
+                        else if (animBtn.getGlobalBounds().contains(mousePos)) {
+                            audio.playClick();
+                            intro.reset();
+                            currentState = State::Animation1; 
+                        }
+                    }
+                }
 
-    // --- 2. TECLADO (LO QUE YA TENÍAS) ---
-    if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-        if(keyPressed->code == sf::Keyboard::Key::Escape) {
-            currentState = State::Menu;
-        }
-        
-        const auto& planetas = world.getPlanets();
-        if (!planetas.empty()) {
-            // ... (Tus controles de Right, Left, Up, Down para planetas se quedan igual) ...
-            
-            // OJO AQUÍ: Este Enter es para viajar al planeta
-            if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                audio.playClick();
-                currentState = State::TravelConfirmation; 
+                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Menu;
+                    }
+                    
+                    const auto& planetas = world.getPlanets();
+                    if (!planetas.empty()) {
+                        if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D ||
+                            keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
+                            selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size();
+                            audio.playHover();
+                        }
+                        else if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A ||
+                                keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
+                            selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size();
+                            audio.playHover();
+                        }
+                        else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                            audio.playClick();
+                            currentState = State::TravelConfirmation; 
+                        }
+                    }
+                }
             }
-        }
-    }
-}
-// --- 3. NUEVO BLOQUE PARA LA ANIMACIÓN (FUERA DEL ELSE IF ANTERIOR) ---
-else if (currentState == State::Animation1) {
-    if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-        // Aquí enviamos la tecla a la clase IntroAnimation para que detecte el Enter
-        intro.handleInput(keyPressed->code);
-        
-        // Opcional: Salir de la animación con Escape
-        if (keyPressed->code == sf::Keyboard::Key::Escape) {
-            currentState = State::Playing;
-        }
-    }
-}
+            else if (currentState == State::Animation1) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+
+                    intro.handleInput(keyPressed->code);
+                    
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Playing;
+                    }
+                }
+            }
             else if (currentState == State::TravelConfirmation) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Y) {
-                        shipAnimX = -100.f; // Reiniciamos posición de la animación
+                        shipAnimX = -100.f;
                         currentState = State::InPlanet; 
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::N) {
