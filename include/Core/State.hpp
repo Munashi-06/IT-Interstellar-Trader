@@ -11,5 +11,6 @@ enum class State {
     TravelConfirmation,
     InPlanet,
     ShipMenu,
-    TradeMenu
+    TradeMenu,
+    Animation1
 };

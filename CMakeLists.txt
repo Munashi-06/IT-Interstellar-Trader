@@ -34,6 +34,7 @@ add_executable(IT-Interstellar-Trader
     src/Interface/ShipMenuUI.cpp
     src/Interface/TradeMenuUI.cpp
     src/Interface/BackgroundStars.cpp
+    src/Interface/IntroAnimation.cpp
     
     src/DataStructures/Heap.cpp
 )
