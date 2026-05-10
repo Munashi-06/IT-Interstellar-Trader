@@ -40,7 +40,9 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
       headerPlayerCategory(f, "CATEGORIA"),
       headerPlayerQuality(f, "CALIDAD"),
       headerPlanetCategory(f, "CATEGORIA"),
-      headerPlanetQuality(f, "CALIDAD")
+      headerPlanetQuality(f, "CALIDAD"),
+      togglePriceBtnText(f, "")
+      
 {
 // --- LAYOUT CONSTANTS (Ajustes visuales) ---
     sf::Vector2f panelSize(560.f, 550.f);
@@ -216,9 +218,22 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     sf::FloatRect mBounds = planetActionBtnText.getLocalBounds();
     planetActionBtnText.setOrigin({mBounds.size.x / 2.f, mBounds.size.y / 2.f});
     planetActionBtnText.setPosition({rightPanelX + (panelSize.x / 2.f), btnY});
+
+// --- CONFIGURATION FOR TOGGLE PRICE BUTTON ---
+    togglePriceBtnBg.setSize({200.f, 30.f});
+    togglePriceBtnBg.setFillColor(sf::Color(50, 50, 100)); // Dark Blue
+    togglePriceBtnBg.setOrigin({100.f, 15.f});
+    togglePriceBtnBg.setPosition({640.f, 130.f}); // Top center, right below the main title
+
+    togglePriceBtnText.setString("SHOW BASE PRICES");
+    togglePriceBtnText.setCharacterSize(14);
+    togglePriceBtnText.setFillColor(sf::Color::White);
+    sf::FloatRect toggleBounds = togglePriceBtnText.getLocalBounds();
+    togglePriceBtnText.setOrigin({toggleBounds.size.x / 2.f, toggleBounds.size.y / 2.f});
+    togglePriceBtnText.setPosition({640.f, 130.f});
 }
 
-void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, const Player& player) {
 // CAPA 1: Fondo Oscuro Translucido General
     // window.draw(generalBackground);
 
@@ -250,6 +265,8 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
 
 // CAPA 3: Interfaz de Usuario (Tablas y Texto)
     window.draw(titleText);
+    window.draw(togglePriceBtnBg);
+    window.draw(togglePriceBtnText);
 
     // --- DIBUJAR JUGADOR (Izquierda) ---
     window.draw(playerTableBg);
@@ -318,11 +335,26 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 qtyT.setPosition({ 450.f, yPos });
                 window.draw(qtyT);
                 
-                float sellPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                ss.str(""); ss << "Bs." << std::fixed << std::setprecision(0) << sellPrice; // Quitamos decimales por espacio
-                sf::Text priceT(font, ss.str());
-                priceT.setCharacterSize(14);
+                float baseSellPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
+                float finalSellPrice = baseSellPrice;
+                sf::Text priceT(font, ""); 
                 priceT.setFillColor(sf::Color::White);
+                // Si NO estamos mostrando los precios originales, aplicamos los bonos del jugador
+                if (!showingOriginalPrices) {
+                    finalSellPrice = TradeManager::getFinalSellPrice(*itemData, baseSellPrice, player);
+                    // Paint the price text green if the player is selling for more than base price
+                    // Paint the price text red if it's a bad deal
+                    if (finalSellPrice > baseSellPrice) {
+                        priceT.setFillColor(sf::Color::Green);
+                    }
+                    else if (finalSellPrice < baseSellPrice) {
+                        priceT.setFillColor(sf::Color::Red);
+                    }
+                }
+                ss.str("");
+                ss << "Bs." << std::fixed << std::setprecision(0) << finalSellPrice;
+                priceT.setString(ss.str());
+                priceT.setCharacterSize(14);
                 priceT.setPosition({ 520.f, yPos });
                 window.draw(priceT);
 
@@ -392,11 +424,26 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 qtyT.setPosition({ 1070.f, yPos });
                 window.draw(qtyT);
                 
-                float buyPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                ss.str(""); ss << "Bs." << std::fixed << std::setprecision(0) << buyPrice;
-                sf::Text priceT(font, ss.str());
-                priceT.setCharacterSize(14);
+                float baseBuyPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
+                float finalBuyPrice = baseBuyPrice;
+                sf::Text priceT(font, ""); 
                 priceT.setFillColor(sf::Color::White);
+                // Si NO estamos mostrando los precios originales, aplicamos los descuentos del jugador
+                if (!showingOriginalPrices) {
+                    finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, baseBuyPrice, player);
+                    // Paint the price text green if the player is buying for less than base price
+                    // Paint the price text red if the player is buying for more than base price
+                    if (finalBuyPrice < baseBuyPrice) {
+                        priceT.setFillColor(sf::Color::Green);
+                    }
+                    else if (finalBuyPrice > baseBuyPrice) {
+                        priceT.setFillColor(sf::Color::Red);
+                    }
+                }
+                ss.str("");
+                ss << "Bs." << std::fixed << std::setprecision(0) << finalBuyPrice;
+                priceT.setString(ss.str());
+                priceT.setCharacterSize(14);
                 priceT.setPosition({ 1140.f, yPos });
                 window.draw(priceT);
 
@@ -408,7 +455,7 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
 
     // Dibujamos el texto de instrucciones en la parte inferior
     window.draw(infoInputText);
-
+    
 // --- ACTUALIZAR Y DIBUJAR BOTONES DE ACCION ---
     // Si hay un item del jugador seleccionado, activamos (pintamos de verde) el botón de Venta
     if (selectedItemID != "" && isPlayerItem) {
@@ -485,6 +532,19 @@ void TradeMenuUI::update(const sf::Vector2f& mousePos) {
 
     if (headerPlanetQty.getGlobalBounds().contains(mousePos)) headerPlanetQty.setFillColor(hoverColor);
     else headerPlanetQty.setFillColor(normalColor);
+
+    // Hover for Toggle Prices Button
+    if (togglePriceBtnBg.getGlobalBounds().contains(mousePos)) {
+        togglePriceBtnText.setFillColor(hoverColor);
+    }
+    else {
+        if(togglePriceBtnText.getString() == "SHOW BASE PRICES") {
+            togglePriceBtnText.setFillColor(sf::Color(54, 54, 217));
+        }
+        else {
+            togglePriceBtnText.setFillColor(sf::Color::White);
+        }
+    }
 }
 
 void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
@@ -597,10 +657,31 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
 
         // --- CLIC IZQUIERDO (Seleccionar, Ordenar o Actuar) ---
         else if (mouseBtn->button == sf::Mouse::Button::Left) {
-            
             if (showInfoPopup) {
                 showInfoPopup = false;
                 return; // Cerramos el popup y no hacemos nada más este frame
+            }
+
+            // Toggle Price Button Click
+            if (togglePriceBtnBg.getGlobalBounds().contains(mousePos)) {
+                showingOriginalPrices = !showingOriginalPrices;
+
+                if (showingOriginalPrices) {
+                    togglePriceBtnText.setString("SHOW PLAYER DISCOUNTS");
+                    togglePriceBtnBg.setFillColor(sf::Color::White); // White when showing base
+                    togglePriceBtnText.setFillColor(sf::Color::Black); // Black text for better contrast
+                }
+                else {
+                    togglePriceBtnText.setString("SHOW BASE PRICES");
+                    togglePriceBtnBg.setFillColor(sf::Color(54, 54, 217)); // Blue when showing discounts
+                    togglePriceBtnText.setFillColor(sf::Color::White); // White text for better contrast
+                }
+
+                // Re-center text just in case the length changed
+                sf::FloatRect newBounds = togglePriceBtnText.getLocalBounds();
+                togglePriceBtnText.setOrigin({newBounds.size.x / 2.f, newBounds.size.y / 2.f});
+                togglePriceBtnText.setPosition({640.f, 130.f});
+                return;
             }
 
             // 1. VERIFICAR CLIC EN CABECERAS DEL JUGADOR (Para Ordenar)

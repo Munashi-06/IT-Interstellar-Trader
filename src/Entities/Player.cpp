@@ -30,10 +30,6 @@ Player::Player(float x, float y, const std::string& texturePath)
     }
 
     // Configuración del hitbox
-    
-    // Controno rojo para depuración (quitar en producción)
-    // hitbox.setOutlineColor(sf::Color::Red);
-    // hitbox.setOutlineThickness(2);
 
     hitbox.setFillColor(sf::Color::Transparent);
     // Centramos la hitbox también para que coincida con el sprite
@@ -46,9 +42,14 @@ void Player::draw(sf::RenderWindow& window) {
     window.draw(*sprite);
 }
 
+void Player::setPosition(sf::Vector2f pos) {
+    sprite->setPosition(pos);
+    hitbox.setPosition(pos);
+}
+
 void Player::setRotation(float angle) {
     if (sprite) {
-        sprite->setRotation(sf::degrees(angle)); 
+        sprite->setRotation(sf::degrees(angle));
     }
 }
 
@@ -87,4 +88,8 @@ void Player::move(sf::Vector2f direction, float deltaTime) {
 
         velocity += thrustDir * acceleration * deltaTime;
     }
+}
+
+void Player::addInventoryCapacity(int extraSlots){
+        inventory.upgradeStorage(extraSlots);
 }

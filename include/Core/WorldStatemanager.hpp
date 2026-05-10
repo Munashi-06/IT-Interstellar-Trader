@@ -1,5 +1,6 @@
 #pragma once
 #include "Entities/Planet.hpp"
+#include "Entities/Player.hpp"
 
 inline int randomInt(int min, int max) {
     return rand() % (max - min + 1) + min;
@@ -23,7 +24,7 @@ private:
     int maxActiveEvents = 4; // Máximo número de eventos activos al mismo tiempo
 
 public:
-    bool update(float deltaTime, std::vector<Planet>& planets);
+    bool update(float deltaTime, std::vector<Planet>& planets, Player& player);
 
-    bool triggerRandomEvent(std::vector<Planet>& planets);
+    bool triggerRandomEvent(std::vector<Planet>& planets, Player& player);
 };

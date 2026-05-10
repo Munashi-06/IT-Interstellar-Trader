@@ -6,9 +6,10 @@
 
 class TradeManager {
 public:
-    // Retorna true si la compra fue exitosa, false si no hay dinero o espacio
     static bool buyItem(const std::string& itemID, Player& player, Inventory& playerInv, Planet& planet, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
-    
-    // Retorna true si la venta fue exitosa
     static bool sellItem(const std::string& itemID, Player& player, Inventory& playerInv, Planet& planet, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+
+    // Helper functions to calculate final prices applying player's Trading Tree skills
+    static float getFinalBuyPrice(const Item& item, float basePlanetPrice, const Player& player);
+    static float getFinalSellPrice(const Item& item, float basePlanetPrice, const Player& player);
 };

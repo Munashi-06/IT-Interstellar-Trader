@@ -6,8 +6,6 @@
 #include "Interface/TradeMenuUI.hpp"
 #include "Interface/BackgroundStars.hpp"
 
-#include "Systems/Inventory.hpp"
-
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -82,12 +80,10 @@ int main() {
     // The player controls a spaceship, which is initialized at the center of the screen with a specific texture
     Player spaceShip(640.f, 360.f, "assets/player.png");
 
-    Inventory shipInventory; // Player's inventory
-
     // Para probar el inventario y la interfaz de la nave, le damos algunos ítems al jugador desde el catalogo global
     auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
     for (const auto& [id, itemPtr] : galaxyItems) {
-        shipInventory.addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
+        spaceShip.getInventory().addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
     }
 
     sf::Clock clock; // Para medir el tiempo entre frames
@@ -141,10 +137,8 @@ int main() {
         std::cerr << "Error cargando textura de previsualización" << std::endl;
     }
 
-    ShipMenuUI shipMenu(font, shipMenuTexture);
-
-    // Interfaz del menú de comercio, que se inicializa con la fuente cargada para mostrar los textos
-    TradeMenuUI tradeMenu(font);
+    ShipMenuUI shipMenu(font, shipMenuTexture); // Ship Menu
+    TradeMenuUI tradeMenu(font); // Trade Menu
 
     sf::Text planetNameText(font, "");
     planetNameText.setCharacterSize(22);
@@ -224,10 +218,12 @@ int main() {
 
         // --- LÓGICA DE EVENTOS ---
         if (currentState == State::Playing) {
-            if (world.update()) {
+            if (world.update(spaceShip)) {
                 std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
                 alertTimer = 3.0f; // La alerta durará 3 segundos
-                radarUI.update(world.getRadar()->getHeapArray());
+                if(spaceShip.gethasAdvancedRadar()) {
+                    radarUI.update(world.getRadar()->getHeapArray());
+                }
             }
             if (alertTimer > 0) alertTimer -= dt;
 
@@ -421,7 +417,7 @@ int main() {
                     }
                 }
                 // Le pasamos el evento a la clase
-                tradeMenu.handleInput(*event, mousePos, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip, world.getCatalog());
+                tradeMenu.handleInput(*event, mousePos, spaceShip.getInventory(), world.getPlanets()[selectedPlanetIndex], spaceShip, world.getCatalog());
             }
             else if (currentState == State::ShipMenu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -430,7 +426,7 @@ int main() {
                     }
                 }
                 // Le pasamos el evento a la clase
-                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog());
+                shipMenu.handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world.getCatalog());
             }
         }
 
@@ -555,13 +551,14 @@ int main() {
             window.draw(adminShipBtn);
             window.draw(adminShipText);
 
-            // Dibujamos el Radar encima de todo (siempre va al final para que se dibuje
-            // encima de los demás elementos)
-            if(aux) {
-                radarUI.update(world.getRadar()->getHeapArray());
-                aux = false; // Solo actualizar el radar la primera vez para mostrarlo al inicio
+            // Draw & Update the Radar only if the player has it unlocked
+            if(spaceShip.gethasAdvancedRadar()) {
+                if(aux) {
+                    radarUI.update(world.getRadar()->getHeapArray());
+                    aux = false; // Solo actualizar el radar la primera vez para mostrarlo al inicio
+                }
+                radarUI.draw(window);
             }
-            radarUI.draw(window);
 
             if (currentState == State::TravelConfirmation) {
                 confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
@@ -575,7 +572,7 @@ int main() {
             if (currentState == State::ShipMenu) {
                 shipMenu.update(mousePos);
                 // Le pasas el inventario y el catálogo global
-                shipMenu.draw(window, shipInventory, world.getGlobalCatalog());
+                shipMenu.draw(window, spaceShip.getInventory(), world.getGlobalCatalog());
             }
         }
         else if (currentState == State::InPlanet) {
@@ -610,7 +607,7 @@ int main() {
             window.clear(backgroundSprite.getColor()); // Limpiamos con un color sólido para evitar que el fondo parpadee al redimensionar
             window.draw(generalBackground); // Dibujamos el fondo oscuro para resaltar los elementos del juego
             bgStars.draw(window, spaceShip.getPosition());
-            tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog());
+            tradeMenu.draw(window, spaceShip.getInventory(), world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip);
             tradeMenu.update(mousePos);
         }
         window.display();

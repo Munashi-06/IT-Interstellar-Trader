@@ -11,6 +11,7 @@ public:
     Inventory() noexcept : capacity(20) {
         slots.resize(capacity, std::nullopt); // Inicializamos con slots vacíos
     }
+
     bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
     void removeItem(const std::string& itemID, int qty);
     void display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const;
