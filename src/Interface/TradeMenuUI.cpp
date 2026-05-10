@@ -494,13 +494,33 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
             // Verificamos si el mouse está sobre la tabla del jugador (Izquierda)
             if (playerTableBg.getGlobalBounds().contains(mousePos)) {
-                if (mouseWheel->delta > 0) playerStartIndex = std::max(0, playerStartIndex - 1);
-                else if (mouseWheel->delta < 0) playerStartIndex++;
+                // Contar items reales del jugador
+                int playerItemCount = 0;
+                for (const auto& slot : playerInv.getSlots()) {
+                    if (slot.has_value()) playerItemCount++;
+                }
+                int maxPlayerScroll = std::max(0, playerItemCount - maxVisibleRows);
+                
+                if (mouseWheel->delta > 0) {
+                    playerStartIndex = std::max(0, playerStartIndex - 1);
+                } else if (mouseWheel->delta < 0) {
+                    playerStartIndex = std::min(maxPlayerScroll, playerStartIndex + 1);
+                }
             }
             // Verificamos si el mouse está sobre la tabla del planeta (Derecha)
             else if (planetTableBg.getGlobalBounds().contains(mousePos)) {
-                if (mouseWheel->delta > 0) planetStartIndex = std::max(0, planetStartIndex - 1);
-                else if (mouseWheel->delta < 0) planetStartIndex++;
+                // Contar items reales del planeta
+                int planetItemCount = 0;
+                for (const auto& slot : currentPlanet.getLocalStock()) {
+                    if (slot.has_value()) planetItemCount++;
+                }
+                int maxPlanetScroll = std::max(0, planetItemCount - maxVisibleRows);
+                
+                if (mouseWheel->delta > 0) {
+                    planetStartIndex = std::max(0, planetStartIndex - 1);
+                } else if (mouseWheel->delta < 0) {
+                    planetStartIndex = std::min(maxPlanetScroll, planetStartIndex + 1);
+                }
             }
         }
     }

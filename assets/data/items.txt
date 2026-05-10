@@ -66,3 +66,23 @@ Plasma Sanguineo Universal;400;5;1
 Camara de Estasis;3000;5;3
 Implantes Ciberneticos;1800;5;2
 Vacuna Planetaria;800;5;1
+Gel de Plasma Refrigerante;180;0;0
+Manual de Ingeniería Avanzada;450;1;1
+Aceite Esencial de Luna;950;2;2
+Chip de Identidad Falsificado;2800;3;2
+Setas Bioluminiscentes;65;4;1
+Kit de Sutura Avanzada;320;5;1
+Cristales de Energía Pura;2200;0;3
+Modulador de Fase Experimental;1600;1;2
+Vino de Nebulosa Añejado;750;2;1
+Parches Dérmicos Regenerativos;550;5;0
+Polvo de Asteroides Raros;320;0;1
+Servomotores de Precisión;750;1;0
+Collar de Perlas Estelares;1800;2;2
+Contrabando de Artefactos Antiguos;4500;3;3
+Algas Nutritivas Deshidratadas;28;4;0
+Inyección de Nanomedicina;950;5;2
+Fragmento de Núcleo Estelar;4800;0;3
+Planos de Nave Experimental;3200;1;3
+Colección de Vinos Galácticos;2200;2;1
+Estimulantes de Combate Ilegales;1800;3;1
