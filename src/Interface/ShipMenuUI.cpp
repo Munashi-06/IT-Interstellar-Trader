@@ -235,15 +235,14 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
                 else { currentSort = SortColumn::Price; sortAscending = true; }
                 inventory.sortByPrice(sortAscending, catalog);
             }
+
+            if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
+                if (player.upgradeShip()) {
+                    std::cout << "Nivel de nave: " << player.getShipLevel() << std::endl;
+                }
+            }
         }
     }
-
-    if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-        if (player.upgradeShip()) {
-            std::cout << "Nivel de nave: " << player.getShipLevel() << std::endl;
-        }
-    }
-
 }
 
 void ShipMenuUI::update(const sf::Vector2f& mousePos) {
