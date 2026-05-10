@@ -36,9 +36,10 @@ int main() {
     
     AudioManager audio;
     audio.loadMusic("assets/audio/undertale_dogsong.ogg");
+    audio.loadTheme("assets/audio/theme.ogg");
     audio.loadSFX("assets/audio/hover_sound.ogg", "assets/audio/option_selection_sound.ogg");
     audio.updateVolumesFromConfig(mainConfig.musicVolume, mainConfig.sfxVolume);
-    audio.playMusic();
+    audio.playMusic();  // Empieza con undertale (música del menú)
 
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
@@ -234,11 +235,55 @@ int main() {
 
         bool showRadar = false; // Variable to control radar visibility
         bool aux = true; // Auxiliary variable to display the radar only once at the beginning
+        
+        // Variables para control de audio - INICIALIZAR COMO "menu" PARA QUE NO CAMBIE AL INICIO
+        std::string currentAudioContext = "menu"; // "menu", "gameplay", "none"
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         float dt = clock.restart().asSeconds(); 
         world.setDeltaTime(dt);
+
+        // --- CONTROL DE AUDIO SEGÚN EL ESTADO ---
+        // MENU: Menu y Options suenan undertale
+        if (currentState == State::Menu || currentState == State::Options) {
+            // Solo cambiar si no estamos ya en contexto menu o si la música no está sonando
+            if (currentAudioContext != "menu") {
+                audio.stopTheme();
+                // Recargar la música del menú explícitamente
+                audio.loadMusic("assets/audio/undertale_dogsong.ogg");
+                audio.playMusic();
+                currentAudioContext = "menu";
+                std::cout << "[AUDIO] Cambiando a música del menú (undertale)" << std::endl;
+            } else {
+                // Si ya estamos en contexto menu, asegurar que la música siga sonando
+                // (por si acaso se detuvo por algún motivo)
+                if (!audio.isMusicPlaying()) {
+                    audio.playMusic();
+                }
+            }
+        }
+        // ANIMACION: sin música
+        else if (currentState == State::Animation1) {
+            if (currentAudioContext != "none") {
+                audio.stopMusic();
+                audio.stopTheme();
+                currentAudioContext = "none";
+                std::cout << "[AUDIO] Silenciando durante animación" << std::endl;
+            }
+        }
+        // GAMEPLAY: todos los estados del juego suenan theme
+        else if (currentState == State::Playing || currentState == State::InPlanet || 
+                 currentState == State::TravelConfirmation || currentState == State::ShipMenu ||
+                 currentState == State::TradeMenu) {
+            if (currentAudioContext != "gameplay") {
+                audio.stopMusic();
+                audio.loadTheme("assets/audio/theme.ogg");
+                audio.playTheme();
+                currentAudioContext = "gameplay";
+                std::cout << "[AUDIO] Cambiando a theme del juego" << std::endl;
+            }
+        }
 
         // --- EVENT LOGIC ---
         if (currentState == State::Playing) {
@@ -422,9 +467,9 @@ int main() {
 
                     intro.handleInput(keyPressed->code);
                     
-                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
-                        currentState = State::Playing;
-                    }
+                    // if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                    //     currentState = State::Playing;
+                    // }
                 }
             }
             else if (currentState == State::TravelConfirmation) {
@@ -478,7 +523,6 @@ int main() {
 window.clear();
 
 if (currentState == State::Menu) {
-    audio.playMusic();
     window.draw(backgroundSprite);
     mainMenu.draw(window);
 } 
@@ -488,8 +532,6 @@ else if (currentState == State::Options){
 }
 else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation)
 {
-    audio.stopMusic();
-
     window.draw(generalBackground); 
 
     sf::Vector2f playerPos = spaceShip.getPosition();
@@ -621,7 +663,7 @@ else if (currentState == State::Animation1) {
     intro.draw(window);
 
     if (intro.getState() == Interface::AnimState::Finished) {
-        currentState = State::Playing;
+        currentState = State::Menu;
     }
 }
 else if (currentState == State::InPlanet) {

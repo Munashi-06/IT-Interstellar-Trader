@@ -37,4 +37,9 @@ class AudioManager {
 
         void setAllVolumes(int musicVol, int sfxVol);
         void updateVolumesFromConfig(int musicVol, int sfxVol);
+        
+        bool loadTheme(const std::string& path);
+        void playTheme();
+        void stopTheme();
+        bool isThemePlaying() const;
 };

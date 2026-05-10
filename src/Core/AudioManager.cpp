@@ -6,7 +6,7 @@ AudioManager::AudioManager() : hoverSound(hoverBuffer), clickSound(clickBuffer)
 
 }
 
-bool AudioManager::loadMusic(const std::string&path){
+bool AudioManager::loadMusic(const std::string& path){
     if(!music.openFromFile(path)){
         std::cerr << "Error cargando música: " << path << std::endl;
         return false;
@@ -57,7 +57,7 @@ bool AudioManager::loadSFX(const std::string& hoverPath, const std::string& clic
     bool success = true;
 
     if (!hoverBuffer.loadFromFile(hoverPath)){
-        std::cerr << "Error cargando efecto de sonido: " << hoverPath <<std::endl;
+        std::cerr << "Error cargando efecto de sonido: " << hoverPath << std::endl;
         success = false;
     }
 
@@ -99,4 +99,36 @@ void AudioManager::setAllVolumes(int musicVol, int sfxVol){
 
 void AudioManager::updateVolumesFromConfig(int musicVol, int sfxVol){
     setAllVolumes(musicVol, sfxVol);
+}
+
+// Nuevos métodos para el theme
+bool AudioManager::loadTheme(const std::string& path){
+    if(!music.openFromFile(path)){
+        std::cerr << "Error cargando theme: " << path << std::endl;
+        return false;
+    }
+
+    currentMusicPath = path;
+    music.setLooping(true);
+    music.setVolume(static_cast<float>(musicVolume));
+    std::cout << "Theme cargado: " << path << std::endl;
+    return true;
+}
+
+void AudioManager::playTheme(){
+    if (!musicPlaying){
+        music.play();
+        musicPlaying = true;
+    }
+}
+
+void AudioManager::stopTheme(){
+    if(musicPlaying){
+        music.stop();
+        musicPlaying = false;
+    }
+}
+
+bool AudioManager::isThemePlaying() const {
+    return musicPlaying;
 }
