@@ -1,9 +1,9 @@
 #include "Systems/Inventory.hpp"
 #include "Systems/PlanetManager.hpp"
 
-// Usamos el catálogo para validar el item, pero solo guardamos el ID
+// We use the catalog to validate the item, but we only store the ID
 bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice) {
-    // Intentar apilar en slots existentes
+    // Try to stack in existing slots
     for (auto& slot : slots) {
         if (slot.has_value() && slot->itemID == itemID) {
             slot->quantity += qty;
@@ -11,7 +11,7 @@ bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, fl
         }
     }
 
-    // Si no se pudo apilar, buscar un slot vacío (nullopt)
+    // If stacking was not possible, look for an empty slot (nullopt)
     for (auto& slot : slots) {
         if (slot == std::nullopt) {
             slot = ItemStack{ itemID, qty, maxStackSize, buyPrice };
@@ -19,7 +19,7 @@ bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, fl
         }
     }
 
-    std::cout << "¡No hay espacio en la bodega!" << std::endl;
+    std::cout << "No space in the cargo hold!" << std::endl;
     return false;
 }
 
@@ -28,7 +28,7 @@ void Inventory::removeItem(const std::string& itemID, int qty) {
         if (slot.has_value() && slot->itemID == itemID) {
             slot->quantity -= qty;
             if (slot->quantity <= 0) {
-                slot = std::nullopt; // Libera el slot
+                slot = std::nullopt; // Frees the slot
             }
             return;
         }
@@ -38,12 +38,12 @@ void Inventory::removeItem(const std::string& itemID, int qty) {
 void Inventory::display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const {
     for (size_t i = 0; i < slots.size(); ++i) {
         if (slots[i].has_value()) {
-            // Buscamos la info real del item en el catálogo global
+            // We look for the actual item info in the global catalog
             const auto& itemInfo = catalog.at(slots[i]->itemID);
             std::cout << "Slot " << i << ": " << itemInfo->getName() 
                       << " x" << slots[i]->quantity << std::endl;
         } else {
-            std::cout << "Slot " << i << ": [ VACÍO ]" << std::endl;
+            std::cout << "Slot " << i << ": [ EMPTY ]" << std::endl;
         }
     }
 }

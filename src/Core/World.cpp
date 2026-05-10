@@ -1,21 +1,20 @@
 #include "Core/World.hpp"
 
 bool World::update() {
-    // se llama en cada frame del bucle principal para manejar contadores de tiempo (como la duración de los eventos).
-    // Aquí podrías actualizar el estado del mundo, como avanzar eventos activos, manejar misiones, etc.
-    
-    // Solo si algo cambió realmente en los eventos, actualizamos el radar
-    // Esto evita recalcular el heap cada frame, lo que mejora el rendimiento
+    // This is called in each frame of the main loop to handle time counters (such as event duration).
+    // Here you could update the world state, such as advancing active events, managing missions, etc.
+    // We only update the radar if something actually changed in the events.
+    // This avoids recalculating the heap every frame, which improves performance.
     bool hasChanged = stateManager.update(deltaTime, solarSystem);
     
     if (hasChanged) {
         forceRadarUpdate();
     }
-    return hasChanged; // Devuelve si hubo cambios al main para que pueda actualizar la interfaz si es necesario
+    return hasChanged; // Returns whether there were changes to the main method so that the interface can be updated if necessary
 }
 
 void World::updateRadar(Planet& plnt) noexcept {
-    // Actualiza el heap de radar después de modificar un planeta (por ejemplo, después de que un evento termine)
+    // Updates the radar heap after modifying a planet
     radar->remove(radar->getHeapArray(), cmp);
     radar->insert(std::move(plnt), radar->getHeapArray(), cmp);
 }
@@ -23,17 +22,17 @@ void World::updateRadar(Planet& plnt) noexcept {
 void World::forceRadarUpdate() {
     std::vector<Planet> display;
     
-    // 1. Obtenemos los planetas del sistema solar
+    // 1. We obtain the planets of the solar system
     for (const auto& p : solarSystem) {
         display.push_back(p);
     }
 
-    // 2. Ordenamos el vector completo usando tu función cmp
-    // Esto garantiza un orden lineal perfecto para la UI
+    // 2. We order the entire vector using your cmp function
+    // This guarantees perfect linear ordering for the UI
     std::sort(display.begin(), display.end(), cmp);
 
-    // 3. Pasamos este vector ordenado al Radar
-    // Nota: El radar ahora recibirá un vector ordenado del 0 al N, 
-    // así que ajusta el bucle del RadarUI para empezar en i=0
+    // 3. We pass this sorted vector to the Radar
+    // Note: The radar will now receive a sorted vector from 0 to N,
+    // so adjust the RadarUI loop to start at i=0
     radar->setHeapArray(display);
 }

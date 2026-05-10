@@ -8,10 +8,10 @@ extern AudioManager g_Audio;
 Settings::Settings(float width, float height, const sf::Font& font) : font(font), saveMessage(font, "") {
     std::vector<std::string> labels = {"Music", "SFX", "VSync", "FPS Limit", "APPLY", "BACK"};
 
-    float xPos = (width / 2.f) - 300.f; // Ajusta el valor para centrar
+    float xPos = (width / 2.f) - 300.f;
 
     for (size_t i=0; i<labels.size(); ++i) {
-        float yPos = 100.f + (i*90.f); // Espaciado vertical entre opciones
+        float yPos = 100.f + (i*90.f);
         sf::Vector2f bSize = {330.f, 60.f};
         if (i ==0 || i==1 || i==3){
             bSize.x = 600.f;
@@ -129,7 +129,7 @@ void Settings::handleMouseClick(sf::Vector2f mousePos){
 
 void Settings::handleMouseMove(sf::Vector2f mousePos) {
     auto updateSlider = [&](Slider& s, int& configVal, bool isFPS = false){
-        if (isFPS && tempConfig.vsync) return; // No permitir mover el slider de FPS si VSync está activado
+        if (isFPS && tempConfig.vsync) return; 
         if (s.dragging){
             float trackX = s.track.getPosition().x;
             float trackWidth = s.track.getSize().x;
@@ -138,7 +138,7 @@ void Settings::handleMouseMove(sf::Vector2f mousePos) {
 
             float percent = (newX - trackX)/trackWidth;
             if (isFPS){
-                configVal = static_cast<int>(5 + (percent * (144.f - 5.f))); // Mapear el rango de fps entre 5 y 144
+                configVal = static_cast<int>(5 + (percent * (144.f - 5.f)));
             } else{
                 configVal = static_cast<int>(((newX - trackX) / trackWidth) * 100.f);
             }
@@ -158,7 +158,7 @@ void Settings::releaseSlider(){
 }
 
 void Settings::resetTempConfig(const GameConfig& globalConfig){
-    tempConfig = globalConfig; //se regresa a los valores globales, descartando cambios si no se da apply
+    tempConfig = globalConfig; //Returns to global values, discarding changes if no apply is given
     float slidersX = options[0].shape.getPosition().x + 350.f;
     float mX = slidersX + (tempConfig.musicVolume * (musicSlider.track.getSize().x / 100.f));
     musicSlider.knob.setPosition({mX, musicSlider.knob.getPosition().y});
@@ -171,7 +171,7 @@ void Settings::applySettings(sf::RenderWindow& window, GameConfig& globalConfig,
     globalConfig = tempConfig;
     if(globalConfig.vsync){
         window.setVerticalSyncEnabled(true);
-        window.setFramerateLimit(0); // Desactivar límite de FPS para que VSync controle la tasa de refresco
+        window.setFramerateLimit(0); // Disable FPS limit so that VSync controls the refresh rate
     } else{
         window.setVerticalSyncEnabled(false);
         window.setFramerateLimit(globalConfig.fpsLimit);

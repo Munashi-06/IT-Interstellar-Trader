@@ -2,13 +2,13 @@
 
 Planet::Planet() : name("Empty"), description("Empty"), localStock({}), EVENT_DURATION(0), orbit(0), techLevel(0), securityLevel(0), resourceAbundance(0), luxuryDemand(0), moonCount(0), medicalTech(0), currentEvent(PlanetEvent::None)
 {
-    // Constructor por defecto
+    // Default constructor
 }
 
 Planet::Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med)
     : name(n), description(d), EVENT_DURATION(0), orbit(orb), techLevel(tech), securityLevel(sec), resourceAbundance(res), luxuryDemand(lux), moonCount(moon), medicalTech(med)
 {
-    // Inicializamos la tabla hash de stock
+    // Initialize the stock hash table
     loadTexture();
 }
 
@@ -50,7 +50,7 @@ Planet::Planet(const Planet& other)
       resourceAbundance(other.resourceAbundance), luxuryDemand(other.luxuryDemand), moonCount(other.moonCount),
       medicalTech(other.medicalTech), baseScale(other.baseScale), highlighted(other.highlighted)
 {
-    // Constructor de copia
+    // Copy constructor
     if (other.texture && other.sprite){
         texture = std::make_unique<sf::Texture>(*other.texture);
         sprite = std::make_unique<sf::Sprite>(*texture);
@@ -71,7 +71,7 @@ void Planet::loadTexture() {
         sprite->setScale({baseScale, baseScale});
         sprite->setOrigin({static_cast<float>(texSize.x)/2.f, static_cast<float>(texSize.y)/2.f});
     } else {
-        std::cerr <<"No se pudo cargar textura para " << name << ":" << path << std::endl;
+        std::cerr <<"Could not load texture for " << name << ":" << path << std::endl;
         texture.reset();
         sprite.reset();
     }
@@ -91,13 +91,13 @@ PlanetEvent Planet::getEvent() const {
 
 std::string Planet::getEventName() const {
     switch (currentEvent) {
-        case PlanetEvent::None: return "Ninguno";
-        case PlanetEvent::War: return "Guerra";
-        case PlanetEvent::Plague: return "Plaga";
-        case PlanetEvent::TechBoom: return "Auge Tecnologico";
-        case PlanetEvent::Famine: return "Hambruna";
-        case PlanetEvent::Piracy: return "Pirateria";
-        default: return "Desconocido";
+        case PlanetEvent::None: return "None";
+        case PlanetEvent::War: return "War";
+        case PlanetEvent::Plague: return "Plague";
+        case PlanetEvent::TechBoom: return "Technology Boom";
+        case PlanetEvent::Famine: return "Famine";
+        case PlanetEvent::Piracy: return "Piracy";
+        default: return "Unknown";
     }
 }
 
@@ -117,7 +117,7 @@ void Planet::decreaseEventDuration() {
     if (currentEvent != PlanetEvent::None) {
         EVENT_DURATION--;
         if (EVENT_DURATION <= 0) {
-            currentEvent = PlanetEvent::None; // El evento termina
+            currentEvent = PlanetEvent::None; // The event ends
         }
     }
 }
@@ -151,12 +151,12 @@ int Planet::getMedicalTech() const {
 }
 
 void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
-    // 1. Asegurar que el vector tenga exactamente 100 slots (solo la primera vez)
+    // 1. Ensure the vector has exactly 100 slots (only the first time)
     if (localStock.size() != 100) {
         localStock.resize(100, std::nullopt);
     }
 
-    // 2. Paso de "Producción": Aumentar cantidad de items que YA están en los slots
+    // 2. "Production" Step: Increase the quantity of items ALREADY in the slots
     for (auto& slot : localStock) {
         if (slot.has_value()) {
             const auto& itemData = catalog.at(slot->itemID);
@@ -167,15 +167,15 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
         }
     }
 
-    // 3. Paso de "Nuevas Mercancías": Si hay slots vacíos, intentar llenarlos
+    // 3. "New Merchandise" Step: If there are empty slots, try to fill them
     for (auto& slot : localStock) {
         if (!slot.has_value()) {
-            // Elegimos un item al azar del catálogo global
+            // We choose a random item from the global catalog
             auto it = catalog.begin();
             std::advance(it, rand() % catalog.size());
             const auto& [id, itemPtr] = *it;
 
-            // Verificar si este ítem ya existe en algún otro slot del mercado
+            // Check if this item already exists in any other slot of the market
             bool alreadyInStock = false;
             for (const auto& existingSlot : localStock) {
                 if (existingSlot.has_value() && existingSlot->itemID == id) {
@@ -185,51 +185,51 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
             }
 
             if (!alreadyInStock && this->canBuyItem(*itemPtr)) {
-                // --- CALCULO DINAMICO DE PROBABILIDAD ---
+                // --- DYNAMIC PROBABILITY CALCULATION ---
                 int probability = 0;
 
-                // A. Base por Rareza
+                // A. Base by Rarity
                 switch (itemPtr->getRarity()) {
-                    case Rarity::Common:    probability = 45; break; // Muy frecuente
+                    case Rarity::Common:    probability = 45; break; // Very frequent
                     case Rarity::Rare:      probability = 20; break;
                     case Rarity::Exotic:    probability = 8;  break;
-                    case Rarity::Legendary: probability = 2;  break; // Súper difícil de ver
-                    case Rarity::Quest:     probability = 0;  break; // Nunca se venden en tiendas normales
+                    case Rarity::Legendary: probability = 2;  break; // Super hard to see
+                    case Rarity::Quest:     probability = 0;  break; // Never sold in normal shops
                 }
 
-                // B. Modificadores por Categoría y Atributos del Planeta (Asumiendo atributos del 1 al 10)
+                // B. Modifiers by Category and Planet Attributes (Assuming attributes from 1 to 10)
                 if (itemPtr->isTechnology()) {
-                    probability += (this->techLevel * 2); // Planetas de alta tecnología venden más tecnología
+                    probability += (this->techLevel * 2); // High-tech planets sell more technology
                 } 
                 else if (itemPtr->isResource()) {
-                    probability += (this->resourceAbundance * 2); // Mucho recurso natural = más oferta
+                    probability += (this->resourceAbundance * 2); // High natural resources = more supply
                 } 
                 else if (itemPtr->isLuxury()) {
-                    probability += (this->luxuryDemand * 2); // Si hay demanda, los mercaderes lo traen
+                    probability += (this->luxuryDemand * 2); // If there's demand, merchants bring it
                 } 
                 else if (itemPtr->isMedical()) {
-                    probability += (this->medicalTech * 2); // Alta tecnología médica = más medicinas
+                    probability += (this->medicalTech * 2); // High medical tech = more medicines
                 } 
                 else if (itemPtr->isIllegal()) {
-                    // La seguridad funciona al revés: Menos seguridad = Más chance de ver contrabando
+                    // Security works in reverse: Less security = More chance to see contraband
                     probability += ((10 - this->securityLevel) * 3); 
                 } 
                 else if (itemPtr->isFood()) {
-                    probability += 10; // La comida siempre tiene un pequeño bono, todos comen
+                    probability += 10; // Food always has a small bonus, everyone eats
                 }
 
-                // Asegurarnos de que ítems de rareza alta no se vuelvan comunes por los bonos
+                // Ensure high rarity items don't become common due to bonuses
                 if (itemPtr->getRarity() == Rarity::Legendary && probability > 5) probability = 5;
                 if (itemPtr->getRarity() == Rarity::Exotic && probability > 15) probability = 15;
 
-                // Cantidad de items que aparecen en el slot, influenciada por la rareza (items más raros suelen aparecer en menor cantidad)
+                // Quantity of items appearing in the slot, influenced by rarity (rarer items usually appear in smaller quantities)
                 int quantity = 1;
-                if (itemPtr->getRarity() == Rarity::Common) quantity = (rand() % 50) + 1; // Entre 1 y 50
-                else if (itemPtr->getRarity() == Rarity::Rare) quantity = (rand() % 20) + 1; // Entre 1 y 20
-                else if (itemPtr->getRarity() == Rarity::Exotic) quantity = (rand() % 11) + 2; // Entre 2 y 12
-                else if (itemPtr->getRarity() == Rarity::Legendary) quantity = (rand() % 5) + 1; // Entre 1 y 5
+                if (itemPtr->getRarity() == Rarity::Common) quantity = (rand() % 50) + 1; // Between 1 and 50
+                else if (itemPtr->getRarity() == Rarity::Rare) quantity = (rand() % 20) + 1; // Between 1 and 20
+                else if (itemPtr->getRarity() == Rarity::Exotic) quantity = (rand() % 11) + 2; // Between 2 and 12
+                else if (itemPtr->getRarity() == Rarity::Legendary) quantity = (rand() % 5) + 1; // Between 1 and 5
 
-                // --- TIRADA DE DADOS ---
+                // --- DICE ROLL ---
                 if (probability > 0 && (rand() % 100 < probability)) {
                     slot = ItemStack{ id, quantity, itemPtr->getMaxStackSize(), itemPtr->getBasePrice() }; 
                 }
@@ -243,24 +243,24 @@ float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<s
     float price = item->getBasePrice();
     float modifier = 1.0f;
 
-    // --- Influencia de Atributos del Planeta ---
+    // --- Influence of Planet Attributes ---
     if (item->isTechnology()) {
-        // A más nivel tecnológico, más oferta, precio más bajo (-20% máximo)
+        // Higher tech level means more supply, lower price (-20% maximum)
         modifier -= (this->techLevel / 50.0f); 
     }
     if (item->isFood() && this->resourceAbundance > 7) {
-        modifier -= 0.15f; // Comida barata en planetas agrícolas
+        modifier -= 0.15f; // Cheap food on agricultural planets
     }
     if (item->isLuxury()) {
-        // Alta demanda de lujo sube el precio
+        // High luxury demand raises the price
         modifier += (this->luxuryDemand / 20.0f);
     }
 
-    // --- Influencia de Eventos ---
+    // --- Influence of Events ---
     switch (this->currentEvent) {
         case PlanetEvent::War:
-            if (item->isMedical()) modifier += 1.5f;   // Medicina sube
-            if (item->isTechnology()) modifier += 0.5f; // Componentes suben
+            if (item->isMedical()) modifier += 1.5f;   // Medicine goes up
+            if (item->isTechnology()) modifier += 0.5f; // Components go up
             break;
         case PlanetEvent::Plague:
             if (item->isMedical()) modifier += 2.0f;
@@ -270,30 +270,30 @@ float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<s
             if (item->isFood()) modifier += 2.5f;
             break;
         case PlanetEvent::TechBoom:
-            if (item->isTechnology()) modifier -= 0.3f; // Exceso de oferta
+            if (item->isTechnology()) modifier -= 0.3f; // Excess supply
             break;
         default: break;
     }
 
-    return price * std::max(0.1f, modifier); // Nunca precio negativo o 0
+    return price * std::max(0.1f, modifier); // Never a negative or 0 price
 }
 
 bool Planet::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice) {
-    // Intentar apilar en slots existentes
+    // Try to stack in existing slots
     for (auto& slot : localStock) {
         if (slot.has_value() && slot->itemID == itemID) {
             slot->quantity += qty;
             return true;
         }
     }
-    // Si no se pudo apilar, buscar un slot vacío
+    // If it couldn't be stacked, look for an empty slot
     for (auto& slot : localStock) {
         if (!slot.has_value()) {
             slot = ItemStack{ itemID, qty, maxStackSize, buyPrice };
             return true;
         }
     }
-    return false; // El mercado está lleno (100 slots)
+    return false; // The market is full (100 slots)
 }
 
 void Planet::removeItem(const std::string& itemID, int qty) {
@@ -301,7 +301,7 @@ void Planet::removeItem(const std::string& itemID, int qty) {
         if (slot.has_value() && slot->itemID == itemID) {
             slot->quantity -= qty;
             if (slot->quantity <= 0) {
-                slot = std::nullopt; // Libera el slot si se queda en 0
+                slot = std::nullopt; // Free the slot if it reaches 0
             }
             return;
         }
@@ -329,16 +329,16 @@ void Planet::sortByQuantity(bool ascending, const std::unordered_map<std::string
 }
 
 bool Planet::canBuyItem(const Item& item) const {
-    // Si yo soy Tech 10 y me vendes Tech vieja (Common/Rare)
+    // If I am Tech 10 and you sell me old Tech (Common/Rare)
     if (item.isTechnology() && this->techLevel > 8 && item.getRarity() < Rarity::Exotic) {
-        // Probabilidad minima de que un planeta avanzado quiera tecnología obsoleta, pero no imposible
-        return (rand() % 100) < 9; // 9% de chance de que la compre
+        // Minimum probability that an advanced planet wants obsolete technology, but not impossible
+        return (rand() % 100) < 9; // 9% chance that it buys it
     }
 
-    // Un planeta muy seguro no compra contrabando
+    // A very secure planet does not buy contraband
     if (item.isIllegal() && this->securityLevel > 8) {
-        // Probabilidad mínima de que un planeta con alta seguridad quiera items ilegales, pero no imposible
-        return (rand() % 100) < 5; // 5% de chance de que la compre
+        // Minimum probability that a high-security planet wants illegal items, but not impossible
+        return (rand() % 100) < 5; // 5% chance that it buys it
     }
 
     return true; 

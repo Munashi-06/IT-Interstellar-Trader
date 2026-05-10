@@ -1,17 +1,17 @@
 #include "Interface/Menu.hpp"
 
 Button::Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font)
-    : text(font, label, 35) // Corregimos C2512 aquí
+    : text(font, label, 35) // Fixed C2512 here
 {
     shape.setSize(size);
     shape.setPosition(pos);
-    shape.setFillColor(sf::Color::Transparent); // Invisible por defecto
+    shape.setFillColor(sf::Color::Transparent); // Invisible by default
     shape.setOutlineColor(selectedColor);
     shape.setOutlineThickness(2);
 
     text.setFillColor(unselectedColor);
     
-    // Centrar texto en la caja
+    // Center text in the box
     sf::FloatRect bounds = text.getLocalBounds();
     text.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f + 12.f});
     text.setPosition({pos.x + size.x / 2.f, pos.y + size.y / 2.f});
@@ -25,7 +25,7 @@ void Button::setAlignmentLeft(float margin = 15.f){
 
 void Button::draw(sf::RenderWindow& window) {
     if (selected) {
-        window.draw(shape); // Solo dibujamos la caja si está seleccionado
+        window.draw(shape); // We only draw the box if it is selected
         text.setFillColor(selectedColor);
     }
     else {
@@ -38,19 +38,19 @@ Menu::Menu(float width, float height)
     : title(font, "", 70)
 {
     if (!font.openFromFile("assets/fonts/04B_03__.TTF")) {
-        std::cerr << "Error cargando la fuente" << std::endl;
+        std::cerr << "Error loading font" << std::endl;
     }
 
-    // --- Configuración del Título ---
+    // --- Title Configuration ---
     title.setFont(font);
     title.setString("INTERSTELLAR TRADER");
-    title.setCharacterSize(70); // Más grande que los botones
-    title.setFillColor(sf::Color::White); // Color distintivo
+    title.setCharacterSize(70); // Larger than buttons
+    title.setFillColor(sf::Color::White); // Distinctive color
     
-    // Centrar el título horizontalmente
+    // Center the title horizontally
     sf::FloatRect titleBounds = title.getLocalBounds();
     title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
-    title.setPosition({width / 2.f, 160.f}); // 100 píxeles desde arriba
+    title.setPosition({width / 2.f, 160.f}); // 100 pixels from the top
 
     std::vector<std::string> labels = {"START", "SETTINGS", "EXIT"};
     
@@ -74,7 +74,7 @@ void Menu::draw(sf::RenderWindow& window) {
 
 void Menu::moveUp() {
     if(selectedItemIndex < 0){
-        selectedItemIndex = options.size() - 1; // Si no hay ningún botón seleccionado, seleccionamos el último
+        selectedItemIndex = options.size() - 1; // If no button is selected, we select the last one
     } else {
         options[selectedItemIndex].selected = false;
         selectedItemIndex = (selectedItemIndex - 1 + options.size()) % options.size();
@@ -84,7 +84,7 @@ void Menu::moveUp() {
 
 void Menu::moveDown() {
     if (selectedItemIndex < 0) {
-        selectedItemIndex = 0; // Si no hay ningún botón seleccionado, seleccionamos el primero
+        selectedItemIndex = 0; // If no button is selected, we select the first one
     } else {
         options[selectedItemIndex].selected = false;
         selectedItemIndex = (selectedItemIndex + 1) % options.size();
@@ -108,9 +108,9 @@ bool Menu::updateHover(sf::Vector2f mousePos) {
         }
         selectedItemIndex = hoveredIndex;
         options[selectedItemIndex].selected = true;
-        return true; // Se ha cambiado la selección
+        return true; // Selection has changed
         }
-    return false; // No se ha cambiado la selección
+    return false; // Selection has not changed
 }
 
 std::string Menu::getSelectedOption() const {

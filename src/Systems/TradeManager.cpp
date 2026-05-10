@@ -4,42 +4,42 @@ bool TradeManager::buyItem(const std::string& itemID, Player& player, Inventory&
     const auto& itemData = catalog.at(itemID);
     float price = planet.getItemPrice(itemID, catalog);
 
-    // 1. Verificar si el jugador tiene suficiente dinero
-    // (Asumo que tienes métodos getMoney() y setMoney() en tu clase Player)
+    // 1. Check if the player has enough money
+    // (Assuming you have getMoney() and setMoney() methods in your Player class)
     if (player.getMoney() < price) {
-        std::cout << "[COMERCIO] Fondos insuficientes para comprar " << itemData->getName() << ".\n";
+        std::cout << "[TRADE] Insufficient funds to buy " << itemData->getName() << ".\n";
         return false;
     }
 
-    // 2. Intentar añadir al inventario del jugador (esto también verifica si hay espacio)
+    // 2. Attempt to add to the player's inventory (this also checks for available space)
     if (!playerInv.addItem(itemID, 1, itemData->getMaxStackSize(), itemData->getBasePrice())) {
-        std::cout << "[COMERCIO] No hay espacio en la bodega de la nave.\n";
+        std::cout << "[TRADE] No space in the ship's cargo hold.\n";
         return false;
     }
 
-    // 3. Si llegamos aquí, hay dinero y espacio. Efectuamos la transacción:
-    player.setMoney(player.getMoney() - price); // Restar dinero
-    planet.removeItem(itemID, 1);               // Quitar 1 unidad del mercado del planeta
+    // 3. If we reached this point, there is money and space. We execute the transaction:
+    player.setMoney(player.getMoney() - price); // Subtract money
+    planet.removeItem(itemID, 1);               // Remove 1 unit from the planet's market
 
-    std::cout << "[COMERCIO] Compraste 1x " << itemData->getName() << " por Bs. " << price << "\n";
+    std::cout << "[TRADE] You bought 1x " << itemData->getName() << " for Bs. " << price << "\n";
     return true;
 }
 
 bool TradeManager::sellItem(const std::string& itemID, Player& player, Inventory& playerInv, Planet& planet, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
     const auto& itemData = catalog.at(itemID);
     
-    // Usamos el mismo precio de mercado del planeta para la venta
+    // We use the same planet market price for the sale
     float price = planet.getItemPrice(itemID, catalog); 
 
-    // 1. Quitamos 1 unidad del inventario del jugador
+    // 1. Remove 1 unit from the player's inventory
     playerInv.removeItem(itemID, 1);
 
-    // 2. Sumamos el dinero al jugador
+    // 2. Add money to the player
     player.setMoney(player.getMoney() + price);
 
-    // 3. Añadimos el ítem al mercado del planeta para que otros puedan comprarlo (o el jugador recomprarlo)
+    // 3. Add the item to the planet's market so others can buy it (or the player can rebuy it)
     planet.addItem(itemID, 1, itemData->getMaxStackSize(), itemData->getBasePrice());
 
-    std::cout << "[COMERCIO] Vendiste 1x " << itemData->getName() << " por Bs. " << price << "\n";
+    std::cout << "[TRADE] You sold 1x " << itemData->getName() << " for Bs. " << price << "\n";
     return true;
 }

@@ -1,119 +1,116 @@
 #include "Interface/ShipMenuUI.hpp"
 
 ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex) 
-    : font(f),                          // Inicializamos la referencia a la fuente
-      shipPreview(shipTex),              // Sprite NECESITA la textura ahora
-      titleText(f, ""),                  // Text NECESITA la fuente y un string inicial
+    : font(f),                          // Initialize font reference
+      shipPreview(shipTex),              // Sprite NEEDS the texture now
+      titleText(f, ""),                  // Text NEEDS font and initial string
       escText(f, ""),
       upgradeText(f, ""),
-      headerName(f, "NOMBRE"),           // Podemos pasarle el texto de una vez
-      headerCategory(f, "CATEGORIA"),
-      headerQuality(f, "CALIDAD"),
-      headerPrice(f, "PRECIO") 
+      headerName(f, "NAME"),             // Direct text initialization
+      headerCategory(f, "CATEGORY"),
+      headerQuality(f, "QUALITY"),
+      headerPrice(f, "PRICE") 
 {
     float tableStartX = 450.f;
     float headerY = 200.f;
     int fontSize = 18;
 
-    // 1. Fondo del 80% (1024x576) y fondo de la tabla
+    // 1. Background (1024x576) and table background
     background.setSize({1024.f, 576.f});
-    background.setFillColor(sf::Color(15, 15, 25, 220)); // Un poco más oscuro
+    background.setFillColor(sf::Color(15, 15, 25, 220)); // Slightly darker
     background.setOutlineThickness(3);
     background.setOutlineColor(sf::Color::Cyan);
     background.setOrigin({512.f, 288.f});
-    background.setPosition({640.f, 360.f}); // Centro de pantalla.
+    background.setPosition({640.f, 360.f}); // Screen center
 
-    // Fondo específico para la tabla, para que resalte más
+    // Specific background for the table to make it stand out
     tableBackground.setSize({600.f, 400.f});
     tableBackground.setFillColor(sf::Color(20, 20, 30, 200));
-    tableBackground.setPosition({tableStartX - 12.f, headerY - 5.f}); // Posicionado para cubrir la zona de la tabla a la derecha
+    tableBackground.setPosition({tableStartX - 12.f, headerY - 5.f}); 
     tableBackground.setOutlineThickness(1);
     tableBackground.setOutlineColor(sf::Color::White);
 
-    // 2. Nave en la parte izquierda
+    // 2. Ship preview on the left side
     shipPreview.setTexture(shipTex);
-    shipPreview.setScale({0.5f, 0.5f}); // Más pequeña
-    // Posicionada relativa a la ventana
+    shipPreview.setScale({0.5f, 0.5f}); // Smaller
     shipPreview.setPosition({150.f, 90.f});
 
-    // --- CONFIGURACIÓN DEL BOTÓN DE MEJORA ---
+    // --- UPGRADE BUTTON CONFIGURATION ---
     upgradeBtn.setSize({200.f, 40.f});
     upgradeBtn.setFillColor(sf::Color(0, 150, 0));
-    upgradeBtn.setPosition({170.f, 450.f}); // Ubicado debajo de la nave
+    upgradeBtn.setPosition({170.f, 450.f}); // Located under the ship
 
-    upgradeText.setString("SUBIR DE NIVEL");
+    upgradeText.setString("UPGRADE SHIP");
     upgradeText.setCharacterSize(18);
     upgradeText.setFillColor(sf::Color::White);
     
-    // Centramos el texto matemáticamente dentro del botón
+    // Center the text mathematically within the button
     sf::FloatRect upRect = upgradeText.getLocalBounds();
     upgradeText.setOrigin({upRect.size.x / 2.f, upRect.size.y / 2.f});
-    upgradeText.setPosition({(tableStartX - 280.f) + 100.f, 450.f + 15.f}); // X + mitad ancho, Y + mitad alto
+    upgradeText.setPosition({(tableStartX - 280.f) + 100.f, 450.f + 15.f}); 
 
-    // 3. Título general
+    // 3. General Title
     titleText.setFont(font);
-    titleText.setString("ESTADO DE LA NAVE E INVENTARIO");
+    titleText.setString("SHIP STATUS AND INVENTORY");
     titleText.setCharacterSize(25);
     titleText.setFillColor(sf::Color::Cyan);
-    titleText.setPosition({400.f, 100.f}); // Arriba al centro
+    titleText.setPosition({400.f, 100.f}); 
 
-    // 4. Cabeceras de la Tabla (Lado derecho)
+    // 4. Table Headers (Right side)
     headerName.setFont(font);
-    headerName.setString("NOMBRE");
+    headerName.setString("NAME");
     headerName.setPosition({tableStartX, headerY});
     headerName.setCharacterSize(fontSize);
 
     headerCategory.setFont(font);
-    headerCategory.setString("CATEGORIA");
+    headerCategory.setString("CATEGORY");
     headerCategory.setPosition({tableStartX + 250.f, headerY});
     headerCategory.setCharacterSize(fontSize);
 
     headerQuality.setFont(font);
-    headerQuality.setString("CALIDAD");
+    headerQuality.setString("QUALITY");
     headerQuality.setPosition({tableStartX + 370.f, headerY});
     headerQuality.setCharacterSize(fontSize);
 
     headerPrice.setFont(font);
-    headerPrice.setString("PRECIO");
+    headerPrice.setString("PRICE");
     headerPrice.setPosition({tableStartX + 490.f, headerY});
     headerPrice.setCharacterSize(fontSize);
     
-    // 5. Configurar la barra de scroll visual (A la derecha de la tabla)
-    scrollTrack.setSize({10.f, 400.f}); // Altura total de la lista
+    // 5. Setup visual scrollbar (Right of the table)
+    scrollTrack.setSize({10.f, 400.f}); 
     scrollTrack.setFillColor(sf::Color(50, 50, 50, 150));
-    scrollTrack.setPosition({tableStartX + 600.f, headerY - 5.f}); // A la derecha de la tabla, alineado con el header
+    scrollTrack.setPosition({tableStartX + 600.f, headerY - 5.f}); 
 
-    scrollThumb.setSize({10.f, 50.f}); // Se ajustará dinámicamente luego
+    scrollThumb.setSize({10.f, 50.f}); // Dynamic adjustment later
     scrollThumb.setFillColor(sf::Color::Cyan);
-    scrollThumb.setPosition({tableStartX + 600.f, headerY - 5.f}); // A la derecha de la tabla, alineado con el header
-
-    // (Ajustar tamaños de letra y colores de las cabeceras aquí)
+    scrollThumb.setPosition({tableStartX + 600.f, headerY - 5.f}); 
 }
 
 void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
-    // Dibujar fondos, nave, botones y cabeceras
+    // Draw backgrounds, ship, buttons, and headers
     window.draw(background);
     window.draw(shipPreview);
     window.draw(titleText);
     window.draw(tableBackground);
     window.draw(upgradeBtn);
     window.draw(upgradeText);
-    // ... dibujar cabeceras ...
+    
     window.draw(headerName);
     window.draw(headerCategory);
     window.draw(headerQuality);
     window.draw(headerPrice);
 
-    // --- DIBUJAR LA TABLA CON SCROLL ---
+    // --- DRAW TABLE WITH SCROLL ---
     const auto& slots = inventory.getSlots(); 
     
-    // Contamos cuántos ítems reales tenemos para ajustar el scroll
+    // Count real items to adjust scroll
     int totalItems = 0;
     for (const auto& slot : slots) {
         if (slot.has_value()) totalItems++;
     }
 
-    // Dibujar ítems basándonos en el startIndex
+    // Draw items based on startIndex
     float startY = 240.f;
     float rowHeight = 35.f;
     int itemsDrawn = 0;
@@ -121,7 +118,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
 
     for (const auto& slot : slots) {
         if (slot.has_value()) {
-            // Solo dibujamos si está dentro del rango visible del scroll
+            // Only draw if within visible scroll range
             if (currentItemIndex >= startIndex && itemsDrawn < maxVisibleItems) {
                 const auto& itemData = catalog.at(slot->itemID);
 
@@ -129,10 +126,10 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
                 sf::Text categoryText(font, itemData->getCategoryString());
                 sf::Text qualityText(font, itemData->getRarityString());
                 
-                // Precio mostrando nada mas 2 decimales
+                // Price formatting (truncating to 2 decimals)
                 std::string price = std::to_string(itemData->getPrice());
-                price = price.substr(0, price.find(".") + 3); // Truncar a 2 decimales
-                price = "Bs. " + price; // Agregar prefijo de moneda
+                price = price.substr(0, price.find(".") + 3); 
+                price = "Bs. " + price; 
                 sf::Text priceText(font, price);
 
                 sf::Color rarityColor;
@@ -140,9 +137,10 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
                     case Rarity::Common: rarityColor = sf::Color::White; break;
                     case Rarity::Rare: rarityColor = sf::Color::Green; break;
                     case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
-                    case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break; // Morado
-                    case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break; // Dorado
+                    case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break; // Purple
+                    case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break; // Gold
                 }
+                
                 rowText.setCharacterSize(14);
                 rowText.setFillColor(sf::Color::White);
                 categoryText.setCharacterSize(14);
@@ -172,7 +170,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
         }
     }
 
-    // Actualizar posición de la barra de scroll (Thumb)
+    // Update scrollbar (Thumb) position
     if (totalItems > maxVisibleItems) {
         float scrollPercent = (float)startIndex / (totalItems - maxVisibleItems);
         float thumbY = 195.f + (scrollPercent * (400.f - scrollThumb.getSize().y));
@@ -184,51 +182,48 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
 }
 
 void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
-    // Detectar scroll del ratón
+    // Detect mouse scroll
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
             if (mouseWheel->delta > 0) {
-                // Scroll arriba
                 startIndex--;
             } else if (mouseWheel->delta < 0) {
-                // Scroll abajo
                 startIndex++;
             }
 
-            // Limitar el scroll para no salirnos del array
+            // Bound scroll range
             if (startIndex < 0) startIndex = 0;
             int maxStart = std::max(0, totalItems - maxVisibleItems);
             if (startIndex > maxStart) startIndex = maxStart;
         }
     }
 
-    // Detectar clics del ratón
+    // Detect mouse clicks
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseBtn->button == sf::Mouse::Button::Left) {
             
-            // Clic en cabecera NOMBRE
+            // NAME header click
             if (headerName.getGlobalBounds().contains(mousePos)) {
-                // Si ya estábamos ordenando por nombre, invertimos el orden (Ascendente/Descendente)
                 if (currentSort == SortColumn::Name) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Name; sortAscending = true; }
                 inventory.sortByName(sortAscending, catalog);
             }
             
-            // Clic en cabecera CATEGORIA
+            // CATEGORY header click
             else if (headerCategory.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Category) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Category; sortAscending = true; }
                 inventory.sortByCategory(sortAscending, catalog);
             }
             
-            // Clic en cabecera CALIDAD
+            // QUALITY header click
             else if (headerQuality.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Quality) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Quality; sortAscending = true; }
                 inventory.sortByQuality(sortAscending, catalog);
             }
             
-            // Clic en cabecera PRECIO
+            // PRICE header click
             else if (headerPrice.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Price) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Price; sortAscending = true; }
@@ -236,19 +231,17 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
             }
         }
     }
-
 }
 
 void ShipMenuUI::update(const sf::Vector2f& mousePos) {
-    // --- HOVER PARA BOTÓN DE MEJORA ---
+    // --- HOVER FOR UPGRADE BUTTON ---
     if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
         upgradeBtn.setFillColor(sf::Color(0, 200, 0));
     } else {
         upgradeBtn.setFillColor(sf::Color(0, 150, 0));
     }
 
-    // --- HOVER PARA CABECERAS ---
-    // Color normal (ej. Blanco) y color resaltado (ej. Amarillo)
+    // --- HOVER FOR HEADERS ---
     sf::Color normalColor = sf::Color::White;
     sf::Color hoverColor = sf::Color::Yellow;
 
