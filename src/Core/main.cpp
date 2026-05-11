@@ -82,7 +82,7 @@ int main() {
     State currentState = State::Menu; // Game's initial state is the Main Menu
 
     // The player controls a spaceship, which is initialized at the center of the screen with a specific texture
-    Player spaceShip(640.f, 360.f, "assets/player.png");
+    Player spaceShip(640.f + 132.f, 360.f, "assets/player.png");
 
     // Inventory shipInventory; // Player's inventory
 
@@ -145,9 +145,11 @@ int main() {
     ShipMenuUI shipMenu(font, shipMenuTexture); // Ship Menu
     TradeMenuUI tradeMenu(font); // Trade Menu
 
+    std::cout << "Loading Upgrades" << std::endl;
     UpgradeManager upgrades;
     upgrades.initTrees(spaceShip);
     UpgradeTreeUI upgradeTree(font); // Upgrade Menu
+    std::cout << "Upgrades Loaded" << std::endl;
 
     DebugMenuUI debugMenu(font);
     debugMenu.initCatalog(world.getCatalog());
@@ -173,75 +175,75 @@ int main() {
     animBtnText.setPosition({ 1150.f, 150.f });
 
     Interface::IntroAnimation intro(1280.f, 720.f);
-        if (!intro.loadAssets(font)) {
-            std::cerr << "Error loading animation assets" << std::endl;
-        }
+    if (!intro.loadAssets(font)) {
+        std::cerr << "Error loading animation assets" << std::endl;
+    }
 
-        sf::RectangleShape adminShipBtn({200.f, 50.f});
-        adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
-        adminShipBtn.setOutlineThickness(2);
-        adminShipBtn.setOutlineColor(sf::Color::White);
-        adminShipBtn.setPosition({ 1050.f, 60.f });
+    sf::RectangleShape adminShipBtn({200.f, 50.f});
+    adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
+    adminShipBtn.setOutlineThickness(2);
+    adminShipBtn.setOutlineColor(sf::Color::White);
+    adminShipBtn.setPosition({ 1050.f, 60.f });
 
-        sf::Text adminShipText(font, "SPACE SHIP");
-        adminShipText.setCharacterSize(16);
-        adminShipText.setFillColor(sf::Color::White);
-        sf::FloatRect textRect = adminShipText.getLocalBounds();
-        adminShipText.setOrigin({textRect.size.x / 2.f, textRect.size.y / 2.f});
-        adminShipText.setPosition({ 1150.f, 80.f });
+    sf::Text adminShipText(font, "SPACE SHIP");
+    adminShipText.setCharacterSize(16);
+    adminShipText.setFillColor(sf::Color::White);
+    sf::FloatRect textRect = adminShipText.getLocalBounds();
+    adminShipText.setOrigin({textRect.size.x / 2.f, textRect.size.y / 2.f});
+    adminShipText.setPosition({ 1150.f, 80.f });
 
-        sf::RectangleShape confirmBg({400.f, 200.f});
-        confirmBg.setFillColor(sf::Color(20, 20, 20, 240)); 
-        confirmBg.setOutlineThickness(3);
-        confirmBg.setOutlineColor(sf::Color::Cyan);
-        confirmBg.setOrigin({200.f, 100.f});
-        confirmBg.setPosition({640.f, 360.f}); 
+    sf::RectangleShape confirmBg({400.f, 200.f});
+    confirmBg.setFillColor(sf::Color(20, 20, 20, 240)); 
+    confirmBg.setOutlineThickness(3);
+    confirmBg.setOutlineColor(sf::Color::Cyan);
+    confirmBg.setOrigin({200.f, 100.f});
+    confirmBg.setPosition({640.f, 360.f}); 
 
-        sf::Text confirmText(font, "");
-        confirmText.setCharacterSize(20);
-        confirmText.setFillColor(sf::Color::White);
+    sf::Text confirmText(font, "");
+    confirmText.setCharacterSize(20);
+    confirmText.setFillColor(sf::Color::White);
 
-        sf::Text optionsText(font, "[Y] YES - LAND    [N] NO - CANCEL");
-        optionsText.setCharacterSize(18);
-        optionsText.setFillColor(sf::Color::Yellow);
-        optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
-        optionsText.setPosition({640.f, 400.f});
+    sf::Text optionsText(font, "[Y] YES - LAND    [N] NO - CANCEL");
+    optionsText.setCharacterSize(18);
+    optionsText.setFillColor(sf::Color::Yellow);
+    optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
+    optionsText.setPosition({640.f, 400.f});
 
-        sf::RectangleShape shipMenuBg({640.f, 400.f});
-        shipMenuBg.setFillColor(sf::Color(15, 15, 25, 180));
-        shipMenuBg.setOutlineThickness(3);
-        shipMenuBg.setOutlineColor(sf::Color::Cyan);
-        shipMenuBg.setOrigin({320.f, 200.f});
-        shipMenuBg.setPosition({640.f, 360.f});
+    sf::RectangleShape shipMenuBg({640.f, 400.f});
+    shipMenuBg.setFillColor(sf::Color(15, 15, 25, 180));
+    shipMenuBg.setOutlineThickness(3);
+    shipMenuBg.setOutlineColor(sf::Color::Cyan);
+    shipMenuBg.setOrigin({320.f, 200.f});
+    shipMenuBg.setPosition({640.f, 360.f});
 
-        sf::Text shipMenuTitle(font, "SHIP'S STATE");
-        shipMenuTitle.setCharacterSize(25);
-        shipMenuTitle.setFillColor(sf::Color::Cyan);
-        shipMenuTitle.setPosition({480.f, 180.f});
+    sf::Text shipMenuTitle(font, "SHIP'S STATE");
+    shipMenuTitle.setCharacterSize(25);
+    shipMenuTitle.setFillColor(sf::Color::Cyan);
+    shipMenuTitle.setPosition({480.f, 180.f});
 
-        sf::Sprite shipPreview(shipMenuTexture); 
-        shipPreview.setScale({2.f, 2.f});
-        shipPreview.setPosition({210.f, 120.f});
+    sf::Sprite shipPreview(shipMenuTexture); 
+    shipPreview.setScale({2.f, 2.f});
+    shipPreview.setPosition({210.f, 120.f});
 
-        sf::RectangleShape upgradeBtn({200.f, 40.f});
-        upgradeBtn.setFillColor(sf::Color(0, 150, 0));
-        upgradeBtn.setPosition({650.f, 320.f});
+    sf::RectangleShape upgradeBtn({200.f, 40.f});
+    upgradeBtn.setFillColor(sf::Color(0, 150, 0));
+    upgradeBtn.setPosition({650.f, 320.f});
 
-        sf::Text upgradeText(font, "UPGRADE");
-        upgradeText.setCharacterSize(18);
-        sf::FloatRect upRect = upgradeText.getLocalBounds();
-        upgradeText.setOrigin({upRect.size.x / 2.f, upRect.size.y / 2.f});
-        upgradeText.setPosition({750.f, 340.f}); 
+    sf::Text upgradeText(font, "UPGRADE");
+    upgradeText.setCharacterSize(18);
+    sf::FloatRect upRect = upgradeText.getLocalBounds();
+    upgradeText.setOrigin({upRect.size.x / 2.f, upRect.size.y / 2.f});
+    upgradeText.setPosition({750.f, 340.f}); 
 
-        int selectedPlanetIndex = 0;
-        sf::Vector2f targetPosition(640.f, 360.f); 
-        float travelSpeed = 400.f; 
-        float shipAnimX = -100.f;
+    int selectedPlanetIndex = 2;
+    sf::Vector2f targetPosition(640.f + 132.f, 360.f); 
+    float travelSpeed = 400.f; 
+    float shipAnimX = -100.f;
 
-        bool showRadar = false; // Variable to control radar visibility
-        bool aux = true; // Auxiliary variable to display the radar only once at the beginning
-        
-        std::string currentAudioContext = "menu"; // "menu", "gameplay", "none"
+    bool showRadar = false; // Variable to control radar visibility
+    bool aux = true; // Auxiliary variable to display the radar only once at the beginning
+    
+    std::string currentAudioContext = "menu"; // "menu", "gameplay", "none"
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -307,15 +309,19 @@ int main() {
                 adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
                 adminShipBtn.setOutlineColor(sf::Color::White);
             }
-            if (animBtn.getGlobalBounds().contains(mousePos)) {///
-                animBtn.setFillColor(sf::Color(150, 0, 200, 255));
-                animBtn.setOutlineColor(sf::Color::Cyan);
-            } else {
-                animBtn.setFillColor(sf::Color(100, 0, 150, 200));
-                animBtn.setOutlineColor(sf::Color::White);
-            }
-        }
+            if(spaceShip.getHasWarpDrive()) {
+                    if (animBtn.getGlobalBounds().contains(mousePos)) {///
+                        animBtn.setFillColor(sf::Color(150, 0, 200, 255));
+                        animBtn.setOutlineColor(sf::Color::Cyan);
+                    }
+                    else {
+                        animBtn.setFillColor(sf::Color(100, 0, 150, 200));
+                        animBtn.setOutlineColor(sf::Color::White);
+                    }
+                }
 
+            }
+// --- INPUT LOGIC ---
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
 
@@ -435,10 +441,12 @@ int main() {
                             audio.playClick();
                             currentState = State::ShipMenu; 
                         }
-                        else if (animBtn.getGlobalBounds().contains(mousePos)) {
-                            audio.playClick();
-                            intro.reset();
-                            currentState = State::Animation1; 
+                        else if(spaceShip.getHasWarpDrive()) {
+                            if (animBtn.getGlobalBounds().contains(mousePos)) {
+                                audio.playClick();
+                                intro.reset();
+                                currentState = State::Animation1; 
+                            }
                         }
                     }
                 }
@@ -452,19 +460,48 @@ int main() {
                     if (!planetas.empty()) {
                         if (keyPressed->code == sf::Keyboard::Key::Right || keyPressed->code == sf::Keyboard::Key::D ||
                             keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
-                            selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size();
+                            
+                            selectedPlanetIndex = (selectedPlanetIndex + 1) % planetas.size(); // Movemos el cursor
                             audio.playHover();
+                            
+                            short targetOrbit = planetas[selectedPlanetIndex].getOrbit();
+                            bool engineOk = (targetOrbit >= spaceShip.getMinOrbit() && targetOrbit <= spaceShip.getMaxOrbit());
+                            bool hullOk = (targetOrbit >= spaceShip.getMinOrbitReach() && targetOrbit <= spaceShip.getMaxOrbitReach());
+                            
+                            if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) {
+                                spaceShip.setCurrentOrbit(targetOrbit); 
+                            }
                         }
                         else if (keyPressed->code == sf::Keyboard::Key::Left || keyPressed->code == sf::Keyboard::Key::A ||
                                 keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
-                            selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size();
+                            
+                            selectedPlanetIndex = (selectedPlanetIndex - 1 + (int)planetas.size()) % planetas.size(); // Movemos el cursor
                             audio.playHover();
+                            
+                            short targetOrbit = planetas[selectedPlanetIndex].getOrbit();
+                            bool engineOk = (targetOrbit >= spaceShip.getMinOrbit() && targetOrbit <= spaceShip.getMaxOrbit());
+                            bool hullOk = (targetOrbit >= spaceShip.getMinOrbitReach() && targetOrbit <= spaceShip.getMaxOrbitReach());
+                            
+                            if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) {
+                                spaceShip.setCurrentOrbit(targetOrbit);
+                            }
                         }
                         else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                            audio.playClick();
-                            currentState = State::TravelConfirmation; 
+                            short targetOrbit = planetas[selectedPlanetIndex].getOrbit();
+                            
+                            bool engineOk = (targetOrbit >= spaceShip.getMinOrbit() && targetOrbit <= spaceShip.getMaxOrbit());
+                            bool hullOk = (targetOrbit >= spaceShip.getMinOrbitReach() && targetOrbit <= spaceShip.getMaxOrbitReach());
+
+                            if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) {
+                                audio.playClick();
+                                currentState = State::TravelConfirmation; 
+                            } else {
+                                std::cout << "[SISTEMA] No puedes viajar a la Orbita " << targetOrbit 
+                                          << ". ¡Necesitas mejorar tus motores o escudos termicos!" << std::endl;
+                            }
                         }
                     }
+
                 }
 debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             }
@@ -563,24 +600,29 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             for (size_t i = 0; i < planets.size(); ++i) {
                 auto& planet = world.getPlanets()[i];
                 
-                float distance = planets[i].getOrbit() * 33.f + 33.f;
-                float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
+                float distance = planet.getOrbit() * 33.f + 33.f;
+                float speed = 0.5f / (planet.getOrbit() * 0.2f);
                 float x = center.x + std::cos(time * speed) * distance;
                 float y = center.y + std::sin(time * speed) * distance;
+
+                if (planet.getOrbit() == spaceShip.getCurrentOrbit()) {
+                    targetPosition = {x, y};
+                }
 
                 if (planet.hasSprite()) {
                     planet.getSprite()->setPosition({x, y});
                     
                     if (i == (size_t)selectedPlanetIndex) {
-                        planet.setHighlighted(true);
-                        targetPosition = {x, y};
-                    } else {
+                        planet.setHighlighted(true); // El anillo cyan sigue al cursor
+                    }
+                            else {
                         planet.setHighlighted(false);
                     }
                     planet.updateScale(dt);
                     window.draw(*planet.getSprite());
                     
-                } else {
+                }
+                else {
                     sf::CircleShape planetShape(8.f);
                     planetShape.setOrigin({8.f, 8.f});
                     planetShape.setPosition({x, y});
@@ -589,8 +631,17 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
                         planetShape.setFillColor(sf::Color::Cyan);
                         planetShape.setOutlineThickness(2);
                         planetShape.setOutlineColor(sf::Color::White);
-                        targetPosition = {x, y};
-                    } else {
+                        
+                        short targetOrbit = planet.getOrbit();
+                        bool engineOk = (targetOrbit >= spaceShip.getMinOrbit() && targetOrbit <= spaceShip.getMaxOrbit());
+                        bool hullOk = (targetOrbit >= spaceShip.getMinOrbitReach() && targetOrbit <= spaceShip.getMaxOrbitReach());
+
+                        if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) {
+                            targetPosition = {x, y};
+                        }
+
+                    }
+                    else {
                         planetShape.setFillColor(sf::Color(150, 150, 150));
                     }
                     window.draw(planetShape);
@@ -656,6 +707,10 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
                 }
                 radarUI.draw(window);
             }
+            if (spaceShip.getHasWarpDrive()) {
+                window.draw(animBtn);
+                window.draw(animBtnText);
+            }
 
             if (currentState == State::TravelConfirmation) {
                 confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
@@ -668,7 +723,7 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
 
             if (currentState == State::ShipMenu) {
                 shipMenu.update(mousePos);
-                shipMenu.draw(window, spaceShip.getInventory(), world.getGlobalCatalog());
+                shipMenu.draw(window, spaceShip, world.getGlobalCatalog());
             }
 
         debugMenu.draw(window);

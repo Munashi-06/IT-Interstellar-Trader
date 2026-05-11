@@ -15,8 +15,7 @@ private:
     sf::RectangleShape background;
     sf::RectangleShape tableBackground;
     sf::Sprite shipPreview;
-    sf::Text titleText;
-    sf::Text escText;
+    sf::Text titleText, escText;
     
     // Upgrade button
     sf::RectangleShape upgradeBtn;
@@ -32,6 +31,9 @@ private:
     sf::RectangleShape scrollThumb; // The moving bar
     // ------------------------
 
+    // Ship Info
+    sf::Text slotsText, money, minAndMaxOrbit, minAndMaxOrbitReach;
+
     SortColumn currentSort = SortColumn::Name;
     bool sortAscending = true;
     
@@ -41,7 +43,7 @@ public:
     ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex);
     
     // Receives the inventory and the catalog to build the table
-    void draw(sf::RenderWindow& window, const Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void draw(sf::RenderWindow& window, const Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
     // Handles clicks (for sorting headers or upgrade button)
     void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player);

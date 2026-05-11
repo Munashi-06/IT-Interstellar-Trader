@@ -15,19 +15,19 @@ public:
 
     void addInventoryCapacity(int extraSlots);
 
+    bool upgradeShip();
+    
     // Setters
     void setPosition(sf::Vector2f pos);
     void setRotation(float angle);
     void setMoney(float amount) { money = amount; }
-    int getShipLevel() const { return shipLevel; }
-    bool upgradeShip();
-    int getUpgradeCost() const;
     void setInventory(const Inventory& inv) { inventory = inv; }
     void setMaxOrbit(short orbit) { maxOrbit = orbit; }
     void setMinOrbit(short orbit) { minOrbit = orbit; }
     void setCurrentOrbit(short orbit) { currentOrbit = orbit; }
     void setMaxOrbitReach(short orbit) { maxOrbitReach = orbit; }
     void setMinOrbitReach(short orbit) { minOrbitReach = orbit; }
+    void setHasWarpDrive(bool val) { hasWarpDrive = val; }
     void setHasAdvancedRadar(bool val) { hasAdvancedRadar = val; }
     void setEventFrequencyBonus(bool val) { hasEventFrequencyBonus = val; }
     void setEventDurationBonus(bool val) { hasEventDurationBonus = val; }
@@ -40,6 +40,8 @@ public:
     void setSyndicateBoss(bool val) { syndicateBoss = val; }
     
     // Getters
+    int getShipLevel() const { return shipLevel; }
+    int getUpgradeCost() const;
     sf::Vector2f getPosition() const { return sprite->getPosition(); }
     float getMoney() const { return money; }
     float& getMoneyRef() { return money; }
@@ -48,6 +50,7 @@ public:
     short getCurrentOrbit() const { return currentOrbit; }
     short getMaxOrbitReach() const { return maxOrbitReach; }
     short getMinOrbitReach() const { return minOrbitReach; }
+    bool getHasWarpDrive() const { return hasWarpDrive; }
     bool getHasAdvancedRadar() const { return hasAdvancedRadar; }
     bool getEventFrequencyBonus() const { return hasEventFrequencyBonus; }
     bool getEventDurationBonus() const { return hasEventDurationBonus; }
@@ -63,6 +66,12 @@ public:
     bool getBlackMarketContacts() const { return blackMarketContacts; }
     bool getSyndicateBoss() const { return syndicateBoss; }
 
+    void levelUpShip() { 
+        if (shipLevel < MAX_SHIP_LEVEL) {
+            shipLevel++; 
+        }
+    }
+        
 private:
     std::unique_ptr<sf::Sprite> sprite; 
     sf::Texture texture;
@@ -84,9 +93,10 @@ private:
     short minOrbit = 3; // Minimum orbit the player can be in
     short maxOrbit = 4; // Maximun orbit the player can be in
     short currentOrbit = 3; // Current orbit of the player
-    short maxOrbitReach = 3; // The farthest orbit the player can reach
     short minOrbitReach = 3; // The closest orbit the player can reach
+    short maxOrbitReach = 5; // The farthest orbit the player can reach
 
+    bool hasWarpDrive = false;
     bool hasAdvancedRadar = false;
     bool hasEventFrequencyBonus = false;
     bool hasEventDurationBonus = false;

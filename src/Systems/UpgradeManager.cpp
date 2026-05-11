@@ -126,11 +126,12 @@ void UpgradeManager::initTrees(Player& player) {
     Upgrade nuclearPropulsion(
         "prop_2", 
         "Nuclear Propulsion", 
-        "Next-gen propulsion system. Unlocks Orbit 7 and increases travel speed by 50%.", 
+        "Next-gen propulsion system. Unlocks Orbit 7 and 1. Increases travel speed by 50%.", 
         3500.0f, 
         false, 
         [&player]() {
             player.setMaxOrbit(7);
+            player.setMinOrbit(1);
             // player.setTravelSpeed(player.getTravelSpeed() * 1.5f);
         }
     );
@@ -181,6 +182,7 @@ void UpgradeManager::initTrees(Player& player) {
             player.setMinOrbit(1);
             player.setMaxOrbit(10);
             // player.setTravelSpeed(9999.f);
+            player.setHasWarpDrive(true);
         }
     );
 
@@ -193,32 +195,28 @@ void UpgradeManager::initTrees(Player& player) {
 #pragma region Logistics Tree Initialization
 
     // ROOT NODE: Advanced Radar
-    // Effect: Unlocks the logistics tree. (You could tie this to revealing planet names on the UI)
     Upgrade advancedRadar(
         "log_1", 
         "Advanced Radar", 
         "Upgrades basic sensors. Shows info About planets events. Essential for interstellar commerce.", 
         800.0f, 
-        false, // Root is never mutually exclusive
+        false, 
         [&player]() {
-            player.setHasAdvancedRadar(true); // You will need to add this bool to Player.hpp
+            player.setHasAdvancedRadar(true); 
         }
     );
     
     logisticsTree = std::make_shared<BinNode<Upgrade>>(std::move(advancedRadar));
     K(logisticsTree).status = UpgradeStatus::AVAILABLE;
 
+    // ================= BRANCH A: THE HAULER (LEFT) - ORIGINAL =================
 
-    // ================= BRANCH A: THE HAULER (LEFT) =================
-
-    // LEFT CHILD: Heavy Freighter Hull
-    // Effect: Massively increases inventory slots. Mutually exclusive with Market Predictor.
     Upgrade heavyFreighter(
         "log_cargo_1", 
         "Heavy Freighter Hull", 
         "Expands cargo bay. +10 Inventory Slots. Lacks space for advanced computers.", 
         2500.0f, 
-        true, // MUTUALLY EXCLUSIVE! Choosing this blocks the Right Child
+        true, 
         [&player]() {
             player.addInventoryCapacity(10); 
         }
@@ -226,8 +224,6 @@ void UpgradeManager::initTrees(Player& player) {
     
     L(logisticsTree) = std::make_shared<BinNode<Upgrade>>(std::move(heavyFreighter));
 
-    // LEFT-LEFT CHILD: Reinforced Cargo Holder
-    // Effect: Increases inventory capacity. Mutually exclusive with Smuggler's Compartment (the other Left child).
     Upgrade reinforcedCargo(
         "log_cargo_3", 
         "Reinforced Cargo Holder", 
@@ -241,8 +237,6 @@ void UpgradeManager::initTrees(Player& player) {
 
     L(L(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(reinforcedCargo));
 
-    // LEFT-RIGHT CHILD: Smuggler's Compartment
-    // Effect: Further increases cargo slightly, but hides it. Mutually exclusive with Reinforced Cargo Holder.
     Upgrade smugglerCompartment(
         "log_cargo_2", 
         "Smuggler's Compartment", 
@@ -257,8 +251,6 @@ void UpgradeManager::initTrees(Player& player) {
 
     R(L(logisticsTree))= std::make_shared<BinNode<Upgrade>>(std::move(smugglerCompartment));
 
-    // LEFT-LEFT-LEFT & LEFT-LEFT-RIGHT CHILD: Quantum Storage
-    // Effect: Uses quantum tech to expand cargo space. +50 inventory slots.
     Upgrade quantumStorage(
         "log_cargo_4", 
         "Quantum Storage", 
@@ -270,18 +262,28 @@ void UpgradeManager::initTrees(Player& player) {
         }
     );
 
-    // 1. Creamos una copia exacta manualmente en memoria
     Upgrade quantumStorage2 = quantumStorage;
 
-    // 2. Ahora sí podemos usar std::move en ambas porque son variables distintas
     L(L(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage));
     L(R(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage2));
 
+    // ================= BRANCH B: THE BROKER (RIGHT) - NUEVA ESTRUCTURA =================
 
-    // ================= BRANCH B: THE BROKER (RIGHT) =================
+    // RIGHT CHILD (NUEVO PADRE): Deep Market Scanners
+    Upgrade marketScanners(
+        "log_scanners",
+        "Deep Market Scanners", 
+        "Upgrades sensors to detect restricted and exotic goods in local markets.", 
+        2000.0f, 
+        false, 
+        [&player]() {
+            player.levelUpShip();
+        }
+    );
 
-    // RIGHT CHILD: Insider Trading Link
-    // Effect: Makes events last longer.
+    R(logisticsTree) = std::make_shared<BinNode<Upgrade>>(std::move(marketScanners));
+
+    // RIGHT-LEFT CHILD: Insider Trading Link (Desplazado hacia abajo a la izquierda)
     Upgrade insiderTrading(
         "log_intel_2", 
         "Insider Trading Link", 
@@ -293,10 +295,9 @@ void UpgradeManager::initTrees(Player& player) {
         }
     );
 
-    R(logisticsTree) = std::make_shared<BinNode<Upgrade>>(std::move(insiderTrading));
+    L(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(insiderTrading));
 
-    // RIGHT-LEFT CHILD: Market Predictor Algorithm
-    // Effect: Increases the frequency of beneficial planet events. Mutually exclusive with Manipulator.
+    // RIGHT-LEFT-LEFT CHILD: Market Predictor Algorithm (Hijo de Insider Trading)
     Upgrade marketPredictor(
         "log_intel_1", 
         "Market Predictor", 
@@ -308,10 +309,9 @@ void UpgradeManager::initTrees(Player& player) {
         }
     );
 
-    L(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(marketPredictor));
+    R(L(R(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(marketPredictor));
 
-    // RIGHT-RIGHT CHILD: Manipulator Chip
-    // Effect: Allows the player to trigger one event every 4 minutes. Mutually exclusive with Market Predictor.
+    // RIGHT-LEFT-RIGHT CHILD: Manipulator Chip (Hijo de Insider Trading)
     Upgrade manipulatorChip(
         "log_intel_3", 
         "Manipulator Chip", 
@@ -337,7 +337,7 @@ void UpgradeManager::initTrees(Player& player) {
     Upgrade universalTranslator(
         "trade_1", 
         "Universal Translator", 
-        std::string("Breaks communication barriers. Grants a flat 5% discount on all purchases."), 
+        "Breaks communication barriers. Grants a flat 5% discount on all purchases.", 
         1000.0f, 
         false, // Root is never mutually exclusive
         [&player]() {
@@ -409,6 +409,24 @@ void UpgradeManager::initTrees(Player& player) {
     );
 
     R(R(tradingTree)) = std::make_shared<BinNode<Upgrade>>(std::move(syndicateBoss));
+
+    // RIGHT-LEFT & LEFT-RIGHT CHILD: VIP Vendor License (Visibility Upgrade 2)
+    // Effect: Grants exclusive access to Legendary items and hidden syndicate stashes.
+    Upgrade vipLicense(
+        "trade_vip_2", 
+        "VIP Vendor License", 
+        "Grants exclusive access to Legendary items and hidden syndicate stashes.", 
+        5000.0f, 
+        false, 
+        [&player]() {
+            player.levelUpShip();
+        }
+    );
+
+    Upgrade vipLicense2 = vipLicense;
+
+    R(L(tradingTree)) = std::make_shared<BinNode<Upgrade>>(std::move(vipLicense));
+    L(R(tradingTree)) = std::make_shared<BinNode<Upgrade>>(std::move(vipLicense2));
 
 #pragma endregion
 }

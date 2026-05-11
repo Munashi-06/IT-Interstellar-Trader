@@ -849,24 +849,24 @@ float TradeMenuUI::getVisibilityPercent(Rarity rarity, int shipLevel) const{
 
         case Rarity::Rare:
             switch(shipLevel){
-                case 1: return 0.35f;
-                case 2: return 0.70f;
+                case 1: return 0.55f;
+                case 2: return 0.75f;
                 case 3: return 1.00f;
                 default: return 1.00f;
             }
         
         case Rarity::Exotic:
             switch(shipLevel){
-                case 1: return 0.15f;
-                case 2: return 0.50f;
+                case 1: return 0.50f;
+                case 2: return 0.70f;
                 case 3: return 1.00f;
                 default: return 1.00f;
             }
         
         case Rarity::Legendary:
             switch(shipLevel){
-                case 1: return 0.05f;
-                case 2: return 0.30f;
+                case 1: return 0.45f;
+                case 2: return 0.70f;
                 case 3: return 1.00f;
                 default: return 1.00f;
             }

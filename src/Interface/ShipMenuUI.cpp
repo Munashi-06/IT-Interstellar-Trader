@@ -10,7 +10,11 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
       headerName(f, "NAME"),             // Direct text initialization
       headerCategory(f, "CATEGORY"),
       headerQuality(f, "QUALITY"),
-      headerPrice(f, "PRICE") 
+      headerPrice(f, "PRICE"),
+      slotsText(f, ""),
+      money(f, ""),
+      minAndMaxOrbit(f, ""),
+      minAndMaxOrbitReach(f, "")
 {
     float tableStartX = 450.f;
     float headerY = 200.f;
@@ -51,7 +55,6 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
     upgradeText.setPosition({(tableStartX - 280.f) + 100.f, 450.f + 15.f}); 
 
     // 3. General Title
-    titleText.setFont(font);
     titleText.setString("SHIP STATUS AND INVENTORY");
     titleText.setCharacterSize(25);
     titleText.setFillColor(sf::Color::Cyan);
@@ -85,10 +88,29 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
 
     scrollThumb.setSize({10.f, 50.f}); // Dynamic adjustment later
     scrollThumb.setFillColor(sf::Color::Cyan);
-    scrollThumb.setPosition({tableStartX + 600.f, headerY - 5.f}); 
+    scrollThumb.setPosition({tableStartX + 600.f, headerY - 5.f});
+
+    // Ship info
+    sf::Vector2f infoPosition(170.f, 280.f);
+
+    slotsText.setCharacterSize(15);
+    slotsText.setPosition(infoPosition);
+    slotsText.setFillColor(sf::Color::White);
+
+    money.setCharacterSize(15);
+    money.setPosition({infoPosition.x, infoPosition.y + 30.f});
+    money.setFillColor(sf::Color::White);
+
+    minAndMaxOrbit.setCharacterSize(15);
+    minAndMaxOrbit.setPosition({infoPosition.x, infoPosition.y + 60.f});
+    minAndMaxOrbit.setFillColor(sf::Color::White);
+
+    minAndMaxOrbitReach.setCharacterSize(15);
+    minAndMaxOrbitReach.setPosition({infoPosition.x, infoPosition.y + 90.f});
+    minAndMaxOrbitReach.setFillColor(sf::Color::White);
 }
 
-void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
     // Draw backgrounds, ship, buttons, and headers
     window.draw(background);
     window.draw(shipPreview);
@@ -103,7 +125,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
     window.draw(headerPrice);
 
     // --- DRAW TABLE WITH SCROLL ---
-    const auto& slots = inventory.getSlots(); 
+    const auto& slots = const_cast<Player&>(player).getInventory().getSlots(); 
     
     // Count real items to adjust scroll
     int totalItems = 0;
@@ -180,6 +202,19 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
         window.draw(scrollTrack);
         window.draw(scrollThumb);
     }
+
+    // --- DRAW SHIP INFO ---
+    std::string moneyString = std::to_string(player.getMoney());
+    moneyString = moneyString.substr(0, moneyString.find(".") + 3); 
+    slotsText.setString("SLOTS: " + std::to_string(const_cast<Player&>(player).getInventory().getUsedSlots()) + "/" + std::to_string(const_cast<Player&>(player).getInventory().getCapacity()));
+    money.setString("MONEY: " + moneyString + "Bs.");
+    minAndMaxOrbit.setString("MIN-MAX ORBIT: " + std::to_string(player.getMinOrbit()) + "-" + std::to_string(player.getMaxOrbit()));
+    minAndMaxOrbitReach.setString("MIN-MAX ORBIT REACH: " + std::to_string(player.getMinOrbitReach()) + "-" + std::to_string(player.getMaxOrbitReach()));
+
+    window.draw(slotsText);
+    window.draw(money);
+    window.draw(minAndMaxOrbit);
+    window.draw(minAndMaxOrbitReach);
 }
 
 void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player) {
