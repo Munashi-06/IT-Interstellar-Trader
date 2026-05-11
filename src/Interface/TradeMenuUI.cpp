@@ -218,7 +218,7 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     planetActionBtnText.setPosition({rightPanelX + (panelSize.x / 2.f), btnY});
 }
 
-void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, int playerShipLevel) {
 // LAYER 1: General Translucent Dark Background
     // window.draw(generalBackground);
 
@@ -351,58 +351,70 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
     
     for (const auto& slot : planetSlots) {
         if (slot.has_value()) {
-            if (currentSlotIndex >= planetStartIndex && drawnCount < maxVisibleRows) {
-                const auto& itemData = catalog.at(slot->itemID);
-                float yPos = startY + (drawnCount * rowHeight);
+            const auto& itemData = catalog.at(slot->itemID);
+            
+            // 🆕 FILTRO: ¿este item es visible según el nivel de la nave?
+            float visibility = getVisibilityPercent(itemData->getRarity(), playerShipLevel);
+            
+            // Usar el itemID como semilla para que el mismo item siempre sea visible/invisible
+            // Esto evita que los items parpadeen al hacer scroll
+            std::hash<std::string> hasher;
+            size_t hashValue = hasher(slot->itemID + std::to_string(playerShipLevel));
+            bool isVisible = (hashValue % 100) < (visibility * 100);
+            
+            if (isVisible) {
+                if (currentSlotIndex >= planetStartIndex && drawnCount < maxVisibleRows) {
+                    float yPos = startY + (drawnCount * rowHeight);
 
-                if (selectedItemID == slot->itemID && !isPlayerItem) {
-                    selectionHighlight.setPosition({680.f, yPos});
-                    window.draw(selectionHighlight);
+                    if (selectedItemID == slot->itemID && !isPlayerItem) {
+                        selectionHighlight.setPosition({680.f, yPos});
+                        window.draw(selectionHighlight);
+                    }
+
+                    sf::Color rarityColor;
+                    switch (itemData->getRarity()) {
+                        case Rarity::Common: rarityColor = sf::Color::White; break;
+                        case Rarity::Rare: rarityColor = sf::Color::Green; break;
+                        case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
+                        case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break;
+                        case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
+                    }
+
+                    sf::Text nameT(font, itemData->getName());
+                    nameT.setCharacterSize(14);
+                    nameT.setFillColor(sf::Color::White);
+                    nameT.setPosition({ 680.f, yPos });
+                    window.draw(nameT);
+                    
+                    sf::Text catT(font, itemData->getCategoryString().substr(0, 8)); 
+                    catT.setCharacterSize(14);
+                    catT.setFillColor(sf::Color::White);
+                    catT.setPosition({ 895.f, yPos });
+                    window.draw(catT);
+                    
+                    sf::Text qualT(font, itemData->getRarityString().substr(0, 3)); 
+                    qualT.setCharacterSize(14);
+                    qualT.setFillColor(rarityColor);
+                    qualT.setPosition({ 1000.f, yPos });
+                    window.draw(qualT);
+
+                    sf::Text qtyT(font, std::to_string(slot->quantity));
+                    qtyT.setCharacterSize(14); qtyT.setFillColor(sf::Color::White);
+                    qtyT.setPosition({ 1070.f, yPos });
+                    window.draw(qtyT);
+                    
+                    float buyPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
+                    ss.str(""); ss << "Bs." << std::fixed << std::setprecision(0) << buyPrice;
+                    sf::Text priceT(font, ss.str());
+                    priceT.setCharacterSize(14);
+                    priceT.setFillColor(sf::Color::White);
+                    priceT.setPosition({ 1140.f, yPos });
+                    window.draw(priceT);
+
+                    drawnCount++;
                 }
-
-                sf::Color rarityColor;
-                switch (itemData->getRarity()) {
-                    case Rarity::Common: rarityColor = sf::Color::White; break;
-                    case Rarity::Rare: rarityColor = sf::Color::Green; break;
-                    case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
-                    case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break;
-                    case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
-                }
-
-                sf::Text nameT(font, itemData->getName());
-                nameT.setCharacterSize(14);
-                nameT.setFillColor(sf::Color::White);
-                nameT.setPosition({ 680.f, yPos });
-                window.draw(nameT);
-                
-                sf::Text catT(font, itemData->getCategoryString().substr(0, 8)); 
-                catT.setCharacterSize(14);
-                catT.setFillColor(sf::Color::White);
-                catT.setPosition({ 895.f, yPos });
-                window.draw(catT);
-                
-                sf::Text qualT(font, itemData->getRarityString().substr(0, 3)); 
-                qualT.setCharacterSize(14);
-                qualT.setFillColor(rarityColor);
-                qualT.setPosition({ 1000.f, yPos });
-                window.draw(qualT);
-
-                sf::Text qtyT(font, std::to_string(slot->quantity));
-                qtyT.setCharacterSize(14); qtyT.setFillColor(sf::Color::White);
-                qtyT.setPosition({ 1070.f, yPos });
-                window.draw(qtyT);
-                
-                float buyPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                ss.str(""); ss << "Bs." << std::fixed << std::setprecision(0) << buyPrice;
-                sf::Text priceT(font, ss.str());
-                priceT.setCharacterSize(14);
-                priceT.setFillColor(sf::Color::White);
-                priceT.setPosition({ 1140.f, yPos });
-                window.draw(priceT);
-
-                drawnCount++;
+                currentSlotIndex++;
             }
-            currentSlotIndex++;
         }
     }
 
@@ -503,7 +515,8 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 
                 if (mouseWheel->delta > 0) {
                     playerStartIndex = std::max(0, playerStartIndex - 1);
-                } else if (mouseWheel->delta < 0) {
+                }
+                else if (mouseWheel->delta < 0) {
                     playerStartIndex = std::min(maxPlayerScroll, playerStartIndex + 1);
                 }
             }
@@ -518,7 +531,8 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 
                 if (mouseWheel->delta > 0) {
                     planetStartIndex = std::max(0, planetStartIndex - 1);
-                } else if (mouseWheel->delta < 0) {
+                }
+                else if (mouseWheel->delta < 0) {
                     planetStartIndex = std::min(maxPlanetScroll, planetStartIndex + 1);
                 }
             }
@@ -739,5 +753,44 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 selectedItemID = "";
             }
         }
+    }
+}
+
+float TradeMenuUI::getVisibilityPercent(Rarity rarity, int shipLevel) const{
+    switch (rarity){
+        case Rarity::Common:
+            switch(shipLevel){
+                case 1: return 0.60f;
+                case 2: return 0.85f;
+                case 3: return 1.00f;
+                default: return 1.00f;
+            }
+
+        case Rarity::Rare:
+            switch(shipLevel){
+                case 1: return 0.35f;
+                case 2: return 0.70f;
+                case 3: return 1.00f;
+                default: return 1.00f;
+            }
+        
+        case Rarity::Exotic:
+            switch(shipLevel){
+                case 1: return 0.15f;
+                case 2: return 0.50f;
+                case 3: return 1.00f;
+                default: return 1.00f;
+            }
+        
+        case Rarity::Legendary:
+            switch(shipLevel){
+                case 1: return 0.05f;
+                case 2: return 0.30f;
+                case 3: return 1.00f;
+                default: return 1.00f;
+            }
+        
+        default: return 1.00f;
+
     }
 }

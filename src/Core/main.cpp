@@ -515,7 +515,7 @@ int main() {
                         currentState = State::Playing;
                     }
                 }
-                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog());
+                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog(), spaceShip);
             }
         }
 
@@ -697,7 +697,7 @@ else if (currentState == State::TradeMenu) {
     window.clear(backgroundSprite.getColor()); 
     window.draw(generalBackground); 
     bgStars.draw(window, spaceShip.getPosition());
-    tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog());
+    tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip.getShipLevel());
     tradeMenu.update(mousePos);
 }
 

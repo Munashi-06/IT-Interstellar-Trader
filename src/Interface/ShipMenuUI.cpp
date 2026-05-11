@@ -1,4 +1,5 @@
 #include "Interface/ShipMenuUI.hpp"
+#include "Entities/Player.hpp"
 
 ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex) 
     : font(f),                          // Initialize font reference
@@ -181,7 +182,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
     }
 }
 
-void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, Player& player) {
     // Detect mouse scroll
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
@@ -228,6 +229,12 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
                 if (currentSort == SortColumn::Price) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Price; sortAscending = true; }
                 inventory.sortByPrice(sortAscending, catalog);
+            }
+
+            if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
+                if (player.upgradeShip()) {
+                    std::cout << "Ship Level: " << player.getShipLevel() << std::endl;
+                }
             }
         }
     }

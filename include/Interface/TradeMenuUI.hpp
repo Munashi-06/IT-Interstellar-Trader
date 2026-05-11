@@ -71,11 +71,14 @@ private:
 
     const sf::Font& font;
 
+    // --- Helper function to calculate the visibility percetage
+    float getVisibilityPercent(Rarity rarity, int shipLevel) const;
+
+
 public:
     TradeMenuUI(const sf::Font& f);
     
-    // The draw method needs to know the player's inventory, the current planet, and the global catalog
-    void draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, int playerShipLevel = 1);
     
     // This is where we will process clicks for "Sell" or "Buy"
     void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);

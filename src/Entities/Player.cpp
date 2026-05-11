@@ -88,3 +88,28 @@ void Player::move(sf::Vector2f direction, float deltaTime) {
         velocity += thrustDir * acceleration * deltaTime;
     }
 }
+
+bool Player::upgradeShip(){
+    if(shipLevel >= MAX_SHIP_LEVEL) {
+        std::cout << "Nave al máximo nivel!" << std::endl;
+        return false;
+    }
+
+    int cost = getUpgradeCost();
+    if (money < cost){
+        std::cout << "You don't have enough money for the upgrade" << std::endl;
+        return false;
+    }
+    money -= cost;
+    shipLevel++;
+    std::cout << "Ship upgraded to level " << shipLevel << "!" << std::endl;
+    return true;
+}
+
+int Player::getUpgradeCost() const {
+    switch (shipLevel){
+        case 1: return 500;
+        case 2: return 2000;
+        default: return 0;
+    }
+}
