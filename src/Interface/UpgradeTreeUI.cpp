@@ -75,17 +75,13 @@ void UpgradeTreeUI::drawNode(sf::RenderWindow& window, std::shared_ptr<BinNode<U
     // 1. Draw connections to children FIRST (so lines render behind the boxes)
     if (L(node)) {
         sf::Vector2f leftChildPos(pos.x - hSpacing, pos.y + vSpacing);
-        // Draw line
         drawConnection(window, pos, leftChildPos, sf::Color(100, 100, 100)); 
-        // Recursive call for the left child (reduce hSpacing to prevent overlap)
         drawNode(window, L(node), leftChildPos, hSpacing * 0.55f, vSpacing); 
     }
     
     if (R(node)) {
         sf::Vector2f rightChildPos(pos.x + hSpacing, pos.y + vSpacing);
-        // Draw line
         drawConnection(window, pos, rightChildPos, sf::Color(100, 100, 100));
-        // Recursive call for the right child
         drawNode(window, R(node), rightChildPos, hSpacing * 0.55f, vSpacing);
     }
 
@@ -116,17 +112,44 @@ void UpgradeTreeUI::drawNode(sf::RenderWindow& window, std::shared_ptr<BinNode<U
 
     window.draw(nodeBox);
 
-    // 3. Draw the Upgrade Name
-    sf::Text nameText(font, wrapText(K(node).name, 14));
-    nameText.setCharacterSize(14);
-    nameText.setFillColor(sf::Color::White);
+    // 3. Draw the Upgrade Name (Centered Multi-line)
+    // Usamos un ancho de 16 caracteres para que encaje lindo en la caja de 140px
+    std::string wrappedName = wrapText(K(node).name, 16); 
+    std::stringstream ss(wrappedName);
+    std::string lineStr;
     
-    // Center the text inside the box
-    sf::FloatRect bounds = nameText.getLocalBounds();
-    nameText.setOrigin({bounds.size.x / 2.f, (bounds.size.y / 2.f) + 3.f});
-    nameText.setPosition(pos);
-    
-    window.draw(nameText);
+    std::vector<sf::Text> lines;
+    float totalHeight = 0.f;
+    float lineSpacing = 4.f; // Espaciado vertical entre líneas
+
+    // Desmenuzamos el texto en líneas individuales
+    while (std::getline(ss, lineStr, '\n')) {
+        sf::Text lineText(font, lineStr);
+        lineText.setCharacterSize(13); // Tamaño sutil para que no desborde
+        lineText.setFillColor(sf::Color::White);
+        
+        // Centrar el origen de cada palabra (SFML 3 SYNTAX)
+        sf::FloatRect bounds = lineText.getLocalBounds();
+        lineText.setOrigin({bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f});
+        
+        lines.push_back(lineText);
+        totalHeight += bounds.size.y + lineSpacing;
+    }
+
+    if (lines.size() > 0) totalHeight -= lineSpacing;
+
+    // Calcular el punto Y inicial para que todo el bloque quede en el centro de la caja
+    float startY = pos.y - (totalHeight / 2.f);
+
+    // Dibujar cada línea
+    for (auto& lineText : lines) {
+        sf::FloatRect bounds = lineText.getLocalBounds();
+        // Usamos la X central de la caja (pos.x) y bajamos progresivamente en Y
+        lineText.setPosition({pos.x, startY + (bounds.size.y / 2.f)});
+        window.draw(lineText);
+        
+        startY += bounds.size.y + lineSpacing;
+    }
 }
 
 std::shared_ptr<BinNode<Upgrade>> UpgradeTreeUI::getHoveredNode(std::shared_ptr<BinNode<Upgrade>> node, sf::Vector2f pos, float hSpacing, float vSpacing, const sf::Vector2f& mousePos) {

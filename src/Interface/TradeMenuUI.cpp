@@ -206,7 +206,7 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     playerActionBtnText.setCharacterSize(16);
     sf::FloatRect pBounds = playerActionBtnText.getLocalBounds();
     playerActionBtnText.setOrigin({pBounds.size.x / 2.f, pBounds.size.y / 2.f});
-    playerActionBtnText.setPosition({leftPanelX + (panelSize.x / 2.f), btnY});
+    playerActionBtnText.setPosition({leftPanelX + (panelSize.x / 2.f), btnY - 5.f});
 
     // Botón Planeta (Comprar)
     planetActionBtnBg.setSize(btnSize);
@@ -217,20 +217,20 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     planetActionBtnText.setCharacterSize(16);
     sf::FloatRect mBounds = planetActionBtnText.getLocalBounds();
     planetActionBtnText.setOrigin({mBounds.size.x / 2.f, mBounds.size.y / 2.f});
-    planetActionBtnText.setPosition({rightPanelX + (panelSize.x / 2.f), btnY});
+    planetActionBtnText.setPosition({rightPanelX + (panelSize.x / 2.f), btnY - 5.f});
 
 // --- CONFIGURATION FOR TOGGLE PRICE BUTTON ---
     togglePriceBtnBg.setSize({200.f, 30.f});
-    togglePriceBtnBg.setFillColor(sf::Color(50, 50, 100)); // Dark Blue
+    togglePriceBtnBg.setFillColor(sf::Color(50, 50, 100, 100)); // Dark Blue
     togglePriceBtnBg.setOrigin({100.f, 15.f});
-    togglePriceBtnBg.setPosition({640.f, 130.f}); // Top center, right below the main title
+    togglePriceBtnBg.setPosition({1130.f, 60.f}); // Top center, right below the main title
 
     togglePriceBtnText.setString("SHOW BASE PRICES");
     togglePriceBtnText.setCharacterSize(14);
     togglePriceBtnText.setFillColor(sf::Color::White);
     sf::FloatRect toggleBounds = togglePriceBtnText.getLocalBounds();
     togglePriceBtnText.setOrigin({toggleBounds.size.x / 2.f, toggleBounds.size.y / 2.f});
-    togglePriceBtnText.setPosition({640.f, 130.f});
+    togglePriceBtnText.setPosition({1130.f, 55.f});
 }
 
 void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, const Player& player) {
@@ -352,7 +352,7 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                     }
                 }
                 ss.str("");
-                ss << "Bs." << std::fixed << std::setprecision(0) << finalSellPrice;
+                ss << "Bs." << std::fixed << std::setprecision(2) << finalSellPrice;
                 priceT.setString(ss.str());
                 priceT.setCharacterSize(14);
                 priceT.setPosition({ 520.f, yPos });
@@ -441,7 +441,7 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                     }
                 }
                 ss.str("");
-                ss << "Bs." << std::fixed << std::setprecision(0) << finalBuyPrice;
+                ss << "Bs." << std::fixed << std::setprecision(2) << finalBuyPrice;
                 priceT.setString(ss.str());
                 priceT.setCharacterSize(14);
                 priceT.setPosition({ 1140.f, yPos });
@@ -539,10 +539,10 @@ void TradeMenuUI::update(const sf::Vector2f& mousePos) {
     }
     else {
         if(togglePriceBtnText.getString() == "SHOW BASE PRICES") {
-            togglePriceBtnText.setFillColor(sf::Color(54, 54, 217));
+            togglePriceBtnText.setFillColor(sf::Color(54, 54, 217, 100));
         }
         else {
-            togglePriceBtnText.setFillColor(sf::Color::White);
+            togglePriceBtnText.setFillColor(sf::Color(255, 255, 255, 100));
         }
     }
 }
@@ -668,13 +668,13 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
 
                 if (showingOriginalPrices) {
                     togglePriceBtnText.setString("SHOW PLAYER DISCOUNTS");
-                    togglePriceBtnBg.setFillColor(sf::Color::White); // White when showing base
-                    togglePriceBtnText.setFillColor(sf::Color::Black); // Black text for better contrast
+                    togglePriceBtnBg.setFillColor(sf::Color(255, 255, 255, 100)); // White when showing base
+                    togglePriceBtnText.setFillColor(sf::Color(0, 0, 0, 100)); // Black text for better contrast
                 }
                 else {
                     togglePriceBtnText.setString("SHOW BASE PRICES");
-                    togglePriceBtnBg.setFillColor(sf::Color(54, 54, 217)); // Blue when showing discounts
-                    togglePriceBtnText.setFillColor(sf::Color::White); // White text for better contrast
+                    togglePriceBtnBg.setFillColor(sf::Color(54, 54, 217, 100)); // Blue when showing discounts
+                    togglePriceBtnText.setFillColor(sf::Color(255, 255, 255, 100)); // White text for better contrast
                 }
 
                 // Re-center text just in case the length changed

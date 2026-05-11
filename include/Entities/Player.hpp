@@ -88,7 +88,7 @@ private:
     bool isSmuggler = false;
     bool isManipulator = false;
 
-    float discount = 1.f; // Percentage discount for trading (e.g., 0.05 for 5% discount)
+    float discount = 0.00f; // Percentage discount for trading (e.g., 0.05 for 5% discount)
     bool corporateLicense = false; // Whether the player has a corporate license for trading in high-security planets
     bool monopolyCharter = false; // Whether the player has a monopoly charter for exclusive trading rights on certain goods
     bool blackMarketContacts = false; // Whether the player has contacts in the black market for better deals on illegal goods
