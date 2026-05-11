@@ -39,6 +39,7 @@ public:
     // Getters
     sf::Vector2f getPosition() const { return sprite->getPosition(); }
     float getMoney() const { return money; }
+    float& getMoneyRef() { return money; }
     short getMaxOrbit() const { return maxOrbit; }
     short getMinOrbit() const { return minOrbit; }
     short getCurrentOrbit() const { return currentOrbit; }

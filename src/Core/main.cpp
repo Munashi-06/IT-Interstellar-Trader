@@ -5,6 +5,8 @@
 #include "Interface/ShipMenuUI.hpp"
 #include "Interface/TradeMenuUI.hpp"
 #include "Interface/BackgroundStars.hpp"
+#include "Interface/UpgradeTreeUI.hpp"
+#include "Interface/DebugMenuUI.hpp"
 
 #include <iostream>
 #include <optional>
@@ -80,12 +82,6 @@ int main() {
     // The player controls a spaceship, which is initialized at the center of the screen with a specific texture
     Player spaceShip(640.f, 360.f, "assets/player.png");
 
-    // Para probar el inventario y la interfaz de la nave, le damos algunos ítems al jugador desde el catalogo global
-    auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
-    for (const auto& [id, itemPtr] : galaxyItems) {
-        spaceShip.getInventory().addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
-    }
-
     sf::Clock clock; // Para medir el tiempo entre frames
 
     sf::Vector2f mousePos; // Para almacenar la posición del mouse en coordenadas del mundo, útil para interacciones con el menú y el mundo de juego
@@ -139,6 +135,13 @@ int main() {
 
     ShipMenuUI shipMenu(font, shipMenuTexture); // Ship Menu
     TradeMenuUI tradeMenu(font); // Trade Menu
+
+    UpgradeManager upgrades;
+    upgrades.initTrees(spaceShip);
+    UpgradeTreeUI upgradeTree(font); // Upgrade Menu
+
+    DebugMenuUI debugMenu(font);
+    debugMenu.initCatalog(world.getCatalog()); // Pásale tu catálogo cargado
 
     sf::Text planetNameText(font, "");
     planetNameText.setCharacterSize(22);
@@ -381,6 +384,7 @@ int main() {
                         }
                     }
                 }
+debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             }
             else if (currentState == State::TravelConfirmation) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -426,7 +430,15 @@ int main() {
                     }
                 }
                 // Le pasamos el evento a la clase
-                shipMenu.handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world.getCatalog());
+                shipMenu.handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world.getCatalog(), currentState);
+            }
+            else if (currentState == State::UpgradeTree) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::ShipMenu;
+                    }
+                }
+                upgradeTree.handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef()); // Asumiendo que puedes pasar el dinero por referencia
             }
         }
 
@@ -574,6 +586,8 @@ int main() {
                 // Le pasas el inventario y el catálogo global
                 shipMenu.draw(window, spaceShip.getInventory(), world.getGlobalCatalog());
             }
+
+debugMenu.draw(window);
         }
         else if (currentState == State::InPlanet) {
             window.clear(backgroundSprite.getColor());
@@ -609,6 +623,13 @@ int main() {
             bgStars.draw(window, spaceShip.getPosition());
             tradeMenu.draw(window, spaceShip.getInventory(), world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip);
             tradeMenu.update(mousePos);
+        }
+        else if (currentState == State::UpgradeTree) {
+            window.draw(generalBackground);
+            bgStars.draw(window, spaceShip.getPosition());
+            
+            upgradeTree.update(mousePos, upgrades);
+            upgradeTree.draw(window, upgrades); 
         }
         window.display();
     }

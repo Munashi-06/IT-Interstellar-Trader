@@ -270,8 +270,12 @@ void UpgradeManager::initTrees(Player& player) {
         }
     );
 
-    L(L(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(quantumStorage);
-    L(R(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage)); 
+    // 1. Creamos una copia exacta manualmente en memoria
+    Upgrade quantumStorage2 = quantumStorage;
+
+    // 2. Ahora sí podemos usar std::move en ambas porque son variables distintas
+    L(L(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage));
+    L(R(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage2));
 
 
     // ================= BRANCH B: THE BROKER (RIGHT) =================
@@ -304,7 +308,7 @@ void UpgradeManager::initTrees(Player& player) {
         }
     );
 
-    R(L(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(marketPredictor));
+    L(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(marketPredictor));
 
     // RIGHT-RIGHT CHILD: Manipulator Chip
     // Effect: Allows the player to trigger one event every 4 minutes. Mutually exclusive with Market Predictor.
@@ -318,6 +322,8 @@ void UpgradeManager::initTrees(Player& player) {
             player.setIsManipulator(true);
         }
     );
+
+    R(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(manipulatorChip));
 
 #pragma endregion
 

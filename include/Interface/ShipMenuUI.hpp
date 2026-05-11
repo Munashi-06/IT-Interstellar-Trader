@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include "Systems/Inventory.hpp"
 #include "Entities/Item.hpp"
+#include "Core/State.hpp"
 #include <vector>
 #include <string>
 
@@ -42,7 +43,7 @@ public:
     void draw(sf::RenderWindow& window, const Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
     // Maneja clics (para ordenar cabeceras o botón de mejorar)
-    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState);
     
     // Para hover de botones
     void update(const sf::Vector2f& mousePos);

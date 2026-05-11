@@ -41,7 +41,7 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
     upgradeBtn.setFillColor(sf::Color(0, 150, 0));
     upgradeBtn.setPosition({170.f, 450.f}); // Ubicado debajo de la nave
 
-    upgradeText.setString("SUBIR DE NIVEL");
+    upgradeText.setString("UPGRADE");
     upgradeText.setCharacterSize(18);
     upgradeText.setFillColor(sf::Color::White);
     
@@ -183,7 +183,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
     }
 }
 
-void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
+void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState) {
     // Detectar scroll del ratón
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
@@ -202,11 +202,11 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
         }
     }
 
-    // Detectar clics del ratón
+    // Detectar clicks del ratón
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseBtn->button == sf::Mouse::Button::Left) {
             
-            // Clic en cabecera NOMBRE
+            // Click en cabecera NOMBRE
             if (headerName.getGlobalBounds().contains(mousePos)) {
                 // Si ya estábamos ordenando por nombre, invertimos el orden (Ascendente/Descendente)
                 if (currentSort == SortColumn::Name) sortAscending = !sortAscending;
@@ -214,25 +214,31 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
                 inventory.sortByName(sortAscending, catalog);
             }
             
-            // Clic en cabecera CATEGORIA
+            // Click en cabecera CATEGORIA
             else if (headerCategory.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Category) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Category; sortAscending = true; }
                 inventory.sortByCategory(sortAscending, catalog);
             }
             
-            // Clic en cabecera CALIDAD
+            // Click en cabecera CALIDAD
             else if (headerQuality.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Quality) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Quality; sortAscending = true; }
                 inventory.sortByQuality(sortAscending, catalog);
             }
             
-            // Clic en cabecera PRECIO
+            // Click en cabecera PRECIO
             else if (headerPrice.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Price) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Price; sortAscending = true; }
                 inventory.sortByPrice(sortAscending, catalog);
+            }
+
+            // Click in UPGRADE
+            if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
+                currentState = State::UpgradeTree;
+                return;
             }
         }
     }
