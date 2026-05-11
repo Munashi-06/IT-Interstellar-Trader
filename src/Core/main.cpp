@@ -6,8 +6,8 @@
 #include "Interface/TradeMenuUI.hpp"
 #include "Interface/BackgroundStars.hpp"
 #include "Interface/IntroAnimation.hpp"
-
-#include "Systems/Inventory.hpp"
+#include "Interface/UpgradeTreeUI.hpp"
+#include "Interface/DebugMenuUI.hpp"
 
 #include <iostream>
 #include <optional>
@@ -84,13 +84,13 @@ int main() {
     // The player controls a spaceship, which is initialized at the center of the screen with a specific texture
     Player spaceShip(640.f, 360.f, "assets/player.png");
 
-    Inventory shipInventory; // Player's inventory
+    // Inventory shipInventory; // Player's inventory
 
-    // To test the ship's inventory and interface, we give the player some items from the global catalog.
-    auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
-    for (const auto& [id, itemPtr] : galaxyItems) {
-        shipInventory.addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
-    }
+    // // To test the ship's inventory and interface, we give the player some items from the global catalog.
+    // auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
+    // for (const auto& [id, itemPtr] : galaxyItems) {
+    //     shipInventory.addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
+    // }
 
     sf::Clock clock; // To measure the time between frames
 
@@ -142,10 +142,15 @@ int main() {
         std::cerr << "Error cargando textura de previsualización" << std::endl;
     }
 
-    ShipMenuUI shipMenu(font, shipMenuTexture);
+    ShipMenuUI shipMenu(font, shipMenuTexture); // Ship Menu
+    TradeMenuUI tradeMenu(font); // Trade Menu
 
-    // Trade menu interface, which initializes with the font loaded to display the texts
-    TradeMenuUI tradeMenu(font);
+    UpgradeManager upgrades;
+    upgrades.initTrees(spaceShip);
+    UpgradeTreeUI upgradeTree(font); // Upgrade Menu
+
+    DebugMenuUI debugMenu(font);
+    debugMenu.initCatalog(world.getCatalog());
 
     sf::Text planetNameText(font, "");
     planetNameText.setCharacterSize(22);
@@ -178,7 +183,7 @@ int main() {
         adminShipBtn.setOutlineColor(sf::Color::White);
         adminShipBtn.setPosition({ 1050.f, 60.f });
 
-        sf::Text adminShipText(font, "ADMINISTRAR NAVE");
+        sf::Text adminShipText(font, "SPACE SHIP");
         adminShipText.setCharacterSize(16);
         adminShipText.setFillColor(sf::Color::White);
         sf::FloatRect textRect = adminShipText.getLocalBounds();
@@ -196,7 +201,7 @@ int main() {
         confirmText.setCharacterSize(20);
         confirmText.setFillColor(sf::Color::White);
 
-        sf::Text optionsText(font, "[Y] SI - VIAJAR    [N] NO - CANCELAR");
+        sf::Text optionsText(font, "[Y] YES - LAND    [N] NO - CANCEL");
         optionsText.setCharacterSize(18);
         optionsText.setFillColor(sf::Color::Yellow);
         optionsText.setOrigin({optionsText.getLocalBounds().size.x / 2.f, 0.f});
@@ -209,7 +214,7 @@ int main() {
         shipMenuBg.setOrigin({320.f, 200.f});
         shipMenuBg.setPosition({640.f, 360.f});
 
-        sf::Text shipMenuTitle(font, "ESTADO DE LA NAVE");
+        sf::Text shipMenuTitle(font, "SHIP'S STATE");
         shipMenuTitle.setCharacterSize(25);
         shipMenuTitle.setFillColor(sf::Color::Cyan);
         shipMenuTitle.setPosition({480.f, 180.f});
@@ -222,7 +227,7 @@ int main() {
         upgradeBtn.setFillColor(sf::Color(0, 150, 0));
         upgradeBtn.setPosition({650.f, 320.f});
 
-        sf::Text upgradeText(font, "SUBIR DE NIVEL");
+        sf::Text upgradeText(font, "UPGRADE");
         upgradeText.setCharacterSize(18);
         sf::FloatRect upRect = upgradeText.getLocalBounds();
         upgradeText.setOrigin({upRect.size.x / 2.f, upRect.size.y / 2.f});
@@ -236,7 +241,6 @@ int main() {
         bool showRadar = false; // Variable to control radar visibility
         bool aux = true; // Auxiliary variable to display the radar only once at the beginning
         
-        // Variables para control de audio - INICIALIZAR COMO "menu" PARA QUE NO CAMBIE AL INICIO
         std::string currentAudioContext = "menu"; // "menu", "gameplay", "none"
 
     while (window.isOpen()) {
@@ -275,7 +279,7 @@ int main() {
         // GAMEPLAY: todos los estados del juego suenan theme
         else if (currentState == State::Playing || currentState == State::InPlanet || 
                  currentState == State::TravelConfirmation || currentState == State::ShipMenu ||
-                 currentState == State::TradeMenu) {
+                 currentState == State::TradeMenu || currentState == State::UpgradeTree) {
             if (currentAudioContext != "gameplay") {
                 audio.stopMusic();
                 audio.loadTheme("assets/audio/theme.ogg");
@@ -287,10 +291,11 @@ int main() {
 
         // --- EVENT LOGIC ---
         if (currentState == State::Playing) {
-            if (world.update()) {
-                std::cout << "[ALERTA] Nuevo evento aleatorio en la galaxia!" << std::endl;
+            if (world.update(spaceShip)) {
                 alertTimer = 3.0f; // The alert will last 3 seconds
-                radarUI.update(world.getRadar()->getHeapArray());
+                if(spaceShip.gethasAdvancedRadar()) {
+                    radarUI.update(world.getRadar()->getHeapArray());
+                }
             }
             if (alertTimer > 0) alertTimer -= dt;
 
@@ -461,6 +466,7 @@ int main() {
                         }
                     }
                 }
+debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             }
             else if (currentState == State::Animation1) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -507,7 +513,7 @@ int main() {
                     }
                 }
                 // We pass the event to the class
-                tradeMenu.handleInput(*event, mousePos, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip, world.getCatalog());
+                tradeMenu.handleInput(*event, mousePos, spaceShip.getInventory(), world.getPlanets()[selectedPlanetIndex], spaceShip, world.getCatalog());
             }
             else if (currentState == State::ShipMenu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -515,193 +521,209 @@ int main() {
                         currentState = State::Playing;
                     }
                 }
-                shipMenu.handleInput(*event, mousePos, shipInventory.getUsedSlots(), shipInventory, world.getCatalog(), spaceShip);
+                shipMenu.handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world.getCatalog(), currentState, spaceShip);
+            }
+            else if (currentState == State::UpgradeTree) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::ShipMenu;
+                    }
+                }
+                upgradeTree.handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
             }
         }
 
 // --- UPDATE & DRAW
-window.clear();
+        window.clear();
 
-if (currentState == State::Menu) {
-    window.draw(backgroundSprite);
-    mainMenu.draw(window);
-} 
-else if (currentState == State::Options){
-    window.draw(settingsBackgroundSprite);
-    settingsMenu.draw(window);
-}
-else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation)
-{
-    window.draw(generalBackground); 
+        if (currentState == State::Menu) {
+            window.draw(backgroundSprite);
+            mainMenu.draw(window);
+        } 
+        else if (currentState == State::Options){
+            window.draw(settingsBackgroundSprite);
+            settingsMenu.draw(window);
+        }
+        else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation)
+        {
+            window.draw(generalBackground); 
 
-    sf::Vector2f playerPos = spaceShip.getPosition();
-    
-    bgStars.draw(window, spaceShip.getPosition());
-
-    sf::Vector2f center(640.f, 360.f);
-    sf::CircleShape sun(15.f); sun.setFillColor(sf::Color::White);
-    sun.setOrigin({15.f, 15.f}); sun.setPosition(center);
-    window.draw(sun);
-
-    float time = worldClock.getElapsedTime().asSeconds(); 
-    const auto& planets = world.getPlanets();
-
-    for (size_t i = 0; i < planets.size(); ++i) {
-        auto& planet = world.getPlanets()[i];
-        
-        float distance = planets[i].getOrbit() * 33.f + 33.f;
-        float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
-        float x = center.x + std::cos(time * speed) * distance;
-        float y = center.y + std::sin(time * speed) * distance;
-
-        if (planet.hasSprite()) {
-            planet.getSprite()->setPosition({x, y});
+            sf::Vector2f playerPos = spaceShip.getPosition();
             
-            if (i == (size_t)selectedPlanetIndex) {
-                planet.setHighlighted(true);
-                targetPosition = {x, y};
-            } else {
-                planet.setHighlighted(false);
+            bgStars.draw(window, spaceShip.getPosition());
+
+            sf::Vector2f center(640.f, 360.f);
+            sf::CircleShape sun(15.f); sun.setFillColor(sf::Color::White);
+            sun.setOrigin({15.f, 15.f}); sun.setPosition(center);
+            window.draw(sun);
+
+            float time = worldClock.getElapsedTime().asSeconds(); 
+            const auto& planets = world.getPlanets();
+
+            for (size_t i = 0; i < planets.size(); ++i) {
+                auto& planet = world.getPlanets()[i];
+                
+                float distance = planets[i].getOrbit() * 33.f + 33.f;
+                float speed = 0.5f / (planets[i].getOrbit() * 0.2f);
+                float x = center.x + std::cos(time * speed) * distance;
+                float y = center.y + std::sin(time * speed) * distance;
+
+                if (planet.hasSprite()) {
+                    planet.getSprite()->setPosition({x, y});
+                    
+                    if (i == (size_t)selectedPlanetIndex) {
+                        planet.setHighlighted(true);
+                        targetPosition = {x, y};
+                    } else {
+                        planet.setHighlighted(false);
+                    }
+                    planet.updateScale(dt);
+                    window.draw(*planet.getSprite());
+                    
+                } else {
+                    sf::CircleShape planetShape(8.f);
+                    planetShape.setOrigin({8.f, 8.f});
+                    planetShape.setPosition({x, y});
+                    
+                    if (i == (size_t)selectedPlanetIndex) {
+                        planetShape.setFillColor(sf::Color::Cyan);
+                        planetShape.setOutlineThickness(2);
+                        planetShape.setOutlineColor(sf::Color::White);
+                        targetPosition = {x, y};
+                    } else {
+                        planetShape.setFillColor(sf::Color(150, 150, 150));
+                    }
+                    window.draw(planetShape);
+                }
             }
-            planet.updateScale(dt);
-            window.draw(*planet.getSprite());
             
-        } else {
-            sf::CircleShape planetShape(8.f);
-            planetShape.setOrigin({8.f, 8.f});
-            planetShape.setPosition({x, y});
-            
-            if (i == (size_t)selectedPlanetIndex) {
-                planetShape.setFillColor(sf::Color::Cyan);
-                planetShape.setOutlineThickness(2);
-                planetShape.setOutlineColor(sf::Color::White);
-                targetPosition = {x, y};
-            } else {
-                planetShape.setFillColor(sf::Color(150, 150, 150));
+            sf::Vector2f currentPos = spaceShip.getPosition();
+            sf::Vector2f direction = targetPosition - currentPos;
+            float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+
+            if (dist > 1.5f) {
+                float angleRadians = std::atan2(direction.y, direction.x);
+                float angleDegrees = angleRadians * 180.f / 3.14159265f;
+                spaceShip.setRotation(angleDegrees + 90.f);
+
+                direction /= dist; 
+                float moveDistance = travelSpeed * dt;
+
+                if (moveDistance > dist) {
+                    spaceShip.setPosition(targetPosition);
+                }
+                else {
+                    spaceShip.setPosition(currentPos + direction * moveDistance);
+                }
             }
-            window.draw(planetShape);
+            else {
+                spaceShip.setPosition(targetPosition);
+            }
+
+            if (!planets.empty()) {
+                planetNameText.setString(planets[selectedPlanetIndex].getName());
+                auto& selectedPlanet = world.getPlanets()[selectedPlanetIndex];
+
+                if (selectedPlanet.hasSprite()){
+                    sf::Sprite uiSprite = *selectedPlanet.getSprite();
+                    auto texSize = selectedPlanet.getSprite()->getTexture().getSize();
+                    float uiScale = 150.f/std::max(texSize.x, texSize.y);
+                    uiSprite.setScale({uiScale, uiScale});
+                    uiSprite.setPosition({85.f, 590.f});
+
+                    window.draw(uiSprite);
+                }
+            }
+
+            spaceShip.update(dt);
+            spaceShip.draw(window);
+
+
+            window.draw(planetNameText);
+
+            window.draw(adminShipBtn);
+            window.draw(adminShipText);
+
+            // Draw the Alert & Update the Radar only if the player has it unlocked
+            if(spaceShip.gethasAdvancedRadar()) {
+                if (alertTimer > 0) {
+                    window.draw(alertSprite);
+                }
+
+                if(aux) {
+                    radarUI.update(world.getRadar()->getHeapArray());
+                    aux = false; // Solo actualizar el radar la primera vez para mostrarlo al inicio
+                }
+                radarUI.draw(window);
+            }
+
+            if (currentState == State::TravelConfirmation) {
+                confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
+                confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
+                confirmText.setPosition({640.f, 330.f});
+                window.draw(confirmBg);
+                window.draw(confirmText);
+                window.draw(optionsText);
+            }
+
+            if (currentState == State::ShipMenu) {
+                shipMenu.update(mousePos);
+                shipMenu.draw(window, spaceShip.getInventory(), world.getGlobalCatalog());
+            }
+
+        debugMenu.draw(window);
         }
-    }
-    
-    sf::Vector2f currentPos = spaceShip.getPosition();
-    sf::Vector2f direction = targetPosition - currentPos;
-    float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
+        else if (currentState == State::Animation1) {
+            intro.update(dt);
+            intro.draw(window);
 
-    if (dist > 1.5f) {
-        float angleRadians = std::atan2(direction.y, direction.x);
-        float angleDegrees = angleRadians * 180.f / 3.14159265f;
-        spaceShip.setRotation(angleDegrees + 90.f);
-
-        direction /= dist; 
-        float moveDistance = travelSpeed * dt;
-
-        if (moveDistance > dist) {
-            spaceShip.setPosition(targetPosition);
+            if (intro.getState() == Interface::AnimState::Finished) {
+                currentState = State::Menu;
+            }
         }
-        else {
-            spaceShip.setPosition(currentPos + direction * moveDistance);
+        else if (currentState == State::InPlanet) {
+            window.clear(backgroundSprite.getColor());
+            window.draw(generalBackground);
+            
+            shipAnimX += 400.f * dt; 
+            if (shipAnimX > 1380.f) shipAnimX = -100.f;
+
+            sf::Vector2f originalPos = spaceShip.getPosition();
+            
+            spaceShip.setPosition({shipAnimX, 500.f}); 
+            spaceShip.setRotation(90.f); 
+            spaceShip.draw(window);
+            spaceShip.setPosition(originalPos);
+            spaceShip.setRotation(0.f); 
+
+            sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());
+            msg.setOrigin({msg.getLocalBounds().size.x / 2.f, 0.f});
+            msg.setPosition({640.f, 300.f});
+            window.draw(msg);
+
+            sf::Text escMsg(font, "Presiona ESC para regresar, ENTER o T para ir a la tienda");
+            escMsg.setCharacterSize(15);
+            escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
+            escMsg.setPosition({640.f, 650.f});
+            window.draw(escMsg);
+            bgStars.draw(window, spaceShip.getPosition());
         }
-    }
-    else {
-        spaceShip.setPosition(targetPosition);
-    }
-
-    if (!planets.empty()) {
-        planetNameText.setString(planets[selectedPlanetIndex].getName());
-        auto& selectedPlanet = world.getPlanets()[selectedPlanetIndex];
-
-        if (selectedPlanet.hasSprite()){
-            sf::Sprite uiSprite = *selectedPlanet.getSprite();
-            auto texSize = selectedPlanet.getSprite()->getTexture().getSize();
-            float uiScale = 150.f/std::max(texSize.x, texSize.y);
-            uiSprite.setScale({uiScale, uiScale});
-            uiSprite.setPosition({85.f, 590.f});
-
-            window.draw(uiSprite);
+        else if (currentState == State::TradeMenu) {
+            window.clear(backgroundSprite.getColor()); 
+            window.draw(generalBackground); 
+            bgStars.draw(window, spaceShip.getPosition());
+            tradeMenu.draw(window, spaceShip.getInventory(), world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip, spaceShip.getShipLevel());
+            tradeMenu.update(mousePos);
         }
-    }
+                else if (currentState == State::UpgradeTree) {
+                    window.draw(generalBackground);
+                    bgStars.draw(window, spaceShip.getPosition());
+                    
+                    upgradeTree.update(mousePos, upgrades);
+                    upgradeTree.draw(window, upgrades); 
+                }
 
-    spaceShip.update(dt);
-    spaceShip.draw(window);
-
-    if (alertTimer > 0) {
-        window.draw(alertSprite);
-    }
-
-    window.draw(planetNameText);
-
-    if (alertTimer > 0) window.draw(alertSprite);
-
-    window.draw(adminShipBtn);
-    window.draw(adminShipText);
-    
-    window.draw(animBtn);
-    window.draw(animBtnText);
-
-    if(aux) {
-        radarUI.update(world.getRadar()->getHeapArray());
-        aux = false; 
-    }
-    radarUI.draw(window);
-
-    if (currentState == State::TravelConfirmation) {
-        confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
-        confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
-        confirmText.setPosition({640.f, 330.f});
-        window.draw(confirmBg);
-        window.draw(confirmText);
-        window.draw(optionsText);
-    }
-
-    if (currentState == State::ShipMenu) {
-        shipMenu.update(mousePos);
-        shipMenu.draw(window, shipInventory, world.getGlobalCatalog());
-    }
-}
-else if (currentState == State::Animation1) {
-    intro.update(dt);
-    intro.draw(window);
-
-    if (intro.getState() == Interface::AnimState::Finished) {
-        currentState = State::Menu;
-    }
-}
-else if (currentState == State::InPlanet) {
-    window.clear(backgroundSprite.getColor());
-    window.draw(generalBackground);
-    
-    shipAnimX += 400.f * dt; 
-    if (shipAnimX > 1380.f) shipAnimX = -100.f;
-
-    sf::Vector2f originalPos = spaceShip.getPosition();
-    
-    spaceShip.setPosition({shipAnimX, 500.f}); 
-    spaceShip.setRotation(90.f); 
-    spaceShip.draw(window);
-    spaceShip.setPosition(originalPos);
-    spaceShip.setRotation(0.f); 
-
-    sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());
-    msg.setOrigin({msg.getLocalBounds().size.x / 2.f, 0.f});
-    msg.setPosition({640.f, 300.f});
-    window.draw(msg);
-
-    sf::Text escMsg(font, "Presiona ESC para regresar, ENTER o T para ir a la tienda");
-    escMsg.setCharacterSize(15);
-    escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
-    escMsg.setPosition({640.f, 650.f});
-    window.draw(escMsg);
-    bgStars.draw(window, spaceShip.getPosition());
-}
-else if (currentState == State::TradeMenu) {
-    window.clear(backgroundSprite.getColor()); 
-    window.draw(generalBackground); 
-    bgStars.draw(window, spaceShip.getPosition());
-    tradeMenu.draw(window, shipInventory, world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip.getShipLevel());
-    tradeMenu.update(mousePos);
-}
-
-window.display();
+        window.display();
     }
     
     return 0;

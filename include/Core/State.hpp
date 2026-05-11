@@ -1,6 +1,6 @@
 #pragma once
 
-// enum for state changes
+// enum for the games states changes
 enum class State {
     Menu,
     DifficultySelection,
@@ -12,5 +12,6 @@ enum class State {
     InPlanet,
     ShipMenu,
     TradeMenu,
-    Animation1
+    Animation1,
+    UpgradeTree
 };

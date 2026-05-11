@@ -41,7 +41,7 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
     upgradeBtn.setFillColor(sf::Color(0, 150, 0));
     upgradeBtn.setPosition({170.f, 450.f}); // Located under the ship
 
-    upgradeText.setString("UPGRADE SHIP");
+    upgradeText.setString("UPGRADE");
     upgradeText.setCharacterSize(18);
     upgradeText.setFillColor(sf::Color::White);
     
@@ -182,7 +182,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Inventory& inventory, cons
     }
 }
 
-void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, Player& player) {
+void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player) {
     // Detect mouse scroll
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
@@ -203,38 +203,42 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseBtn->button == sf::Mouse::Button::Left) {
             
-            // NAME header click
+            // click on Header NAME
             if (headerName.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Name) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Name; sortAscending = true; }
                 inventory.sortByName(sortAscending, catalog);
             }
             
-            // CATEGORY header click
+            // Click on Header CATEGORY
             else if (headerCategory.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Category) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Category; sortAscending = true; }
                 inventory.sortByCategory(sortAscending, catalog);
             }
             
-            // QUALITY header click
+            // Click on Header QUALITY
             else if (headerQuality.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Quality) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Quality; sortAscending = true; }
                 inventory.sortByQuality(sortAscending, catalog);
             }
             
-            // PRICE header click
+            // Click on Header PRICE
             else if (headerPrice.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Price) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Price; sortAscending = true; }
                 inventory.sortByPrice(sortAscending, catalog);
             }
 
+            // Click in UPGRADE
             if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-                if (player.upgradeShip()) {
-                    std::cout << "Ship Level: " << player.getShipLevel() << std::endl;
-                }
+                // Use This for adding more upgrades (More item Stock)
+                // if (player.upgradeShip()) {
+                //     std::cout << "Ship Level: " << player.getShipLevel() << std::endl;
+                // }
+                currentState = State::UpgradeTree;
+                return;
             }
         }
     }

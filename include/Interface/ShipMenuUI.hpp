@@ -3,6 +3,7 @@
 #include "Systems/Inventory.hpp"
 #include "Entities/Item.hpp"
 #include "Entities/Player.hpp"
+#include "Core/State.hpp"
 #include <vector>
 #include <string>
 
@@ -43,7 +44,7 @@ public:
     void draw(sf::RenderWindow& window, const Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
     // Handles clicks (for sorting headers or upgrade button)
-    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, Player& player);
+    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player);
     
     // For button hover
     void update(const sf::Vector2f& mousePos);

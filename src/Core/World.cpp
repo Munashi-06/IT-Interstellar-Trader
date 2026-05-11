@@ -1,12 +1,12 @@
 #include "Core/World.hpp"
 #include <algorithm>
 
-bool World::update() {
+bool World::update(Player& player) {
     // This is called in each frame of the main loop to handle time counters (such as event duration).
     // Here you could update the world state, such as advancing active events, managing missions, etc.
     // We only update the radar if something actually changed in the events.
     // This avoids recalculating the heap every frame, which improves performance.
-    bool hasChanged = stateManager.update(deltaTime, solarSystem);
+    bool hasChanged = stateManager.update(deltaTime, solarSystem, player);
     
     if (hasChanged) {
         forceRadarUpdate();

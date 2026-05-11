@@ -29,12 +29,15 @@ add_executable(IT-Interstellar-Trader
     src/Systems/PlanetManager.cpp
     src/Systems/ItemFactory.cpp
     src/Systems/Inventory.cpp
+    src/Systems/UpgradeManager.cpp
     
     src/Interface/Menu.cpp
     src/Interface/ShipMenuUI.cpp
     src/Interface/TradeMenuUI.cpp
     src/Interface/BackgroundStars.cpp
     src/Interface/IntroAnimation.cpp
+    src/Interface/UpgradeTreeUI.cpp
+    src/Interface/DebugMenuUI.cpp
     
     src/DataStructures/Heap.cpp
 )

@@ -67,6 +67,11 @@ private:
     sf::Text infoPopupText;
     sf::Text infoPopupEscText;
 
+// --- TOGGLE PRICES BUTTON ---
+    sf::RectangleShape togglePriceBtnBg;
+    sf::Text togglePriceBtnText;
+    bool showingOriginalPrices = false; // True = Base Planet Price, False = Player Discounted Price
+
     sf::Text infoInputText; // To tell the player which keys can be used in the market
 
     const sf::Font& font;
@@ -75,10 +80,11 @@ private:
     float getVisibilityPercent(Rarity rarity, int shipLevel) const;
 
 
+
 public:
     TradeMenuUI(const sf::Font& f);
     
-    void draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, int playerShipLevel = 1);
+    void draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, const Player& player, int playerShipLevel = 1);
     
     // This is where we will process clicks for "Sell" or "Buy"
     void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);

@@ -11,4 +11,8 @@ public:
     
     // Returns true if the sale was successful
     static bool sellItem(const std::string& itemID, Player& player, Inventory& playerInv, Planet& planet, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
+
+    // Helper functions to calculate final prices applying player's Trading Tree skills
+    static float getFinalBuyPrice(const Item& item, float basePlanetPrice, const Player& player);
+    static float getFinalSellPrice(const Item& item, float basePlanetPrice, const Player& player);
 };
