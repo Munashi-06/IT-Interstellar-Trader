@@ -8,6 +8,7 @@
 #include "Interface/IntroAnimation.hpp"
 #include "Interface/UpgradeTreeUI.hpp"
 #include "Interface/DebugMenuUI.hpp"
+#include "Interface/PirateEncounter.hpp"
 
 #include <iostream>
 #include <optional>
@@ -16,6 +17,7 @@
 #include <cmath> 
 
 GameConfig mainConfig;
+
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
@@ -39,7 +41,10 @@ int main() {
     audio.loadTheme("assets/audio/theme.ogg");
     audio.loadSFX("assets/audio/hover_sound.ogg", "assets/audio/option_selection_sound.ogg");
     audio.updateVolumesFromConfig(mainConfig.musicVolume, mainConfig.sfxVolume);
-    audio.playMusic();  // Empieza con undertale (música del menú)
+    audio.playMusic();
+
+    Interface::PirateEncounter pirates;
+    pirates.loadAssets();
 
     if (mainConfig.vsync){
         window.setVerticalSyncEnabled(true);
@@ -97,6 +102,7 @@ int main() {
     sf::Vector2f mousePos; // To store the mouse position in world coordinates, useful for interactions with the menu and the game world
 
     float alertTimer = 0.f; 
+    bool pirateEncounterActive = false; // NUEVO: Para controlar el encuentro con piratas
     
     // Priority Radar with the same charged source
     RadarUI radarUI(font);
@@ -278,6 +284,15 @@ int main() {
                 std::cout << "[AUDIO] Silenciando durante animación" << std::endl;
             }
         }
+        // PIRATA ENCOUNTER: sin música
+        else if (currentState == State::PirateEncounter) {
+            if (currentAudioContext != "none") {
+                audio.stopMusic();
+                audio.stopTheme();
+                currentAudioContext = "none";
+                std::cout << "[AUDIO] Silenciando durante encuentro con piratas" << std::endl;
+            }
+        }
         // GAMEPLAY: todos los estados del juego suenan theme
         else if (currentState == State::Playing || currentState == State::InPlanet || 
                  currentState == State::TravelConfirmation || currentState == State::ShipMenu ||
@@ -310,7 +325,7 @@ int main() {
                 adminShipBtn.setOutlineColor(sf::Color::White);
             }
             if(spaceShip.getHasWarpDrive()) {
-                    if (animBtn.getGlobalBounds().contains(mousePos)) {///
+                    if (animBtn.getGlobalBounds().contains(mousePos)) { ///
                         animBtn.setFillColor(sf::Color(150, 0, 200, 255));
                         animBtn.setOutlineColor(sf::Color::Cyan);
                     }
@@ -503,7 +518,7 @@ int main() {
                     }
 
                 }
-debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
+                debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             }
             else if (currentState == State::Animation1) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -530,7 +545,14 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Playing; 
-                        audio.playHover();             
+                        audio.playHover();
+                        
+                        // NUEVO: Tirar dado para encuentro con piratas al salir del planeta
+                        if (pirates.rollForEncounter(0.3f)) {
+                            pirateEncounterActive = true;
+                            pirates.reset();
+                            currentState = State::PirateEncounter;
+                        }
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::T) {
                         currentState = State::TradeMenu;
@@ -567,6 +589,24 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
                     }
                 }
                 upgradeTree.handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
+            }
+            // NUEVO: Estado para el encuentro con piratas
+            else if (currentState == State::PirateEncounter) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    // Cualquier tecla termina el encuentro
+                    if (keyPressed->code == sf::Keyboard::Key::Escape ||
+                        keyPressed->code == sf::Keyboard::Key::Enter ||
+                        keyPressed->code == sf::Keyboard::Key::Space) {
+                        currentState = State::Playing;
+                        pirateEncounterActive = false;
+                        audio.playClick();
+                    }
+                }
+                else if (event->is<sf::Event::MouseButtonPressed>()) {
+                    currentState = State::Playing;
+                    pirateEncounterActive = false;
+                    audio.playClick();
+                }
             }
         }
 
@@ -770,13 +810,55 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             tradeMenu.draw(window, spaceShip.getInventory(), world.getPlanets()[selectedPlanetIndex], spaceShip.getMoney(), world.getGlobalCatalog(), spaceShip, spaceShip.getShipLevel());
             tradeMenu.update(mousePos);
         }
-                else if (currentState == State::UpgradeTree) {
-                    window.draw(generalBackground);
-                    bgStars.draw(window, spaceShip.getPosition());
-                    
-                    upgradeTree.update(mousePos, upgrades);
-                    upgradeTree.draw(window, upgrades); 
-                }
+        else if (currentState == State::UpgradeTree) {
+            window.draw(generalBackground);
+            bgStars.draw(window, spaceShip.getPosition());
+            
+            upgradeTree.update(mousePos, upgrades);
+            upgradeTree.draw(window, upgrades); 
+        }
+        
+            else if (currentState == State::PirateEncounter) {
+            window.clear(sf::Color::Black);
+            
+            // Dibujamos estrellas (podrían usar una vista desplazada)
+            bgStars.draw(window, spaceShip.getPosition());
+            
+            // IMPORTANTE: Asegurar que dibujamos en coordenadas de pantalla
+            window.setView(window.getDefaultView()); 
+
+            pirates.update(dt);
+            pirates.draw(window); 
+               
+            // 4. Un overlay oscuro semi-transparente para dar efecto (opcional)
+            sf::RectangleShape darkOverlay;
+            darkOverlay.setSize({1280.f, 720.f});
+            darkOverlay.setFillColor(sf::Color(0, 0, 0, 100));
+            window.draw(darkOverlay);
+            
+            // 5. Texto de advertencia (encima de todo)
+            sf::Text warningText(font, "¡PIRATAS TE ATACAN!");
+            warningText.setCharacterSize(30);
+            warningText.setFillColor(sf::Color::Red);
+            warningText.setOutlineColor(sf::Color::Black);
+            warningText.setOutlineThickness(2);
+            sf::FloatRect textBounds = warningText.getLocalBounds();
+            warningText.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
+            warningText.setPosition({640.f, 150.f});
+            window.draw(warningText);
+            
+            sf::Text continueText(font, "Presiona cualquier tecla para continuar");
+            continueText.setCharacterSize(16);
+            continueText.setFillColor(sf::Color::White);
+            sf::FloatRect contBounds = continueText.getLocalBounds();
+            continueText.setOrigin({contBounds.size.x / 2.f, 0.f});
+            continueText.setPosition({640.f, 650.f});
+            window.draw(continueText);
+            
+            if (pirates.isFinished() && !pirateEncounterActive) {
+                currentState = State::Playing;
+            }
+        }
 
         window.display();
     }
