@@ -2,36 +2,49 @@
 #define PIRATE_ENCOUNTER_HPP
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include <random>
+#include <memory>
+#include <vector>
+#include <string>
 
 namespace Interface {
+    enum class PirateMenu { Main, Bribery, Result };
+
     class PirateEncounter {
     public:
         PirateEncounter();
-        
         bool loadAssets();
-        // Lógica para decidir si ocurre el ataque (ej. 30% de probabilidad)
-        bool rollForEncounter(float chance = 0.3f); 
-        
         void update(float dt);
-        void draw(sf::RenderWindow& window);
-        void reset();
+        void draw(sf::RenderWindow& window, sf::Font& font);
+        
+        // Esta función decide si hay encuentro y activa el objeto
+        bool rollForEncounter(float chance);
+        
+        void reset(); // Configura el menú inicial
+        void stop();  // Apaga el encuentro
 
-        bool isFinished() const { return finished; }
-        bool isActive() const { return active; }
+        void handleInput(sf::Keyboard::Key key);
+        void setShowButtons(bool show);
+        bool isShowingButtons() const;
+        
+        PirateMenu getCurrentMenu() const { return currentMenu; }
+        int getSelectedButton() const { return selectedButton; }
+        void setMenu(PirateMenu menu) { currentMenu = menu; selectedButton = 0; }
 
     private:
         sf::Texture pirateTex;
         std::unique_ptr<sf::Sprite> pirateSprite;
         
         bool active;
-        bool finished;
         float displayTimer;
-        float maxDisplayTime;
         float baseScale;
-        
-        // Generador de números aleatorios
+        bool showButtons;
+
+        PirateMenu currentMenu;
+        int selectedButton;
+        std::vector<std::string> mainOptions;
+        std::vector<std::string> briberyOptions;
+
         std::mt19937 rng;
     };
 }

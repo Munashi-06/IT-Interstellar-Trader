@@ -336,7 +336,7 @@ int main() {
                 }
 
             }
-// --- INPUT LOGIC ---
+        // --- INPUT LOGIC ---
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
 
@@ -590,27 +590,60 @@ int main() {
                 }
                 upgradeTree.handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
             }
-            // NUEVO: Estado para el encuentro con piratas
             else if (currentState == State::PirateEncounter) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // Cualquier tecla termina el encuentro
-                    if (keyPressed->code == sf::Keyboard::Key::Escape ||
-                        keyPressed->code == sf::Keyboard::Key::Enter ||
-                        keyPressed->code == sf::Keyboard::Key::Space) {
-                        currentState = State::Playing;
-                        pirateEncounterActive = false;
-                        audio.playClick();
+                    
+                    if (!pirates.isShowingButtons()) {
+                        if (keyPressed->code == sf::Keyboard::Key::Enter) {
+                            pirates.setShowButtons(true);
+                        }
+                    } 
+                    else {
+                        pirates.handleInput(keyPressed->code);
+
+                        if (keyPressed->code == sf::Keyboard::Key::Enter) {
+                            int sel = pirates.getSelectedButton();
+                            int roll = std::rand() % 100;
+                            float currentMoney = spaceShip.getMoney();
+
+                            if (pirates.getCurrentMenu() == Interface::PirateMenu::Main) {
+                                if (sel == 0) { // DEFENDERSE
+                                    if (roll < 50) spaceShip.setMoney(0.0f);
+                                    pirates.stop(); 
+                                    pirateEncounterActive = false;
+                                    currentState = State::Playing;
+                                } 
+                                else if (sel == 1) { 
+                                    pirates.setMenu(Interface::PirateMenu::Bribery);
+                                } 
+                                else if (sel == 2) { // RENDIRSE
+                                    spaceShip.getInventory().clearAll(); 
+                                    pirates.stop();
+                                    pirateEncounterActive = false;
+                                    currentState = State::Playing;
+                                }
+                            } 
+                            else if (pirates.getCurrentMenu() == Interface::PirateMenu::Bribery) {
+                                if (sel == 0) { // 80%
+                                    spaceShip.setMoney(currentMoney * 0.2f);
+                                    if (roll < 10) spaceShip.setMoney(0.0f);
+                                    pirates.stop(); pirateEncounterActive = false; currentState = State::Playing;
+                                } 
+                                else if (sel == 1) { // 40%
+                                    spaceShip.setMoney(currentMoney * 0.6f);
+                                    if (roll < 60) spaceShip.setMoney(0.0f);
+                                    pirates.stop(); pirateEncounterActive = false; currentState = State::Playing;
+                                } 
+                                else { 
+                                    pirates.setMenu(Interface::PirateMenu::Main);
+                                }
+                            }
+                        }
                     }
-                }
-                else if (event->is<sf::Event::MouseButtonPressed>()) {
-                    currentState = State::Playing;
-                    pirateEncounterActive = false;
-                    audio.playClick();
                 }
             }
         }
-
-// --- UPDATE & DRAW
+        // --- UPDATE & DRAW
         window.clear();
 
         if (currentState == State::Menu) {
@@ -817,51 +850,44 @@ int main() {
             upgradeTree.update(mousePos, upgrades);
             upgradeTree.draw(window, upgrades); 
         }
-        
-            else if (currentState == State::PirateEncounter) {
+
+        //Dibujar el encuentro con piratas
+        else if (currentState == State::PirateEncounter) {
             window.clear(sf::Color::Black);
-            
-            // Dibujamos estrellas (podrían usar una vista desplazada)
             bgStars.draw(window, spaceShip.getPosition());
-            
-            // IMPORTANTE: Asegurar que dibujamos en coordenadas de pantalla
             window.setView(window.getDefaultView()); 
 
             pirates.update(dt);
-            pirates.draw(window); 
-               
-            // 4. Un overlay oscuro semi-transparente para dar efecto (opcional)
+            pirates.draw(window, font); 
+            
             sf::RectangleShape darkOverlay;
             darkOverlay.setSize({1280.f, 720.f});
             darkOverlay.setFillColor(sf::Color(0, 0, 0, 100));
             window.draw(darkOverlay);
-            
-            // 5. Texto de advertencia (encima de todo)
-            sf::Text warningText(font, "¡PIRATAS TE ATACAN!");
-            warningText.setCharacterSize(30);
-            warningText.setFillColor(sf::Color::Red);
-            warningText.setOutlineColor(sf::Color::Black);
-            warningText.setOutlineThickness(2);
-            sf::FloatRect textBounds = warningText.getLocalBounds();
-            warningText.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
-            warningText.setPosition({640.f, 150.f});
-            window.draw(warningText);
-            
-            sf::Text continueText(font, "Presiona cualquier tecla para continuar");
-            continueText.setCharacterSize(16);
-            continueText.setFillColor(sf::Color::White);
-            sf::FloatRect contBounds = continueText.getLocalBounds();
-            continueText.setOrigin({contBounds.size.x / 2.f, 0.f});
-            continueText.setPosition({640.f, 650.f});
-            window.draw(continueText);
-            
-            if (pirates.isFinished() && !pirateEncounterActive) {
-                currentState = State::Playing;
+
+            if (!pirates.isShowingButtons()) {
+                sf::Text warningText(font, "PIRATAS TE ATACAN!"); 
+                warningText.setCharacterSize(30);
+                warningText.setFillColor(sf::Color::Red);
+                warningText.setOutlineColor(sf::Color::Black);
+                warningText.setOutlineThickness(2);
+                sf::FloatRect textBounds = warningText.getLocalBounds();
+                warningText.setOrigin({textBounds.size.x / 2.f, textBounds.size.y / 2.f});
+                warningText.setPosition({640.f, 150.f});
+                window.draw(warningText);
+                
+                sf::Text continueText(font, "Presiona ENTER para ver opciones");
+                continueText.setCharacterSize(16);
+                continueText.setFillColor(sf::Color::White);
+                sf::FloatRect contBounds = continueText.getLocalBounds();
+                continueText.setOrigin({contBounds.size.x / 2.f, 0.f});
+                continueText.setPosition({640.f, 650.f});
+                window.draw(continueText);
             }
         }
 
         window.display();
-    }
-    
+    } // Cierre del bucle while (window.isOpen())
+
     return 0;
-}
+} // Cierre de la función int main()

@@ -23,6 +23,12 @@ bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, fl
     return false;
 }
 
+void Inventory::clearAll() noexcept {
+    for (auto& slot : slots) {
+        slot = std::nullopt;
+    }
+}
+
 void Inventory::removeItem(const std::string& itemID, int qty) {
     for (auto& slot : slots) {
         if (slot.has_value() && slot->itemID == itemID) {

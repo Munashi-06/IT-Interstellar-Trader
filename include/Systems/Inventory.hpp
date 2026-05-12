@@ -12,6 +12,8 @@ public:
         slots.resize(capacity, std::nullopt); // Initialize with empty slots
     }
 
+    std::vector<std::optional<ItemStack>>& getSlots() noexcept { return slots; }
+    void clearAll() noexcept;
     bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
     void removeItem(const std::string& itemID, int qty);
     void display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const;
