@@ -35,7 +35,6 @@ int main() {
     sf::Clock worldClock;
     
     AudioManager audio;
-    audio.loadMusic("assets/audio/undertale_dogsong.ogg");
     audio.loadTheme("assets/audio/theme.ogg");
     audio.loadSFX("assets/audio/hover_sound.ogg", "assets/audio/option_selection_sound.ogg");
     audio.updateVolumesFromConfig(mainConfig.musicVolume, mainConfig.sfxVolume);
@@ -257,10 +256,9 @@ int main() {
             if (currentAudioContext != "menu") {
                 audio.stopTheme();
                 // Recargar la música del menú explícitamente
-                audio.loadMusic("assets/audio/undertale_dogsong.ogg");
+                audio.loadMusic("assets/audio/theme.ogg");
                 audio.playMusic();
                 currentAudioContext = "menu";
-                std::cout << "[AUDIO] Cambiando a música del menú (undertale)" << std::endl;
             } else {
                 // Si ya estamos en contexto menu, asegurar que la música siga sonando
                 // (por si acaso se detuvo por algún motivo)

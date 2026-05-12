@@ -1,88 +1,200 @@
-Raciones de Supervivencia;20;4;0
-Sintetizador de Nutrientes;150;4;1
-Fruta de Kepler;300;4;2
-Botiquin Basico;50;5;0
-Suero Antidoto;200;5;1
-Nanobots Curativos;1200;5;2
-Regenerador Celular;4500;5;3
-Hierro Galactico;15;0;0
-Hielo de Cometa;10;0;0
-Cobre Estelar;45;0;0
-Cristales de Silicio;80;0;1
-Titanio Refinado;150;0;1
-Gas de Nebulosa;200;0;2
-Isotopos de Uranio;400;0;2
-Materia Oscura Estable;2500;0;3
-Celdas de Energia;60;1;0
-Modulos de Reparacion;120;1;0
-Microprocesadores;300;1;1
-Escudos de Plasma;850;1;1
-Computadora de Salto;1500;1;2
-Reactores Antimateria;3500;1;3
-Sensores de Largo Alcance;700;1;2
-Nucleo Cuantico;5000;1;3
-Raciones de Lujo;100;2;1
-Seda Cuantica;450;2;2
-Joyas de Asteroides;900;2;2
-Arte de la Antigua Tierra;2500;2;3
-Especias de Orion;4000;2;3
-Software Encriptado;600;3;1
-Narcoticos Medicos;1100;3;2
-Planos Robados;3000;3;3
-Barritas de Proteina;12;4;0
-Algas Deshidratadas;25;4;0
-Carne de Laboratorio;80;4;1
-Nectar de Estrellas;1200;4;3
-Vino Sintetico;180;4;1
-Estimulantes de Adrenalina;350;5;1
-Vendas de Polimero;30;5;0
-Platino Bruto;250;0;1
-Fibra de Carbono;100;0;0
-Aleacion Superconductora;600;0;2
-Polvo Estelar Concentrado;1500;0;3
-Cristales Kyber Sinteticos;350;0;1
-Bateria de Iones;90;1;0
-Lentes Infrarrojos;250;1;1
-Proyector Holografico;800;1;2
-Motor de Curvatura;8000;1;3
-Drones de Mantenimiento;1200;1;2
-Piel de Bestia Lunar;600;2;1
-Perfume de Feromonas;1200;2;2
-Corona Imperial Antigua;5500;2;3
-Seda Aracnida Espacial;300;2;0
-Diamantes de Enana Blanca;8500;2;3
-Armas de Plasma Ilegales;1500;3;2
-Organos Clonados;2200;3;2
-Reliquia Sith Robada;6000;3;3
-Especies Invasoras Vivas;800;3;1
-Datos de Espionaje;3500;3;2
-Semillas Mutantes;40;4;0
-Carne de Leviatan;600;4;2
-Agua Purificada;10;4;0
-Raciones Militares;55;4;0
-Huevos de Dragon de Hielo;1800;4;3
-Bisturi Laser;150;5;0
-Plasma Sanguineo Universal;400;5;1
-Camara de Estasis;3000;5;3
-Implantes Ciberneticos;1800;5;2
-Vacuna Planetaria;800;5;1
-Gel de Plasma Refrigerante;180;0;0
-Manual de Ingeniería Avanzada;450;1;1
-Aceite Esencial de Luna;950;2;2
-Chip de Identidad Falsificado;2800;3;2
-Setas Bioluminiscentes;65;4;1
-Kit de Sutura Avanzada;320;5;1
-Cristales de Energía Pura;2200;0;3
-Modulador de Fase Experimental;1600;1;2
-Vino de Nebulosa Añejado;750;2;1
-Parches Dérmicos Regenerativos;550;5;0
-Polvo de Asteroides Raros;320;0;1
-Servomotores de Precisión;750;1;0
-Collar de Perlas Estelares;1800;2;2
-Contrabando de Artefactos Antiguos;4500;3;3
-Algas Nutritivas Deshidratadas;28;4;0
-Inyección de Nanomedicina;950;5;2
-Fragmento de Núcleo Estelar;4800;0;3
-Planos de Nave Experimental;3200;1;3
-Colección de Vinos Galácticos;2200;2;1
-Estimulantes de Combate Ilegales;1800;3;1
+Survival Rations;20;4;0
+Nutrient Synthesizer;150;4;1
+Kepler Fruit;300;4;2
+Basic First Aid Kit;50;5;0
+Antidote Serum;200;5;1
+Healing Nanobots;1200;5;2
+Cellular Regenerator;4500;5;3
+Galactic Iron;15;0;0
+Comet Ice;10;0;0
+Stellar Copper;45;0;0
+Silicon Crystals;80;0;1
+Refined Titanium;150;0;1
+Nebula Gas;200;0;2
+Uranium Isotopes;400;0;2
+Stable Dark Matter;2500;0;3
+Energy Cells;60;1;0
+Repair Modules;120;1;0
+Microprocessors;300;1;1
+Plasma Shields;850;1;1
+Jump Computer;1500;1;2
+Antimatter Reactors;3500;1;3
+Long Range Sensors;700;1;2
+Quantum Core;5000;1;3
+Luxury Rations;100;2;1
+Quantum Silk;450;2;2
+Asteroid Jewelry;900;2;2
+Ancient Earth Art;2500;2;3
+Orion Spices;4000;2;3
+Encrypted Software;600;3;1
+Medical Narcotics;1100;3;2
+Stolen Blueprints;3000;3;3
+Protein Bars;12;4;0
+Dehydrated Algae;25;4;0
+Lab-Grown Meat;80;4;1
+Star Nectar;1200;4;3
+Synthetic Wine;180;4;1
+Adrenaline Stimulants;350;5;1
+Polymer Bandages;30;5;0
+Raw Platinum;250;0;1
+Carbon Fiber;100;0;0
+Superconducting Alloy;600;0;2
+Concentrated Stardust;1500;0;3
+Synthetic Kyber Crystals;350;0;1
+Ion Battery;90;1;0
+Infrared Lenses;250;1;1
+Holographic Projector;800;1;2
+Warp Engine;8000;1;3
+Maintenance Drones;1200;1;2
+Lunar Beast Skin;600;2;1
+Pheromone Perfume;1200;2;2
+Ancient Imperial Crown;5500;2;3
+Space Spider Silk;300;2;0
+White Dwarf Diamonds;8500;2;3
+Illegal Plasma Weapons;1500;3;2
+Cloned Organs;2200;3;2
+Stolen Sith Relic;6000;3;3
+Live Invasive Species;800;3;1
+Espionage Data;3500;3;2
+Mutant Seeds;40;4;0
+Leviathan Meat;600;4;2
+Purified Water;10;4;0
+Military Rations;55;4;0
+Ice Dragon Eggs;1800;4;3
+Laser Scalpel;150;5;0
+Universal Blood Plasma;400;5;1
+Stasis Chamber;3000;5;3
+Cybernetic Implants;1800;5;2
+Planetary Vaccine;800;5;1
+Cooling Plasma Gel;180;0;0
+Advanced Engineering Manual;450;1;1
+Lunar Essence Oil;950;2;2
+Fake Identity Chip;2800;3;2
+Bioluminescent Mushrooms;65;4;1
+Advanced Suture Kit;320;5;1
+Pure Energy Crystals;2200;0;3
+Experimental Phase Modulator;1600;1;2
+Aged Nebula Wine;750;2;1
+Regenerative Skin Patches;550;5;0
+Rare Asteroid Dust;320;0;1
+Precision Servomotors;750;1;0
+Stellar Pearl Necklace;1800;2;2
+Smuggled Ancient Artifacts;4500;3;3
+Dehydrated Nutritious Algae;28;4;0
+Nanomedicine Injection;950;5;2
+Stellar Core Fragment;4800;0;3
+Experimental Ship Blueprints;3200;1;3
+Galactic Wine Collection;2200;2;1
+Illegal Combat Stimulants;1800;3;1
+Crystallized Plasma Gems;340;0;1
+Quantum Hacking Kit;650;1;2
+Starflower Essence;1200;2;1
+Illegal Designer Drugs;2200;3;2
+Void Mushrooms;45;4;1
+Neural Painkiller;280;5;0
+Primordial Comet Fragment;900;0;2
+Plasma Energy Regulator;1100;1;1
+Luxury Atomic Clock;3500;2;3
+Illegal Phase Weapons;3200;3;2
+Cosmic Seed Pods;55;4;0
+Medical Assistance Exoskeleton;480;5;1
+Dense Asteroid Mineral;180;0;0
+Gravitational Wave Converter;3200;1;3
+Interstellar Silk Tapestry;850;2;0
+Sealed Assassination Contracts;5000;3;3
+Zero Gravity Roots;75;4;1
+Nanofiber Bandage;120;5;0
+Pure Nebula Concentrate;650;0;2
+Solid State Heat Sink;1400;1;2
+Stellar Plasma Condenser;750;0;1
+Experimental Armor Plating;2200;1;2
+Lunar Beast Oil;1500;2;2
+Stolen Identity Chips;1800;3;1
+Space Insect Protein;35;4;0
+Emergency Auto-Injector;650;5;1
+Cooled Nova Essence;2800;0;3
+Titanium Servo Joints;950;1;1
+Stellar Sand Glassware;600;2;0
+Hacked Military Blueprints;4200;3;2
+Dehydrated Larvae;20;4;0
+Instant Clotting Patch;90;5;0
+Magnetic Meteorite Dust;420;0;1
+Biological Computing Matrix;3800;1;3
+Full Moon Essence;2200;2;2
+Illegal Sonic Weapons;2800;3;1
+Zero Gravity Fruits;120;4;1
+Portable Diagnostic Kit;750;5;1
+Stellar Quartz Crystal;1100;0;2
+Superconducting Energy Coils;1800;1;2
+Stellar Beast Claw;2800;2;3
+Cloned Stem Cells;3200;5;3
+Corporate Espionage Files;5500;3;3
+Miniature Reactor Core;4200;1;3
+Cosmic Tree Seeds;180;4;2
+Smuggler Bracelet;3500;2;2
+Autonomous Exploration Drones;2800;1;2
+Alien Blood Samples;950;5;2
+Dead Planet Mineral;550;0;1
+Stellar Emergency Rations;30;4;0
+Military Field Kit;180;5;0
+Abandoned Ship Scrap;25;0;0
+Luxury Synthetic Leather;450;2;0
+Bank Hacking Software;1800;3;1
+Black Hole Algae;95;4;1
+Reflex Enhancer;220;5;1
+Nebula Copper;70;0;0
+Advanced Piloting Manual;320;1;0
+Water Planet Pearls;1500;2;2
+Fake Identity Documents;1200;3;1
+Stellar Dragon Scales;3200;0;3
+Alien Circuit Board;850;1;1
+Martian Grape Wine;650;4;2
+Lunar Energy Amulet;1800;2;1
+Wormhole Particles;5500;0;3
+Secret Research Data;2800;3;2
+Quantum Memory Module;2200;1;2
+Void Healing Mushrooms;380;5;1
+Titan Bone Dust;150;0;0
+Space Combat Rations;45;4;0
+Combat Painkiller;180;5;0
+Desert Planet Spices;280;2;0
+Organ Smuggling;1800;3;1
+Ice Beast Meat;85;4;1
+Quick Combat Bandage;60;5;0
+Asteroid Titanium;220;0;1
+Compact Cargo Drone;950;1;1
+Space Worm Silk;1200;2;2
+Illegal Pulse Weapons;2200;3;2
+Accelerated Regeneration Serum;1500;5;2
+Volcanic Blood Crystal;480;0;2
+Force Field Generator;3500;1;3
+Quantum Music Box;2200;2;2
+Lethal Virus Samples;4500;3;3
+Stellar Freeze-Dried Soup;15;4;0
+Pure Adrenaline Syringe;280;5;1
+Planetary Ring Stones;180;0;0
+Subspace Communication Antenna;750;1;1
+Starlight Tear Necklace;2800;2;3
+Smuggling Robots;2200;3;2
+Vegetable Fiber Bars;40;4;0
+Compact First Aid Kit;55;5;0
+Volcanic Planet Mercury;320;0;1
+Alien Signal Processor;1500;1;2
+Lost Race Relics;5500;2;3
+Forbidden Energy Weapons;3800;3;3
+Intergalactic Coffee Beans;150;4;1
+Enhanced Vision Implant;850;5;1
+Capital Ship Alloy;1200;0;2
+Advanced Life Support Plate;2800;1;2
+Liquid Alloy Compound;850;0;2
+Tracking Signal Inhibitor;1800;1;2
+Ancient Coin Chest;4200;2;3
+Mastermind Files;6000;3;3
+Luminescent Mushrooms;55;4;1
+Bone Marrow Regenerator;2200;5;2
+Ionic Storm Crystals;650;0;1
+Phase Shield Modulator;3200;1;3
+Cosmic Artist Painting;2800;2;2
+Mind Control Drugs;3500;3;2
+Lunar Bee Honey;90;4;1
+Vacuum Resistance Implant;1500;5;2
