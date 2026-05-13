@@ -18,7 +18,7 @@ add_executable(IT-Interstellar-Trader
     src/Core/main.cpp
     src/Core/AudioManager.cpp
     src/Core/Settings.cpp
-    src/Core/WorldStatemanager.cpp
+    src/Core/WorldStateManager.cpp
     src/Core/World.cpp
     
     src/Entities/Player.cpp

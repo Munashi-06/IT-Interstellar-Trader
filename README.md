@@ -25,7 +25,7 @@ Si deseas clonar el repositorio y compilar el código fuente por tu cuenta, sigu
 **Linux (Ubuntu/Debian)**
 Ejecuta el siguiente comando para instalar el compilador, CMake y todas las dependencias multimedia que requiere SFML:
 
-- sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev libfreetype-dev libxcursor-dev libxi-dev
+- sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev libfreetype-dev libxcursor-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev git
 
 ### Pasos para Compilar
 #### En Linux:
