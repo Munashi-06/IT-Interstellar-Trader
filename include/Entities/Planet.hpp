@@ -50,6 +50,8 @@ public:
     int getLuxuryDemand() const;
     int getMoonCount() const;
     int getMedicalTech() const;
+    float getBaseItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const;
+    float getLocalBasePrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const;
     const std::vector<std::optional<ItemStack>>& getLocalStock() const noexcept { return localStock; }
     sf::Sprite* getSprite() { return sprite.get(); }
     const sf::Sprite* getSprite() const { return sprite.get(); }

@@ -335,19 +335,21 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 qtyT.setPosition({ 450.f, yPos });
                 window.draw(qtyT);
                 
-                float baseSellPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                float finalSellPrice = baseSellPrice;
+                float localBasePrice = currentPlanet.getLocalBasePrice(slot->itemID, catalog);
+                float planetPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
+                float finalSellPrice;
+
                 sf::Text priceT(font, ""); 
                 priceT.setFillColor(sf::Color::White);
-                // If we are NOT showing the original pices, we apply the player's bonus
-                if (!showingOriginalPrices) {
-                    finalSellPrice = TradeManager::getFinalSellPrice(*itemData, baseSellPrice, player);
-                    // Paint the price text green if the player is selling for more than base price
-                    // Paint the price text red if it's a bad deal
-                    if (finalSellPrice > baseSellPrice) {
+
+                if (showingOriginalPrices) {
+                    finalSellPrice = localBasePrice;
+                } else {
+                    finalSellPrice = TradeManager::getFinalSellPrice(*itemData, planetPrice, player);
+                    
+                    if (finalSellPrice > localBasePrice) {
                         priceT.setFillColor(sf::Color::Green);
-                    }
-                    else if (finalSellPrice < baseSellPrice) {
+                    } else if (finalSellPrice < localBasePrice) {
                         priceT.setFillColor(sf::Color::Red);
                     }
                 }
@@ -435,19 +437,21 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 qtyT.setPosition({ 1070.f, yPos });
                 window.draw(qtyT);
                 
-                float baseBuyPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
-                float finalBuyPrice = baseBuyPrice;
+                float localBasePrice = currentPlanet.getLocalBasePrice(slot->itemID, catalog);  // Atributos
+                float planetPrice = currentPlanet.getItemPrice(slot->itemID, catalog);           // Atributos + Eventos
+                float finalBuyPrice;
+
                 sf::Text priceT(font, ""); 
                 priceT.setFillColor(sf::Color::White);
-                // If we are NOT showing the original pices, we apply the player's discounts
-                if (!showingOriginalPrices) {
-                    finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, baseBuyPrice, player);
-                    // Paint the price text green if the player is buying for less than base price
-                    // Paint the price text red if the player is buying for more than base price
-                    if (finalBuyPrice < baseBuyPrice) {
+
+                if (showingOriginalPrices) {
+                    finalBuyPrice = localBasePrice;
+                } else {
+                    finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, planetPrice, player);
+                    
+                    if (finalBuyPrice < localBasePrice) {
                         priceT.setFillColor(sf::Color::Green);
-                    }
-                    else if (finalBuyPrice > baseBuyPrice) {
+                    } else if (finalBuyPrice > localBasePrice) {
                         priceT.setFillColor(sf::Color::Red);
                     }
                 }

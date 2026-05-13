@@ -239,75 +239,73 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
     }
 }
 
-float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
+float Planet::getLocalBasePrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
     const auto& item = globalCatalog.at(itemID);
     float price = item->getBasePrice();
     float modifier = 1.0f;
-
-    // --- Influence of Planet Attributes ---
+    
+    // SOLO atributos del planeta, SIN eventos
     if (item->isTechnology()) {
-        // Higher tech level means more supply, lower price (-20% maximum)
-        if(this->techLevel >= 8){
-            modifier -= 0.40f; // Tech 8-10 planets have a significant discount on technology
-        } else if (this->techLevel <= 3){
-            modifier += 0.40f; // Tech 1-3 planets have a premium on technology
-        }
+        if (this->techLevel >= 8) modifier -= 0.40f;
+        else if (this->techLevel <= 3) modifier += 0.40f;
     }
-
-    if (item->isResource() || item->isFood()){
-        // If the planet is abundant in resources, they are cheaper. If it's a famine, food is more expensive.
-        if(this->resourceAbundance >= 8){
-            modifier -= 0.35f; // Abundant planets have a discount on resources
-        } else if (this->resourceAbundance <= 3){
-            modifier += 0.35f; // Scarce planets have a premium on resources
-        }
+    if (item->isResource() || item->isFood()) {
+        if (this->resourceAbundance >= 8) modifier -= 0.35f;
+        else if (this->resourceAbundance <= 3) modifier += 0.35f;
     }
-
-    if (item->isLuxury()){
-        if(this->luxuryDemand >= 8){
-            modifier -= 0.30f; // If the demand for luxury is very high, it means there are many merchants bringing it, so it becomes cheaper
-        } else if (this->luxuryDemand <= 3){
-            modifier += 0.30f; // If the demand for luxury is very low, it means few merchants bring it, so it becomes more expensive
-        }
+    if (item->isLuxury()) {
+        if (this->luxuryDemand >= 8) modifier -= 0.30f;
+        else if (this->luxuryDemand <= 3) modifier += 0.30f;
     }
-
-    if (item->isMedical()){
-        if(this->medicalTech >= 8){
-            modifier -= 0.35f; // Planets with advanced medical technology have cheaper medicines
-        } else if (this->medicalTech <= 3){
-            modifier += 0.35f; // Planets with poor medical technology have more expensive medicines
-        }
+    if (item->isMedical()) {
+        if (this->medicalTech >= 8) modifier -= 0.35f;
+        else if (this->medicalTech <= 3) modifier += 0.35f;
     }
-
-    if(item->isIllegal()){
-        // The more secure the planet, the more expensive illegal items are (and vice versa)
-        if(this->securityLevel >= 8){
-            modifier += 0.50f; // Very secure planets have a high premium on illegal items
-        } else if (this->securityLevel <= 3){
-            modifier -= 0.50f; // Very insecure planets have a discount on illegal items
-        }
+    if (item->isIllegal()) {
+        if (this->securityLevel >= 8) modifier += 0.50f;
+        else if (this->securityLevel <= 3) modifier -= 0.50f;
     }
+    
+    return price * std::max(0.05f, modifier);
+}
 
-    // --- Influence of Events ---
+float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
+    const auto& item = globalCatalog.at(itemID);
+    float localBase = getLocalBasePrice(itemID, globalCatalog);
+    float eventModifier = 0.0f;
+    
+    // Solo eventos
     switch (this->currentEvent) {
         case PlanetEvent::War:
-            if (item->isMedical()) modifier += 1.5f;   // Medicine goes up
-            if (item->isTechnology()) modifier += 0.5f; // Components go up
+            if (item->isMedical()) eventModifier += 2.5f;
+            if (item->isTechnology()) eventModifier += 1.0f;
+            if (item->isLuxury()) eventModifier += 0.3f;
+            if (item->isFood()) eventModifier += 0.5f;
             break;
         case PlanetEvent::Plague:
-            if (item->isMedical()) modifier += 2.0f;
-            if (item->isFood()) modifier += 0.4f;
+            if (item->isMedical()) eventModifier += 3.5f;
+            if (item->isFood()) eventModifier += 0.8f;
+            if (item->isLuxury()) eventModifier -= 0.4f;
             break;
         case PlanetEvent::Famine:
-            if (item->isFood()) modifier += 2.5f;
+            if (item->isFood()) eventModifier += 3.5f;
+            if (item->isResource()) eventModifier += 0.3f;
+            if (item->isMedical()) eventModifier += 0.5f;
+            if (item->isLuxury()) eventModifier -= 0.5f;
             break;
         case PlanetEvent::TechBoom:
-            if (item->isTechnology()) modifier -= 0.3f; // Excess supply
+            if (item->isTechnology()) eventModifier -= 0.6f;
+            if (item->isResource()) eventModifier -= 0.2f;
+            break;
+        case PlanetEvent::Piracy:
+            if (item->isIllegal()) eventModifier -= 0.7f;
+            if (item->isLuxury()) eventModifier += 0.4f;
+            if (item->isTechnology()) eventModifier += 0.3f;
             break;
         default: break;
     }
-
-    return price * std::max(0.1f, modifier); // Never a negative or 0 price
+    
+    return localBase * std::max(0.01f, (1.0f + eventModifier));
 }
 
 bool Planet::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice) {
@@ -407,4 +405,9 @@ void Planet::updateScale(float deltaTime){
         newScale = std::max(newScale, targetScale);
     }
     sprite->setScale({newScale, newScale});
+}
+
+float Planet::getBaseItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
+    const auto& item = globalCatalog.at(itemID);
+    return item->getBasePrice();  // Precio puro del archivo items.txt
 }
