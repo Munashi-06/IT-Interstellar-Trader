@@ -366,6 +366,19 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
         }
     }
 
+    if (isPlayerItem && selectedItemID != "") {
+        bool stillExists = false;
+        for (const auto& slot : playerInv.getSlots()) {
+            if (slot.has_value() && slot->itemID == selectedItemID) {
+                stillExists = true;
+                break;
+            }
+        }
+        if (!stillExists) {
+            selectedItemID = "";  // Deseleccionar item fantasma
+        }
+    }
+
     // --- DRAW PLANET (Right) ---
     window.draw(planetTableBg);
     // Update Planet Name
@@ -468,6 +481,19 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
             }
         }
     }
+
+    if (!isPlayerItem && selectedItemID != "") {
+    bool stillExists = false;
+    for (const auto& slot : currentPlanet.getLocalStock()) {
+        if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+            stillExists = true;
+            break;
+        }
+    }
+    if (!stillExists) {
+        selectedItemID = "";  // Deseleccionar item fantasma
+    }
+}
 
     // Draw instruction text at the bottom
     window.draw(infoInputText);
@@ -787,18 +813,69 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
             }
             // 3. CHECK CLICK ON ACTION BUTTONS (Buy/Sell)
             if (selectedItemID != "") {
-                if (isPlayerItem && playerActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                    // Click on SELL
-                    TradeManager::sellItem(selectedItemID, player, playerInv, currentPlanet, catalog);
-                    return; 
+                if (isPlayerItem) {
+                    // Validar SELL
+                    bool itemExists = false;
+                    for (const auto& slot : playerInv.getSlots()) {
+                        if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                            itemExists = true;
+                            break;
+                        }
+                    }
+                    if (!itemExists) {
+                        selectedItemID = "";
+                        return;
+                    }
+                    
+                    if (playerActionBtnBg.getGlobalBounds().contains(mousePos)) {
+                        TradeManager::sellItem(selectedItemID, player, playerInv, currentPlanet, catalog);
+                        
+                        // Deseleccionar si se quedó sin unidades
+                        bool stillHasItem = false;
+                        for (const auto& slot : playerInv.getSlots()) {
+                            if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                                stillHasItem = true;
+                                break;
+                            }
+                        }
+                        if (!stillHasItem) {
+                            selectedItemID = "";
+                        }
+                        return;
+                    }
                 }
-                else if (!isPlayerItem && planetActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                    // Click on BUY
-                    TradeManager::buyItem(selectedItemID, player, playerInv, currentPlanet, catalog);
-                    return;
+                else {
+                    // Validar BUY
+                    bool itemExists = false;
+                    for (const auto& slot : currentPlanet.getLocalStock()) {
+                        if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                            itemExists = true;
+                            break;
+                        }
+                    }
+                    if (!itemExists) {
+                        selectedItemID = "";
+                        return;
+                    }
+                    
+                    if (planetActionBtnBg.getGlobalBounds().contains(mousePos)) {
+                        TradeManager::buyItem(selectedItemID, player, playerInv, currentPlanet, catalog);
+                        
+                        // Deseleccionar si el planeta se quedó sin stock
+                        bool stillHasItem = false;
+                        for (const auto& slot : currentPlanet.getLocalStock()) {
+                            if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                                stillHasItem = true;
+                                break;
+                            }
+                        }
+                        if (!stillHasItem) {
+                            selectedItemID = "";
+                        }
+                        return;
+                    }
                 }
             }
-
             // 4. CHECK SELECTION IN LISTS
             bool clickedOnItem = false;
             if (mousePos.y >= startY && mousePos.y < startY + (maxVisibleRows * rowHeight)) {
