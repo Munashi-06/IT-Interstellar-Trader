@@ -3,6 +3,8 @@ project(IT-Interstellar-Trader)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Forzar enlazado estático" FORCE)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -12,7 +14,6 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(SFML)
-
 add_executable(IT-Interstellar-Trader 
     src/Core/main.cpp
     src/Core/AudioManager.cpp
@@ -44,7 +45,7 @@ add_executable(IT-Interstellar-Trader
     src/DataStructures/Heap.cpp
 )
 
-target_include_directories(IT-Interstellar-Trader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)  
+target_include_directories(IT-Interstellar-Trader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
