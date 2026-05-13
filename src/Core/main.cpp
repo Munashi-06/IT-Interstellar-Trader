@@ -593,52 +593,66 @@ int main() {
             else if (currentState == State::PirateEncounter) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     
-                    if (!pirates.isShowingButtons()) {
+                    // 1. SI ESTAMOS EN EL AVISO FINAL
+                    if (pirates.getCurrentMenu() == Interface::PirateMenu::Result) {
                         if (keyPressed->code == sf::Keyboard::Key::Enter) {
-                            pirates.setShowButtons(true);
+                            pirates.stop();
+                            pirateEncounterActive = false;
+                            currentState = State::Playing;
                         }
                     } 
-                    else {
+                    // 2. SI ESTAMOS ELIGIENDO (Lógica de Balance)
+                    else if (pirates.isShowingButtons()) {
                         pirates.handleInput(keyPressed->code);
 
                         if (keyPressed->code == sf::Keyboard::Key::Enter) {
                             int sel = pirates.getSelectedButton();
                             int roll = std::rand() % 100;
-                            float currentMoney = spaceShip.getMoney();
+                            // NOTA: Usa el nombre de tu variable del main (ej: spaceShip o player)
+                            int playerLevel = spaceShip.getLevel(); 
 
                             if (pirates.getCurrentMenu() == Interface::PirateMenu::Main) {
                                 if (sel == 0) { // DEFENDERSE
-                                    if (roll < 50) spaceShip.setMoney(0.0f);
-                                    pirates.stop(); 
-                                    pirateEncounterActive = false;
-                                    currentState = State::Playing;
+                                    int winChance = 40 + (playerLevel * 12); 
+                                    if (roll < winChance) {
+                                        pirates.setResult("VICTORIA: Sistemas Nvl " + std::to_string(playerLevel) + " repelieron el ataque.");
+                                    } else {
+                                        spaceShip.setMoney(0.0f);
+                                        pirates.setResult("DERROTA: Saquearon tus creditos.");
+                                    }
                                 } 
-                                else if (sel == 1) { 
-                                    pirates.setMenu(Interface::PirateMenu::Bribery);
-                                } 
-                                else if (sel == 2) { // RENDIRSE
-                                    spaceShip.getInventory().clearAll(); 
-                                    pirates.stop();
-                                    pirateEncounterActive = false;
-                                    currentState = State::Playing;
+                                else if (sel == 1) { pirates.setMenu(Interface::PirateMenu::Bribery); }
+                                else if (sel == 2) { 
+                                    spaceShip.getInventory().clearAll();
+                                    pirates.setResult("RENDIDO: Han tomado toda tu carga.");
                                 }
                             } 
                             else if (pirates.getCurrentMenu() == Interface::PirateMenu::Bribery) {
-                                if (sel == 0) { // 80%
+                                float currentMoney = spaceShip.getMoney();
+                                if (sel == 0) { // SOBORNO 80% (Casi seguro)
                                     spaceShip.setMoney(currentMoney * 0.2f);
-                                    if (roll < 10) spaceShip.setMoney(0.0f);
-                                    pirates.stop(); pirateEncounterActive = false; currentState = State::Playing;
-                                } 
-                                else if (sel == 1) { // 40%
-                                    spaceShip.setMoney(currentMoney * 0.6f);
-                                    if (roll < 60) spaceShip.setMoney(0.0f);
-                                    pirates.stop(); pirateEncounterActive = false; currentState = State::Playing;
-                                } 
-                                else { 
-                                    pirates.setMenu(Interface::PirateMenu::Main);
+                                    if (roll < 5) {
+                                        spaceShip.setMoney(0.0f);
+                                        pirates.setResult("TRAICION: Se llevaron el pago y el resto.");
+                                    } else {
+                                        pirates.setResult("PAGADO: Eres libre de irte.");
+                                    }
                                 }
+                                else if (sel == 1) { // SOBORNO 40% (Arriesgado)
+                                    spaceShip.setMoney(currentMoney * 0.6f);
+                                    if (roll < 45) {
+                                        spaceShip.setMoney(0.0f);
+                                        pirates.setResult("RECHAZADO: El soborno fue insuficiente.");
+                                    } else {
+                                        pirates.setResult("SUERTE: Aceptaron el trato minimo.");
+                                    }
+                                }
+                                else { pirates.setMenu(Interface::PirateMenu::Main); }
                             }
                         }
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Enter) {
+                        pirates.setShowButtons(true);
                     }
                 }
             }

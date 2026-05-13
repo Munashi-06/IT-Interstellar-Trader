@@ -1,5 +1,4 @@
 #include "Interface/PirateEncounter.hpp"
-#include <iostream>
 #include <cmath>
 
 namespace Interface {
@@ -14,100 +13,82 @@ namespace Interface {
     }
 
     bool PirateEncounter::loadAssets() {
-        if (!pirateTex.loadFromFile("assets/anim03.png")) {
-            std::cerr << "[ERROR] No se pudo cargar assets/anim03.png" << std::endl;
-            return false;
-        }
-        
+        if (!pirateTex.loadFromFile("assets/anim03.png")) return false;
         pirateSprite = std::make_unique<sf::Sprite>(pirateTex);
         sf::Vector2u texSize = pirateTex.getSize();
         pirateSprite->setOrigin({texSize.x / 2.f, texSize.y / 2.f});
         pirateSprite->setPosition({640.f, 300.f}); 
-        
-        float scale = 1.0f;
-        if (texSize.x > 600) scale = 600.0f / texSize.x;
-        if (texSize.y > 400) scale = std::min(scale, 400.0f / texSize.y);
-        
-        baseScale = scale; 
+        baseScale = (texSize.x > 600) ? 600.0f / texSize.x : 1.0f;
         pirateSprite->setScale({baseScale, baseScale});
         return true;
     }
 
-    bool PirateEncounter::rollForEncounter(float chance) {
-        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        if (dist(rng) < chance) {
-            active = true; // ACTIVAMOS el objeto para que update/draw funcionen
-            reset();       // Preparamos menús
-            return true;
-        }
-        return false;
-    }
-
-    void PirateEncounter::update(float dt) {
-        if (!active) return;
-        displayTimer += dt;
-        // Animación de pulso
-        float pulse = 1.0f + 0.05f * std::sin(displayTimer * 5.0f);
-        if (pirateSprite) pirateSprite->setScale({baseScale * pulse, baseScale * pulse});
-    }
-
-    void PirateEncounter::handleInput(sf::Keyboard::Key key) {
-        // Navegación exclusiva con FLECHAS
-        if (key == sf::Keyboard::Key::Up) {
-            selectedButton = (selectedButton - 1 + 3) % 3;
-        } 
-        else if (key == sf::Keyboard::Key::Down) {
-            selectedButton = (selectedButton + 1) % 3;
-        }
+    void PirateEncounter::setResult(const std::string& message) {
+        resultMessage = message;
+        currentMenu = PirateMenu::Result;
+        showButtons = false; 
     }
 
     void PirateEncounter::draw(sf::RenderWindow& window, sf::Font& font) {
         if (!active || !pirateSprite) return;
-
         window.draw(*pirateSprite);
 
-        if (showButtons) {
-            const auto& currentOpts = (currentMenu == PirateMenu::Main) ? mainOptions : briberyOptions;
-
-            for (int i = 0; i < (int)currentOpts.size(); ++i) {
-                sf::RectangleShape button({380.f, 45.f});
-                button.setOrigin({190.f, 22.5f});
-                button.setPosition({640.f, 450.f + (i * 65.f)});
-
-                if (i == selectedButton) {
-                    button.setFillColor(sf::Color(150, 0, 0, 230)); // Rojo selección
-                    button.setOutlineColor(sf::Color::Red);
-                } else {
-                    button.setFillColor(sf::Color(20, 20, 20, 230));
-                    button.setOutlineColor(sf::Color::White);
-                }
-                button.setOutlineThickness(2);
+        if (currentMenu == PirateMenu::Result) {
+            sf::Text resText(font, resultMessage);
+            resText.setCharacterSize(22);
+            resText.setFillColor(sf::Color::Yellow);
+            resText.setOutlineColor(sf::Color::Black);
+            resText.setOutlineThickness(2);
+            sf::FloatRect b = resText.getLocalBounds();
+            resText.setOrigin({b.size.x / 2.f, b.size.y / 2.f + b.position.y / 2.f});
+            resText.setPosition({640.f, 480.f});
+            window.draw(resText);
+            
+            sf::Text sub(font, "Presiona ENTER para continuar...");
+            sub.setCharacterSize(14);
+            sub.setPosition({640.f, 530.f});
+            sf::FloatRect sb = sub.getLocalBounds();
+            sub.setOrigin({sb.size.x / 2.f, sb.size.y / 2.f + sb.position.y / 2.f});
+            window.draw(sub);
+        } else if (showButtons) {
+            const auto& opts = (currentMenu == PirateMenu::Main) ? mainOptions : briberyOptions;
+            for (int i = 0; i < (int)opts.size(); ++i) {
+                sf::RectangleShape btn({380.f, 45.f});
+                btn.setOrigin({190.f, 22.5f});
+                btn.setPosition({640.f, 450.f + (i * 65.f)});
+                btn.setFillColor(i == selectedButton ? sf::Color(150,0,0,230) : sf::Color(20,20,20,230));
+                btn.setOutlineThickness(2);
+                btn.setOutlineColor(i == selectedButton ? sf::Color::Red : sf::Color::White);
                 
-                sf::Text btnText(font, currentOpts[i]);
-                btnText.setCharacterSize(18);
-                sf::FloatRect b = btnText.getLocalBounds();
-                
-                // Corrección para SFML 3.0 (usando b.position.y)
-                btnText.setOrigin({b.size.x / 2.f, b.size.y / 2.f + b.position.y / 2.f});
-                btnText.setPosition(button.getPosition());
-
-                window.draw(button);
-                window.draw(btnText);
+                sf::Text txt(font, opts[i]);
+                txt.setCharacterSize(18);
+                sf::FloatRect tb = txt.getLocalBounds();
+                txt.setOrigin({tb.size.x/2.f, tb.size.y/2.f + tb.position.y/2.f});
+                txt.setPosition(btn.getPosition());
+                window.draw(btn);
+                window.draw(txt);
             }
         }
     }
 
-    void PirateEncounter::reset() {
-        showButtons = false;
-        currentMenu = PirateMenu::Main;
-        selectedButton = 0;
-        displayTimer = 0.f;
+    bool PirateEncounter::rollForEncounter(float chance) {
+        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+        if (dist(rng) < chance) { active = true; reset(); return true; }
+        return false;
     }
-
-    void PirateEncounter::stop() {
-        active = false; // Apaga update y draw
+    void PirateEncounter::update(float dt) {
+        if (!active) return;
+        displayTimer += dt;
+        float pulse = 1.0f + 0.05f * std::sin(displayTimer * 5.0f);
+        pirateSprite->setScale({baseScale * pulse, baseScale * pulse});
     }
-
-    void PirateEncounter::setShowButtons(bool show) { showButtons = show; }
+    void PirateEncounter::handleInput(sf::Keyboard::Key k) {
+        if (currentMenu == PirateMenu::Result) return;
+        if (k == sf::Keyboard::Key::Up) selectedButton = (selectedButton - 1 + 3) % 3;
+        if (k == sf::Keyboard::Key::Down) selectedButton = (selectedButton + 1) % 3;
+    }
+    void PirateEncounter::reset() { showButtons = false; currentMenu = PirateMenu::Main; selectedButton = 0; resultMessage = ""; }
+    void PirateEncounter::stop() { active = false; }
+    void PirateEncounter::setShowButtons(bool s) { showButtons = s; }
     bool PirateEncounter::isShowingButtons() const { return showButtons; }
 }

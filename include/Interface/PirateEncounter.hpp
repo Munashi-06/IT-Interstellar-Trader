@@ -17,11 +17,11 @@ namespace Interface {
         void update(float dt);
         void draw(sf::RenderWindow& window, sf::Font& font);
         
-        // Esta función decide si hay encuentro y activa el objeto
         bool rollForEncounter(float chance);
-        
-        void reset(); // Configura el menú inicial
-        void stop();  // Apaga el encuentro
+        void reset(); 
+        void stop();  
+
+        void setResult(const std::string& message);
 
         void handleInput(sf::Keyboard::Key key);
         void setShowButtons(bool show);
@@ -34,19 +34,16 @@ namespace Interface {
     private:
         sf::Texture pirateTex;
         std::unique_ptr<sf::Sprite> pirateSprite;
-        
         bool active;
         float displayTimer;
         float baseScale;
         bool showButtons;
-
         PirateMenu currentMenu;
         int selectedButton;
+        std::string resultMessage; 
         std::vector<std::string> mainOptions;
         std::vector<std::string> briberyOptions;
-
         std::mt19937 rng;
     };
 }
-
 #endif

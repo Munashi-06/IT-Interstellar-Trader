@@ -8,6 +8,7 @@ public:
     Player() = default;
     Player(float x, float y, const std::string& texturePath);
     
+    int getLevel() const { return shipLevel; }
 
     void draw(sf::RenderWindow& window);
     void update(float deltaTime);
@@ -107,5 +108,6 @@ private:
     bool corporateLicense = false; // Whether the player has a corporate license for trading in high-security planets
     bool monopolyCharter = false; // Whether the player has a monopoly charter for exclusive trading rights on certain goods
     bool blackMarketContacts = false; // Whether the player has contacts in the black market for better deals on illegal goods
-    bool syndicateBoss = false; // Whether the player is a syndicate boss with maximum influence in the black market
+    bool syndicateBoss = false; // Whether the player is a syndicate boss with maximum influence
+    
 }; 
