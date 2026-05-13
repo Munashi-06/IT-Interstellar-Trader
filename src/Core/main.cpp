@@ -711,7 +711,7 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             }
 
             if (currentState == State::TravelConfirmation) {
-                confirmText.setString("DESEAS VIAJAR A " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
+                confirmText.setString("Do you want to go to " + world.getPlanets()[selectedPlanetIndex].getName() + "?");
                 confirmText.setOrigin({confirmText.getLocalBounds().size.x / 2.f, 0.f});
                 confirmText.setPosition({640.f, 330.f});
                 window.draw(confirmBg);
@@ -749,12 +749,12 @@ debugMenu.handleInput(*event, mousePos, spaceShip, spaceShip.getInventory());
             spaceShip.setPosition(originalPos);
             spaceShip.setRotation(0.f); 
 
-            sf::Text msg(font, "ESTAS EN EL PLANETA: " + world.getPlanets()[selectedPlanetIndex].getName());
+            sf::Text msg(font, "You are going to: " + world.getPlanets()[selectedPlanetIndex].getName());
             msg.setOrigin({msg.getLocalBounds().size.x / 2.f, 0.f});
             msg.setPosition({640.f, 300.f});
             window.draw(msg);
 
-            sf::Text escMsg(font, "Presiona ESC para regresar, ENTER o T para ir a la tienda");
+            sf::Text escMsg(font, "Press ESC to return, ENTER or T to go to the store");
             escMsg.setCharacterSize(15);
             escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
             escMsg.setPosition({640.f, 650.f});

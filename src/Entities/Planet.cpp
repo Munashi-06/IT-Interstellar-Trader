@@ -247,14 +247,45 @@ float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<s
     // --- Influence of Planet Attributes ---
     if (item->isTechnology()) {
         // Higher tech level means more supply, lower price (-20% maximum)
-        modifier -= (this->techLevel / 50.0f); 
+        if(this->techLevel >= 8){
+            modifier -= 0.40f; // Tech 8-10 planets have a significant discount on technology
+        } else if (this->techLevel <= 3){
+            modifier += 0.40f; // Tech 1-3 planets have a premium on technology
+        }
     }
-    if (item->isFood() && this->resourceAbundance > 7) {
-        modifier -= 0.15f; // Cheap food on agricultural planets
+
+    if (item->isResource() || item->isFood()){
+        // If the planet is abundant in resources, they are cheaper. If it's a famine, food is more expensive.
+        if(this->resourceAbundance >= 8){
+            modifier -= 0.35f; // Abundant planets have a discount on resources
+        } else if (this->resourceAbundance <= 3){
+            modifier += 0.35f; // Scarce planets have a premium on resources
+        }
     }
-    if (item->isLuxury()) {
-        // High luxury demand raises the price
-        modifier += (this->luxuryDemand / 20.0f);
+
+    if (item->isLuxury()){
+        if(this->luxuryDemand >= 8){
+            modifier -= 0.30f; // If the demand for luxury is very high, it means there are many merchants bringing it, so it becomes cheaper
+        } else if (this->luxuryDemand <= 3){
+            modifier += 0.30f; // If the demand for luxury is very low, it means few merchants bring it, so it becomes more expensive
+        }
+    }
+
+    if (item->isMedical()){
+        if(this->medicalTech >= 8){
+            modifier -= 0.35f; // Planets with advanced medical technology have cheaper medicines
+        } else if (this->medicalTech <= 3){
+            modifier += 0.35f; // Planets with poor medical technology have more expensive medicines
+        }
+    }
+
+    if(item->isIllegal()){
+        // The more secure the planet, the more expensive illegal items are (and vice versa)
+        if(this->securityLevel >= 8){
+            modifier += 0.50f; // Very secure planets have a high premium on illegal items
+        } else if (this->securityLevel <= 3){
+            modifier -= 0.50f; // Very insecure planets have a discount on illegal items
+        }
     }
 
     // --- Influence of Events ---
