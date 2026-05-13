@@ -9,6 +9,7 @@
 #include "Interface/UpgradeTreeUI.hpp"
 #include "Interface/DebugMenuUI.hpp"
 #include "Interface/PirateEncounter.hpp"
+#include "Interface/GameIntroAnimation.hpp"
 
 #include <iostream>
 #include <optional>
@@ -22,7 +23,8 @@ GameConfig mainConfig;
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "START") {
         // state = State::DifficultySelection; // Submenu of the Main Menu
-        state = State::Playing; // Temporary, to test the change of states
+        state = State::GameIntro; // NUEVO: Cambiado de State::Playing a State::GameIntro
+        // state = State::Playing; // Temporary, to test the change of states
     } else if (option == "SETTINGS") {
         state = State::Options;
     } else if (option == "EXIT") {
@@ -185,6 +187,12 @@ int main() {
         std::cerr << "Error loading animation assets" << std::endl;
     }
 
+    // NUEVO: Inicializar GameIntroAnimation
+    Interface::GameIntroAnimation gameIntro(1280.f, 720.f);
+    if (!gameIntro.loadAssets(font)) {
+        std::cerr << "Error loading game intro assets" << std::endl;
+    }
+
     sf::RectangleShape adminShipBtn({200.f, 50.f});
     adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
     adminShipBtn.setOutlineThickness(2);
@@ -282,6 +290,24 @@ int main() {
                 audio.stopTheme();
                 currentAudioContext = "none";
                 std::cout << "[AUDIO] Silenciando durante animación" << std::endl;
+            }
+        }
+        //GameIntro - sin música
+        // else if (currentState == State::GameIntro) {
+        //     if (currentAudioContext != "none") {
+        //         audio.stopMusic();
+        //         audio.stopTheme();
+        //         currentAudioContext = "none";
+        //         std::cout << "[AUDIO] Silenciando durante game intro" << std::endl;
+        //     }
+        // }
+        //GameIntro - NO detener nada, dejar que suene su propia música
+        else if (currentState == State::GameIntro) {
+            // No detener ninguna música, solo cambiar el contexto
+            if (currentAudioContext != "gameintro") {
+
+                currentAudioContext = "gameintro";
+                std::cout << "[AUDIO] Modo Game Intro - música manejada por GameIntroAnimation" << std::endl;
             }
         }
         // PIRATA ENCOUNTER: sin música
@@ -446,6 +472,12 @@ int main() {
                         // Here's how to confirm the difficulty selection and start playing
                         currentState = State::Playing;
                     }
+                }
+            }
+            // NUEVO: Input para GameIntro
+            else if (currentState == State::GameIntro) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    gameIntro.handleInput(keyPressed->code);
                 }
             }
             else if (currentState == State::Playing) {
@@ -613,7 +645,7 @@ int main() {
 
                             if (pirates.getCurrentMenu() == Interface::PirateMenu::Main) {
                                 if (sel == 0) { // DEFENDERSE
-                                    int winChance = 40 + (playerLevel * 12); 
+                                    int winChance = 30 + (playerLevel * 12); 
                                     if (roll < winChance) {
                                         pirates.setResult("VICTORIA: Sistemas Nvl " + std::to_string(playerLevel) + " repelieron el ataque.");
                                     } else {
@@ -667,6 +699,16 @@ int main() {
         else if (currentState == State::Options){
             window.draw(settingsBackgroundSprite);
             settingsMenu.draw(window);
+        }
+        
+        else if (currentState == State::GameIntro) {
+            gameIntro.update(dt);
+            gameIntro.draw(window);
+            
+            if (gameIntro.isFinished()) {
+                currentState = State::Playing;
+                gameIntro.reset();
+            }
         }
         else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation)
         {

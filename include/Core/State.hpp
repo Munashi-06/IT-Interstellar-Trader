@@ -13,6 +13,7 @@ enum class State {
     ShipMenu,
     TradeMenu,
     Animation1,
+    GameIntro,
     UpgradeTree,
     PirateEncounter
 };
