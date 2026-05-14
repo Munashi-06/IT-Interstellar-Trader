@@ -78,6 +78,7 @@ private:
 
     // --- Helper function to calculate the visibility percetage
     float getVisibilityPercent(Rarity rarity, int shipLevel) const;
+    std::vector<const ItemStack*> getVisiblePlanetItems(const Planet& planet, int shipLevel, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const;
 
 
 

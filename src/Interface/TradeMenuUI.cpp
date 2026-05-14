@@ -393,94 +393,82 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
     window.draw(headerPlanetCategory);
     window.draw(headerPlanetQuality);
 
-    // Draw Planet items (Local market)
-    const auto& planetSlots = currentPlanet.getLocalStock(); 
+    // Draw Planet items (Local market) - PRE-FILTERED
+    const auto& visiblePlanetItems = getVisiblePlanetItems(currentPlanet, playerShipLevel, catalog); 
     drawnCount = 0;
-    currentSlotIndex = 0;
     
-    for (const auto& slot : planetSlots) {
-        if (slot.has_value()) {
-            const auto& itemData = catalog.at(slot->itemID);
-            
-            // 🆕 FILTRO: ¿este item es visible según el nivel de la nave?
-            float visibility = getVisibilityPercent(itemData->getRarity(), playerShipLevel);
-            
-            // Usar el itemID como semilla para que el mismo item siempre sea visible/invisible
-            // Esto evita que los items parpadeen al hacer scroll
-            std::hash<std::string> hasher;
-            size_t hashValue = hasher(slot->itemID + std::to_string(playerShipLevel));
-            bool isVisible = (hashValue % 100) < (visibility * 100);
-            
-            if (isVisible) {
-                if (currentSlotIndex >= planetStartIndex && drawnCount < maxVisibleRows) {
-                    float yPos = startY + (drawnCount * rowHeight);
+    for (size_t i = 0; i < visiblePlanetItems.size(); ++i) {
+        const auto& slot = *visiblePlanetItems[i];
+        
+        if (i >= (size_t)planetStartIndex && drawnCount < maxVisibleRows){
+            const auto& itemData = catalog.at(slot.itemID);
+            float yPos = startY + (drawnCount * rowHeight);
 
-                    if (selectedItemID == slot->itemID && !isPlayerItem) {
-                        selectionHighlight.setPosition({680.f, yPos});
-                        window.draw(selectionHighlight);
-                    }
-
-                    sf::Color rarityColor;
-                    switch (itemData->getRarity()) {
-                        case Rarity::Common: rarityColor = sf::Color::White; break;
-                        case Rarity::Rare: rarityColor = sf::Color::Green; break;
-                        case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
-                        case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break;
-                        case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
-                    }
-
-                    sf::Text nameT(font, itemData->getName());
-                    nameT.setCharacterSize(14);
-                    nameT.setFillColor(sf::Color::White);
-                    nameT.setPosition({ 680.f, yPos });
-                    window.draw(nameT);
-                    
-                    sf::Text catT(font, itemData->getCategoryString().substr(0, 8)); 
-                    catT.setCharacterSize(14);
-                    catT.setFillColor(sf::Color::White);
-                    catT.setPosition({ 895.f, yPos });
-                    window.draw(catT);
-                    
-                    sf::Text qualT(font, itemData->getRarityString().substr(0, 3)); 
-                    qualT.setCharacterSize(14);
-                    qualT.setFillColor(rarityColor);
-                    qualT.setPosition({ 1000.f, yPos });
-                    window.draw(qualT);
-
-                sf::Text qtyT(font, std::to_string(slot->quantity));
-                qtyT.setCharacterSize(14); qtyT.setFillColor(sf::Color::White);
-                qtyT.setPosition({ 1070.f, yPos });
-                window.draw(qtyT);
-                
-                float localBasePrice = currentPlanet.getLocalBasePrice(slot->itemID, catalog);  // Atributos
-                float planetPrice = currentPlanet.getItemPrice(slot->itemID, catalog);           // Atributos + Eventos
-                float finalBuyPrice;
-
-                sf::Text priceT(font, ""); 
-                priceT.setFillColor(sf::Color::White);
-
-                if (showingOriginalPrices) {
-                    finalBuyPrice = localBasePrice;
-                } else {
-                    finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, planetPrice, player);
-                    
-                    if (finalBuyPrice < localBasePrice) {
-                        priceT.setFillColor(sf::Color::Green);
-                    } else if (finalBuyPrice > localBasePrice) {
-                        priceT.setFillColor(sf::Color::Red);
-                    }
-                }
-                ss.str("");
-                ss << "Bs." << std::fixed << std::setprecision(2) << finalBuyPrice;
-                priceT.setString(ss.str());
-                priceT.setCharacterSize(14);
-                priceT.setPosition({ 1140.f, yPos });
-                window.draw(priceT);
-
-                    drawnCount++;
-                }
-                currentSlotIndex++;
+            if(selectedItemID == slot.itemID && !isPlayerItem){
+                selectionHighlight.setPosition({680.f, yPos});
+                window.draw(selectionHighlight);
             }
+
+            sf::Color rarityColor;
+            switch (itemData->getRarity()){
+                case Rarity::Common: rarityColor = sf::Color::White; break;
+                case Rarity::Rare: rarityColor = sf::Color::Green; break;
+                case Rarity::Exotic: rarityColor = sf::Color::Blue; break;
+                case Rarity::Legendary: rarityColor = sf::Color(128, 0, 128); break;
+                case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
+            }
+
+            sf::Text nameT(font, itemData->getName());
+            nameT.setCharacterSize(14);
+            nameT.setFillColor(sf::Color::White);
+            nameT.setPosition({ 680.f, yPos });
+            window.draw(nameT);
+
+            sf::Text catT(font, itemData->getCategoryString().substr(0, 8));
+            catT.setCharacterSize(14);
+            catT.setFillColor(sf::Color::White);
+            catT.setPosition({ 895.f, yPos });
+            window.draw(catT);
+
+            sf::Text qualT(font, itemData->getRarityString().substr(0, 3));
+            qualT.setCharacterSize(14);
+            qualT.setFillColor(rarityColor);
+            qualT.setPosition({ 1000.f, yPos });
+            window.draw(qualT);
+
+            sf::Text qtyT(font, std::to_string(slot.quantity));
+            qtyT.setCharacterSize(14);
+            qtyT.setFillColor(sf::Color::White);
+            qtyT.setPosition({ 1070.f, yPos });
+            window.draw(qtyT);
+
+            float localBasePrice = currentPlanet.getLocalBasePrice(slot.itemID, catalog);
+            float planetPrice = currentPlanet.getItemPrice(slot.itemID, catalog);
+            float finalBuyPrice;
+
+            sf::Text priceT(font, "");
+            priceT.setFillColor(sf::Color::White);
+
+            if (showingOriginalPrices){
+                finalBuyPrice = localBasePrice;
+            } else {
+                finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, planetPrice, player);
+
+                if (finalBuyPrice < localBasePrice){
+                    priceT.setFillColor(sf::Color::Green);
+                } else if (finalBuyPrice > localBasePrice){
+                    priceT.setFillColor(sf::Color::Red);
+                }
+            }
+
+            ss.str("");
+            ss << "Bs." << std::fixed << std::setprecision(2) << finalBuyPrice;
+            priceT.setString(ss.str());
+            priceT.setCharacterSize(14);
+            priceT.setPosition({ 1140.f, yPos });
+            window.draw(priceT);
+
+            drawnCount++;
         }
     }
 
@@ -614,11 +602,8 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
             }
             // Check if mouse is over planet table (Right)
             else if (planetTableBg.getGlobalBounds().contains(mousePos)) {
-                // Count actual planet items
-                int planetItemCount = 0;
-                for (const auto& slot : currentPlanet.getLocalStock()) {
-                    if (slot.has_value()) planetItemCount++;
-                }
+                const auto& visibleItems = getVisiblePlanetItems(currentPlanet, player.getShipLevel(), catalog);
+                int planetItemCount = visibleItems.size();
                 int maxPlanetScroll = std::max(0, planetItemCount - maxVisibleRows);
                 
                 if (mouseWheel->delta > 0) {
@@ -689,7 +674,12 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 }
                 // Planet Click
                 else if (mousePos.x >= 670.f && mousePos.x <= 1230.f) {
-                    std::string foundID = getClickedItemID(currentPlanet.getLocalStock(), planetStartIndex, clickedRow);
+                    const auto& visibleItems = getVisiblePlanetItems(currentPlanet, player.getShipLevel(), catalog);
+                    std::string foundID = "";
+                    int targetIndex = planetStartIndex + clickedRow;
+                    if(targetIndex >= 0 && targetIndex < (int)visibleItems.size()){
+                        foundID = visibleItems[targetIndex]->itemID;
+                    }
                     if (foundID != "") {
                         selectedItemID = foundID;
                         isPlayerItem = false;
@@ -899,9 +889,14 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 }
                 // Planet Click
                 else if (mousePos.x >= 670.f && mousePos.x <= 1230.f) {
-                    std::string foundID = getClickedItemID(currentPlanet.getLocalStock(), planetStartIndex, clickedRow);
-                    if (foundID != "") {
-                        if (selectedItemID == foundID && !isPlayerItem) {
+                    const auto& visibleItems = getVisiblePlanetItems(currentPlanet, player.getShipLevel(), catalog);
+                    std::string foundID = "";
+                    int targetIndex = planetStartIndex + clickedRow;
+                    if(targetIndex >= 0 && targetIndex < (int)visibleItems.size()){
+                        foundID = visibleItems[targetIndex]->itemID;
+                    }
+                    if(foundID != ""){
+                        if(selectedItemID == foundID && !isPlayerItem){
                             selectedItemID = "";
                         } else {
                             selectedItemID = foundID;
@@ -957,4 +952,23 @@ float TradeMenuUI::getVisibilityPercent(Rarity rarity, int shipLevel) const{
         default: return 1.00f;
 
     }
+}
+
+std::vector<const ItemStack*> TradeMenuUI::getVisiblePlanetItems(const Planet& planet, int shipLevel, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const {
+    std::vector<const ItemStack*> visibleItems;
+    
+    for(const auto& slot : planet.getLocalStock()){
+        if(slot.has_value()){
+            const auto& itemData = catalog.at(slot->itemID);
+            float visibility = getVisibilityPercent(itemData->getRarity(), shipLevel);
+
+            std::hash<std::string> hasher;
+            size_t hashValue = hasher(slot->itemID + std::to_string(shipLevel));
+            bool isVisible = (hashValue % 100) < (visibility * 100);
+            if (isVisible){
+                visibleItems.push_back(&*slot);
+            }
+        }
+    }
+    return visibleItems;
 }
