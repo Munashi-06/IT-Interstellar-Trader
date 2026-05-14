@@ -1,6 +1,7 @@
 #ifndef PIRATE_ENCOUNTER_HPP
 #define PIRATE_ENCOUNTER_HPP
 
+#include "Entities/Player.hpp"
 #include <SFML/Graphics.hpp>
 #include <random>
 #include <memory>
@@ -31,6 +32,8 @@ namespace Interface {
         int getSelectedButton() const { return selectedButton; }
         void setMenu(PirateMenu menu) { currentMenu = menu; selectedButton = 0; }
 
+        void handleEncounterLogic(sf::Keyboard::Key key, Player& player);
+        bool isActive() const { return active; }
     private:
         sf::Texture pirateTex;
         std::unique_ptr<sf::Sprite> pirateSprite;

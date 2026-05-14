@@ -28,6 +28,7 @@ private:
     float baseScale = 1.0f;
     bool highlighted = false;
 
+    sf::Vector2f currentPosition;
 public:
     Planet();
     Planet(std::string n, std::string d, int orb, int tech, int sec, int res, int lux, int moon, int med);
@@ -54,6 +55,7 @@ public:
     sf::Sprite* getSprite() { return sprite.get(); }
     const sf::Sprite* getSprite() const { return sprite.get(); }
     void setHighlighted(bool h);
+    sf::Vector2f getPosition() const { return currentPosition; }
 
     void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Updates local stock based on planet specialization and current events
     bool canBuyItem(const Item& item) const; // Lógica de "necesito esto?"
@@ -71,4 +73,6 @@ public:
     bool isHighlighted() const { return highlighted; }
     bool isPointNear(const sf::Vector2f& point, const sf::Vector2f& planetPos) const;
     void updateScale(float deltaTime);
+
+    void updateOrbitPosition(float time, const sf::Vector2f& center);
 };

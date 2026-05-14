@@ -59,38 +59,31 @@ void Player::setRotation(float angle) {
 
 void Player::update(float deltaTime) {
     if (!sprite) return;
-
-    // Subtle space friction
-    velocity *= std::pow(drag, deltaTime * 60.f);
-
-    // Interpolated Rotation (Smooth)
-    float currentRot = sprite->getRotation().asDegrees();
-    float diff = targetRotation - currentRot;
-    
-    // Normalize angle to always rotate via the shortest path
-    while (diff > 180) diff -= 360;
-    while (diff < -180) diff += 360;
-
-    // Apply smooth rotation
-    sprite->rotate(sf::degrees(diff * rotationSpeed * deltaTime));
-
-    // Move the ship with the accumulated velocity
-    sprite->move(velocity * deltaTime);
-
     hitbox.setPosition(sprite->getPosition());
 }
 
-void Player::move(sf::Vector2f direction, float deltaTime) {
-    // 1. Rotation: We only change the rotation target if there is input
-    if (direction.x != 0 || direction.y != 0) {
-        targetRotation = (std::atan2(direction.y, direction.x) * 180.f / 3.141592f) + 90.f;
-        
-        // 2. Acceleration: Instead of using 'direction' (input), 
-        // we use the current angle of the sprite to push the ship.
-        float angleRad = (sprite->getRotation().asDegrees() - 90.f) * 3.141592f / 180.f;
-        sf::Vector2f thrustDir(std::cos(angleRad), std::sin(angleRad));
+void Player::travelTo(sf::Vector2f target, float dt, float travelSpeed) {
+    sf::Vector2f currentPos = getPosition();
+    sf::Vector2f direction = target - currentPos;
+    float dist = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-        velocity += thrustDir * acceleration * deltaTime;
+    if (dist > 1.5f) {
+        float angleRadians = std::atan2(direction.y, direction.x);
+        float angleDegrees = angleRadians * 180.f / 3.14159265f;
+        setRotation(angleDegrees + 90.f);
+
+        direction /= dist; 
+        float moveDistance = travelSpeed * dt;
+
+        if (moveDistance > dist) {
+            setPosition(target);
+        }
+        else {
+            setPosition(currentPos + direction * moveDistance);
+        }
+    }
+    else {
+        setPosition(target);
     }
 }
 
@@ -147,4 +140,8 @@ void Player::resetToDefaults() {
     syndicateBoss = false;
 
     inventory.resetCapacity();
+}
+
+void Player::clearInv() {
+    inventory.clearAll();
 }

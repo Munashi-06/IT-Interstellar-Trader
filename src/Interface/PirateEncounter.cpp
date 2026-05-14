@@ -94,4 +94,45 @@ namespace Interface {
     void PirateEncounter::stop() { active = false; }
     void PirateEncounter::setShowButtons(bool s) { showButtons = s; }
     bool PirateEncounter::isShowingButtons() const { return showButtons; }
+
+    void PirateEncounter::handleEncounterLogic(sf::Keyboard::Key key, Player& player) {
+        if (currentMenu == PirateMenu::Result) {
+            if (key == sf::Keyboard::Key::Enter) stop();
+        } 
+        else if (showButtons) {
+            handleInput(key);
+            
+            if (key == sf::Keyboard::Key::Enter) {
+                int sel = getSelectedButton();
+                int roll = std::rand() % 100;
+                int playerLevel = player.getLevel(); 
+
+                if (currentMenu == PirateMenu::Main) {
+                    if (sel == 0) { 
+                        if (roll < 30 + (playerLevel * 12)) setResult("VICTORIA: Defendiste la nave.");
+                        else { player.setMoney(0.0f); setResult("DERROTA: Saquearon tus creditos."); }
+                    }
+                    else if (sel == 1) setMenu(PirateMenu::Bribery);
+                    else if (sel == 2) { player.getInventory().clearAll(); setResult("RENDIDO: Han tomado toda tu carga."); }
+                } 
+                else if (currentMenu == PirateMenu::Bribery) {
+                    float currentMoney = player.getMoney();
+                    if (sel == 0) { 
+                        player.setMoney(currentMoney * 0.2f);
+                        if (roll < 5) { player.setMoney(0.0f); setResult("TRAICION: Se llevaron todo."); }
+                        else setResult("PAGADO: Eres libre de irte.");
+                    }
+                    else if (sel == 1) { 
+                        player.setMoney(currentMoney * 0.6f);
+                        if (roll < 45) { player.setMoney(0.0f); setResult("RECHAZADO: Se llevaron todo."); }
+                        else setResult("SUERTE: Aceptaron el trato minimo.");
+                    }
+                    else setMenu(PirateMenu::Main);
+                }
+            }
+        } 
+        else if (key == sf::Keyboard::Key::Enter) {
+            setShowButtons(true);
+        }
+    }
 }

@@ -385,3 +385,15 @@ void Planet::updateScale(float deltaTime){
     }
     sprite->setScale({newScale, newScale});
 }
+
+void Planet::updateOrbitPosition(float time, const sf::Vector2f& center) {
+    float distance = orbit * 33.f + 33.f;
+    float speed = 0.5f / (orbit * 0.2f);
+    
+    currentPosition.x = center.x + std::cos(time * speed) * distance;
+    currentPosition.y = center.y + std::sin(time * speed) * distance;
+
+    if (sprite) {
+        sprite->setPosition(currentPosition);
+    }
+}

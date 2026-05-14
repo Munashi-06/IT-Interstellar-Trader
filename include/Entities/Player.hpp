@@ -12,7 +12,8 @@ public:
 
     void draw(sf::RenderWindow& window);
     void update(float deltaTime);
-    void move(sf::Vector2f direction, float deltaTime);
+
+    void travelTo(sf::Vector2f target, float dt, float travelSpeed);
 
     void addInventoryCapacity(int extraSlots);
 
@@ -75,19 +76,12 @@ public:
     }
 
     void resetToDefaults();
+    void clearInv();
         
 private:
     std::unique_ptr<sf::Sprite> sprite; 
     sf::Texture texture;
-    sf::RectangleShape hitbox; // For future collisions
-    
-    sf::Vector2f velocity{0.f, 0.f};
-    float acceleration = 800.f; // How fast does it gain speed
-    float drag = 0.987f;        // Space friction (0.99 = very slippery)
-    float maxSpeed = 200.f;
-    
-    float targetRotation = 0.f;
-    float rotationSpeed = 4.f;  // How smoothly it spins (higher = faster)
+    sf::RectangleShape hitbox; // For future collisions 
 
     float money = 50.f; // Player money
     int shipLevel = 1;

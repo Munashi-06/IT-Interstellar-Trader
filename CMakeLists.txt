@@ -16,6 +16,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SFML)
 add_executable(IT-Interstellar-Trader 
     src/Core/main.cpp
+    src/Core/Engine.cpp
     src/Core/AudioManager.cpp
     src/Core/Settings.cpp
     src/Core/WorldStatemanager.cpp
@@ -32,6 +33,7 @@ add_executable(IT-Interstellar-Trader
     src/Systems/Inventory.cpp
     src/Systems/UpgradeManager.cpp
     src/Systems/SaveSystem.cpp
+    src/Systems/AssetManager.cpp
     
     src/Interface/Menu.cpp
     src/Interface/ShipMenuUI.cpp
