@@ -345,9 +345,11 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 if (showingOriginalPrices) {
                     finalSellPrice = localBasePrice;
                 } else {
-                    finalSellPrice = TradeManager::getFinalSellPrice(*itemData, planetPrice, player);
+                    finalSellPrice = TradeManager::getFinalSellPrice(*itemData, planetPrice, player, slot->buyPrice, slot->originPlanet, currentPlanet.getName());
                     
-                    if (finalSellPrice > localBasePrice) {
+                    if (slot->originPlanet == currentPlanet.getName()) {
+                        priceT.setFillColor(sf::Color::White);
+                    } else if (finalSellPrice > localBasePrice) {
                         priceT.setFillColor(sf::Color::Green);
                     } else if (finalSellPrice < localBasePrice) {
                         priceT.setFillColor(sf::Color::Red);

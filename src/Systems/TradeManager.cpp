@@ -14,7 +14,7 @@ bool TradeManager::buyItem(const std::string& itemID, Player& player, Inventory&
     }
 
     // 3. Intentar añadir al inventario del jugador
-    if (!playerInv.addItem(itemID, 1, itemData->getMaxStackSize(), itemData->getBasePrice())) {
+    if (!playerInv.addItem(itemID, 1, itemData->getMaxStackSize(), finalPrice, planet.getName())) {
         std::cout << "[TRADE] No space in the ship's cargo hold.\n";
         return false;
     }
@@ -32,7 +32,17 @@ bool TradeManager::sellItem(const std::string& itemID, Player& player, Inventory
     
     // 1. We get de base price in the planet and apply the player's sell bonus
     float basePlanetPrice = planet.getItemPrice(itemID, catalog); 
-    float finalPrice = getFinalSellPrice(*itemData, basePlanetPrice, player);
+    float originalBuyPrice = basePlanetPrice;
+    std::string originPlanet = planet.getName(); // Por defecto
+
+    for (const auto& slot : playerInv.getSlots()) {
+        if (slot.has_value() && slot->itemID == itemID) {
+            originalBuyPrice = slot->buyPrice;
+            originPlanet = slot->originPlanet;
+            break;
+        }
+    }
+    float finalPrice = getFinalSellPrice(*itemData, basePlanetPrice, player, originalBuyPrice, originPlanet, planet.getName());
 
     // 2. Remove 1 unit from the player's inventory
     playerInv.removeItem(itemID, 1);
@@ -70,7 +80,7 @@ float TradeManager::getFinalBuyPrice(const Item& item, float basePlanetPrice, co
     return basePlanetPrice * (1.0f - totalDiscount);
 }
 
-float TradeManager::getFinalSellPrice(const Item& item, float basePlanetPrice, const Player& player) {
+float TradeManager::getFinalSellPrice(const Item& item, float basePlanetPrice, const Player& player, float originalBuyPrice, const std::string& originPlanet, const std::string& currentPlanet) {
     float totalBonus = 0.0f; // Iniciamos en 0% de bono extra
     
     // 1. Sumamos los bonos de venta según las habilidades
@@ -81,7 +91,11 @@ float TradeManager::getFinalSellPrice(const Item& item, float basePlanetPrice, c
     if (player.getSyndicateBoss() && item.isIllegal()) {
         totalBonus += 0.50f; // Sumamos 50% de ganancia (¡Aquí está el Syndicate Boss!)
     }
-    
-    // 2. Aplicamos el bono total sumado al precio base
-    return basePlanetPrice * (1.0f + totalBonus);
+
+    float bonusPrice = basePlanetPrice * (1.0f + totalBonus);
+    //LIMIT: The selling price must never be higher than the buying price on the same planet. This prevents the exploit of buying and selling in the same location.
+    if (originPlanet == currentPlanet) {
+        bonusPrice = std::min(bonusPrice, originalBuyPrice);
+    }
+    return bonusPrice;
 }

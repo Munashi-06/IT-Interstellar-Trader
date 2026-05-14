@@ -12,7 +12,7 @@ public:
         slots.resize(capacity, std::nullopt); // Initialize with empty slots
     }
 
-    bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
+    bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice, const std::string& originPlanet = "");
     void removeItem(const std::string& itemID, int qty);
     void display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const;
     void upgradeStorage(int extraSlots) noexcept;

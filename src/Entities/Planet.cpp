@@ -319,7 +319,7 @@ bool Planet::addItem(const std::string& itemID, int qty, int maxStackSize, float
     // If it couldn't be stacked, look for an empty slot
     for (auto& slot : localStock) {
         if (!slot.has_value()) {
-            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice };
+            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice, this->name };
             return true;
         }
     }

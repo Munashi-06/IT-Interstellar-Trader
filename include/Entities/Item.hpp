@@ -16,6 +16,7 @@ struct ItemStack {
     int quantity;
     int maxStackSize;
     float buyPrice; // Purchase price, used to calculate profit when selling
+    std::string originPlanet; // The planet where the item was bought, used to prevent buy-sell exploits
 };
 
 // Base class for items
