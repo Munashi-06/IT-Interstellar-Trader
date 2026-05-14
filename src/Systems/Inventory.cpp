@@ -66,6 +66,11 @@ int Inventory::getUsedSlots() const noexcept {
     return used;
 }
 
+void Inventory::resetCapacity() {
+    clearAll();
+    capacity = 20;
+}
+
 void Inventory::sortByName(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
     StockSorter::sortByName(slots, ascending, catalog);
 }

@@ -19,8 +19,14 @@ public:
     void display(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const;
     void upgradeStorage(int extraSlots) noexcept;
     const std::vector<std::optional<ItemStack>>& getSlots() const noexcept { return slots; }
+
+    void resetCapacity();
+
+    // Getters
     int getCapacity() const noexcept { return capacity; }
     int getUsedSlots() const noexcept;
+
+    // Sort Items
     void sortByName(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     void sortByCategory(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     void sortByQuality(bool ascending, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);

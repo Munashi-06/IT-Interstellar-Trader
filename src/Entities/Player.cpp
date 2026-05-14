@@ -122,3 +122,29 @@ int Player::getUpgradeCost() const {
         default: return 0;
     }
 }
+
+void Player::resetToDefaults() {
+    money = 50.f;
+    shipLevel = 1;
+    
+    minOrbit = 3;
+    maxOrbit = 4;
+    currentOrbit = 3;
+    minOrbitReach = 3;
+    maxOrbitReach = 5;
+
+    hasWarpDrive = false;
+    hasAdvancedRadar = false;
+    hasEventFrequencyBonus = false;
+    hasEventDurationBonus = false;
+    isSmuggler = false;
+    isManipulator = false;
+
+    discount = 0.00f;
+    corporateLicense = false;
+    monopolyCharter = false;
+    blackMarketContacts = false;
+    syndicateBoss = false;
+
+    inventory.resetCapacity();
+}

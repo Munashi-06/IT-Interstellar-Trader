@@ -73,6 +73,8 @@ public:
             shipLevel++; 
         }
     }
+
+    void resetToDefaults();
         
 private:
     std::unique_ptr<sf::Sprite> sprite; 

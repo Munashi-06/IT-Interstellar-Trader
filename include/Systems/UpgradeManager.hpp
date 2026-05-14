@@ -12,6 +12,10 @@ private:
     std::shared_ptr<BinNode<Upgrade>> propulsionTree;
     std::shared_ptr<BinNode<Upgrade>> tradingTree;
 
+    void collectPurchased(std::shared_ptr<BinNode<Upgrade>> node, std::vector<std::string>& list) const;
+    bool findNodeAndSibling(std::shared_ptr<BinNode<Upgrade>> current, std::shared_ptr<BinNode<Upgrade>> sibling,
+        const std::string& targetID, std::shared_ptr<BinNode<Upgrade>>& outNode, std::shared_ptr<BinNode<Upgrade>>& outSibling) const;
+    void resetNodeStatus(std::shared_ptr<BinNode<Upgrade>> node, bool isRoot);
 public:
     UpgradeManager();
     
@@ -27,4 +31,8 @@ public:
     std::shared_ptr<BinNode<Upgrade>> getLogisticsRoot() const { return logisticsTree; }
     std::shared_ptr<BinNode<Upgrade>> getPropulsionRoot() const { return propulsionTree; }
     std::shared_ptr<BinNode<Upgrade>> getTradingRoot() const { return tradingTree; }
+
+    std::vector<std::string> getPurchasedUpgrades() const;
+    void loadPurchasedUpgrades(const std::vector<std::string>& purchasedIDs);
+    void resetTrees();
 };

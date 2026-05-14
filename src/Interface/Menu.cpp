@@ -52,7 +52,7 @@ Menu::Menu(float width, float height)
     title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
     title.setPosition({width / 2.f, 160.f}); // 100 pixels from the top
 
-    std::vector<std::string> labels = {"NEW GAME", "CONTIUE", "SETTINGS", "EXIT"};
+    std::vector<std::string> labels = {"NEW GAME", "CONTINUE", "SETTINGS", "EXIT"};
     
     for (size_t i = 0; i < labels.size(); ++i) {
         float bWidth = 330.f;

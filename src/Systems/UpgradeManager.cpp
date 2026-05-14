@@ -275,7 +275,7 @@ void UpgradeManager::initTrees(Player& player) {
         "Deep Market Scanners", 
         "Upgrades sensors to detect restricted and exotic goods in local markets.", 
         2000.0f, 
-        false, 
+        true, 
         [&player]() {
             player.levelUpShip();
         }
@@ -303,7 +303,7 @@ void UpgradeManager::initTrees(Player& player) {
         "Market Predictor", 
         "Advanced AI intercepts comms. Increases Planet Event frequency. No room for extra cargo.", 
         2500.0f, 
-        true,
+        false,
         [&player]() {
             player.setEventFrequencyBonus(true);
         }
@@ -429,4 +429,86 @@ void UpgradeManager::initTrees(Player& player) {
     L(R(tradingTree)) = std::make_shared<BinNode<Upgrade>>(std::move(vipLicense2));
 
 #pragma endregion
+}
+
+// ==========================================
+// SAVING AND LOADING LOGIC
+// ==========================================
+
+void UpgradeManager::collectPurchased(std::shared_ptr<BinNode<Upgrade>> node, std::vector<std::string>& list) const {
+    if (!node) return;
+    if (K(node).status == UpgradeStatus::PURCHASED) {
+        list.push_back(K(node).id);
+    }
+    // Pre-order traversal ensures that the parent is stored before the children
+    collectPurchased(L(node), list);
+    collectPurchased(R(node), list);
+}
+
+std::vector<std::string> UpgradeManager::getPurchasedUpgrades() const {
+    std::vector<std::string> list;
+    collectPurchased(propulsionTree, list);
+    collectPurchased(logisticsTree, list);
+    collectPurchased(tradingTree, list);
+    return list;
+}
+
+bool UpgradeManager::findNodeAndSibling(std::shared_ptr<BinNode<Upgrade>> current, std::shared_ptr<BinNode<Upgrade>> sibling, const std::string& targetID, std::shared_ptr<BinNode<Upgrade>>& outNode, std::shared_ptr<BinNode<Upgrade>>& outSibling) const {
+    if (!current) return false;
+    
+    if (K(current).id == targetID) {
+        outNode = current;
+        outSibling = sibling;
+        return true;
+    }
+    
+    // When you look to the left, the right is its counterpart (and vice versa)
+    if (findNodeAndSibling(L(current), R(current), targetID, outNode, outSibling)) return true;
+    if (findNodeAndSibling(R(current), L(current), targetID, outNode, outSibling)) return true;
+    
+    return false;
+}
+
+void UpgradeManager::loadPurchasedUpgrades(const std::vector<std::string>& purchasedIDs) {
+    for (const std::string& id : purchasedIDs) {
+        std::shared_ptr<BinNode<Upgrade>> node = nullptr;
+        std::shared_ptr<BinNode<Upgrade>> sibling = nullptr;
+        
+        if (findNodeAndSibling(propulsionTree, nullptr, id, node, sibling) ||
+            findNodeAndSibling(logisticsTree, nullptr, id, node, sibling) ||
+            findNodeAndSibling(tradingTree, nullptr, id, node, sibling)) 
+        {
+            // 1. Simulate the purchase visually
+            K(node).status = UpgradeStatus::PURCHASED;
+            
+            // 2. Lock mutually exclusive nodes
+            if (K(node).isMutuallyExclusive && sibling != nullptr) {
+                K(sibling).status = UpgradeStatus::BLOCKED_BY_CHOICE;
+            }
+            
+            // 3. Unlock the children
+            if (L(node) && K(L(node)).status == UpgradeStatus::LOCKED) K(L(node)).status = UpgradeStatus::AVAILABLE;
+            if (R(node) && K(R(node)).status == UpgradeStatus::LOCKED) K(R(node)).status = UpgradeStatus::AVAILABLE;
+            
+            // 4. Aplly the lambda effect to the player WITHOUT charging them anything
+            K(node).applyEffect();
+        }
+    }
+}
+
+void UpgradeManager::resetNodeStatus(std::shared_ptr<BinNode<Upgrade>> node, bool isRoot) {
+    if (!node) return;
+    
+    // La raíz siempre vuelve a estar AVAILABLE, los hijos se bloquean por defecto
+    K(node).status = isRoot ? UpgradeStatus::AVAILABLE : UpgradeStatus::LOCKED;
+    
+    // Repetimos el proceso para sus hijos
+    resetNodeStatus(L(node), false);
+    resetNodeStatus(R(node), false);
+}
+
+void UpgradeManager::resetTrees() {
+    resetNodeStatus(propulsionTree, true);
+    resetNodeStatus(logisticsTree, true);
+    resetNodeStatus(tradingTree, true);
 }

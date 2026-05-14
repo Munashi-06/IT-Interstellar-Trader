@@ -23,11 +23,10 @@ GameConfig mainConfig;
 
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
     if (option == "NEW GAME") {
-        
-        state = State::GameIntro;
+        state = State::Playing;
     }
-    else if(option == "CONTINUE"){
-        
+    else if(option == "CONTINUE") {
+        state = State::Playing;
     }
     else if (option == "SETTINGS") {
         state = State::Options;
@@ -372,15 +371,50 @@ int main() {
                     // Confirm with Enter or Space
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         std::string opt = mainMenu.getSelectedOption();
+                        
+                        // If the user clicks CONTINUE but there is no saved data, we ignore it
+                        if (opt == "CONTINUE" && !SaveSystem::saveExists()) {
+                            // audio.playError();
+                            continue; 
+                        }
+
                         ejecuteAction(opt, currentState, window);
                         
                         if (opt == "NEW GAME") {
-                            SaveSystem::setGameSeed("ALFA-77"); 
+                            SaveSystem::setGameSeed("ALFA-77"); // Default seed
+                            spaceShip.resetToDefaults();
+                            upgrades.resetTrees();
+
                             for (auto& planet : world.getPlanets()) {
                                 planet.refreshMarket(world.getCatalog());
                             }
+                            SaveSystem::saveGame(spaceShip, upgrades); // Autosave on startup
                         }
 
+                        else if (opt == "CONTINUE") {
+                            SaveData data;
+                            if (SaveSystem::loadGame(data)) {
+                                SaveSystem::setGameSeed(data.seedText); 
+                                spaceShip.setMoney(data.money);
+                                spaceShip.setCurrentOrbit(data.currentOrbit);
+                                
+                                // Restore inventory
+                                spaceShip.getInventory().clearAll();
+                                for (const auto& pair : data.inventory) {
+                                    const auto& itemData = world.getCatalog().at(pair.first);
+                                    spaceShip.getInventory().addItem(pair.first, pair.second, itemData->getMaxStackSize(), itemData->getBasePrice());
+                                }
+
+                                // We turn off the tree first, and then turn on only the saved ones
+                                upgrades.resetTrees(); 
+                                upgrades.loadPurchasedUpgrades(data.purchasedUpgrades); 
+
+                                for (auto& planet : world.getPlanets()) {
+                                    planet.refreshMarket(world.getCatalog());
+                                }
+                            }
+                        }
+                        
                         audio.playClick();
                     }
                 }
@@ -393,15 +427,49 @@ int main() {
                 else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
                         std::string opt = mainMenu.getSelectedOption();
+                        
+                        // If the user clicks CONTINUE but there is no saved data, we ignore it
+                        if (opt == "CONTINUE" && !SaveSystem::saveExists()) {
+                            // audio.playError();
+                            continue; 
+                        }
+
                         ejecuteAction(opt, currentState, window);
                         
                         if (opt == "NEW GAME") {
-                            SaveSystem::setGameSeed("ALFA-77"); 
+                            SaveSystem::setGameSeed("ALFA-77"); // Default seed
+                            spaceShip.resetToDefaults();
+                            upgrades.resetTrees();
+
                             for (auto& planet : world.getPlanets()) {
                                 planet.refreshMarket(world.getCatalog());
                             }
+                            SaveSystem::saveGame(spaceShip, upgrades); // Autosave on startup
                         }
+                        else if (opt == "CONTINUE") {
+                            SaveData data;
+                            if (SaveSystem::loadGame(data)) {
+                                SaveSystem::setGameSeed(data.seedText); 
+                                spaceShip.setMoney(data.money);
+                                spaceShip.setCurrentOrbit(data.currentOrbit);
+                                
+                                // Restore inventory
+                                spaceShip.getInventory().clearAll();
+                                for (const auto& pair : data.inventory) {
+                                    const auto& itemData = world.getCatalog().at(pair.first);
+                                    spaceShip.getInventory().addItem(pair.first, pair.second, itemData->getMaxStackSize(), itemData->getBasePrice());
+                                }
 
+                                // We turn off the tree first, and then turn on only the saved ones
+                                upgrades.resetTrees(); 
+                                upgrades.loadPurchasedUpgrades(data.purchasedUpgrades); 
+
+                                for (auto& planet : world.getPlanets()) {
+                                    planet.refreshMarket(world.getCatalog());
+                                }
+                            }
+                        }
+                        
                         audio.playClick();
                     }
                 }
@@ -495,6 +563,9 @@ int main() {
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Menu;
                     }
+                    else if(keyPressed->code == sf::Keyboard::Key::G || keyPressed->code == sf::Keyboard::Key::S) {
+                        SaveSystem::saveGame(spaceShip, upgrades);
+                    }
                     
                     const auto& planetas = world.getPlanets();
                     if (!planetas.empty()) {
@@ -536,8 +607,8 @@ int main() {
                                 audio.playClick();
                                 currentState = State::TravelConfirmation; 
                             } else {
-                                std::cout << "[SISTEMA] No puedes viajar a la Orbita " << targetOrbit 
-                                          << ". ¡Necesitas mejorar tus motores o escudos termicos!" << std::endl;
+                                std::cout << "[SYSTEM] You cannot travel to Orbit " << targetOrbit 
+                                          << ". You need to upgrade your engines or heat shields!" << std::endl;
                             }
                         }
                     }
