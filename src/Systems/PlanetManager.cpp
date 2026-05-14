@@ -43,7 +43,8 @@ std::vector<Planet> PlanetManager::loadUniqueOrbitPlanets(const std::string& fil
             std::getline(ss, temp, ',');
             try {
                 val = std::stoi(temp);
-            } catch (...) {
+            }
+            catch (...) {
                 val = 0; // Default value if parsing fails
             }
         };
@@ -60,24 +61,21 @@ std::vector<Planet> PlanetManager::loadUniqueOrbitPlanets(const std::string& fil
     }
 
     // --- selection logic ---
-    std::random_device rd;
-    std::mt19937 g(rd());
-
     std::vector<Planet> selectedPlanets;
 
     for (int orbit = 1; orbit <= 10; ++orbit) {
         if (orbitPool.count(orbit) && !orbitPool[orbit].empty()) {
-            std::uniform_int_distribution<int> dist(0, orbitPool[orbit].size() - 1);
-            int randomIndex = dist(g);
+            int randomIndex = rand() % orbitPool[orbit].size(); 
         
             selectedPlanets.push_back(orbitPool[orbit][randomIndex]);
-        } else {
+        }
+        else {
             std::cerr << "Warning: No planets defined for orbit " << orbit << std::endl;
         }
     }
     std::vector<int> availableOrbits;
 
-    insertionSort(selectedPlanets, [](const Planet& a, const Planet& b) {
+    StockSorter::hybridSort(selectedPlanets.begin(), selectedPlanets.end(), [](const Planet& a, const Planet& b) {
         return a.getOrbit() < b.getOrbit();
     });
     return selectedPlanets;

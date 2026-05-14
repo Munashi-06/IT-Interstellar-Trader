@@ -31,6 +31,7 @@ add_executable(IT-Interstellar-Trader
     src/Systems/ItemFactory.cpp
     src/Systems/Inventory.cpp
     src/Systems/UpgradeManager.cpp
+    src/Systems/SaveSystem.cpp
     
     src/Interface/Menu.cpp
     src/Interface/ShipMenuUI.cpp

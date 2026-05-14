@@ -1,9 +1,10 @@
 #pragma once
+#include "Core/WorldStatemanager.hpp"
 #include "Entities/Planet.hpp"
 #include "Systems/PlanetManager.hpp"
-#include "Core/WorldStatemanager.hpp"
 #include "Systems/ItemFactory.hpp"
 #include "DataStructures/Heap.hpp"
+#include "DataStructures/StockSorter.hpp"
 #include <SFML/Graphics.hpp>
 
 class World {

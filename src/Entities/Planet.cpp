@@ -168,13 +168,20 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
         }
     }
 
+    std::vector<std::string> catalogKeys;
+    for (const auto& pair : catalog) {
+        catalogKeys.push_back(pair.first);
+    }
+    StockSorter::hybridSort(catalogKeys.begin(), catalogKeys.end(), [](const std::string& a, const std::string& b) {
+        return a < b;
+    });
+
     // 3. "New Merchandise" Step: If there are empty slots, try to fill them
     for (auto& slot : localStock) {
         if (!slot.has_value()) {
-            // We choose a random item from the global catalog
-            auto it = catalog.begin();
-            std::advance(it, rand() % catalog.size());
-            const auto& [id, itemPtr] = *it;
+            // Elegimos un ID al azar de nuestra lista ordenada determinista
+            std::string id = catalogKeys[rand() % catalogKeys.size()];
+            const auto& itemPtr = catalog.at(id);
 
             // Check if this item already exists in any other slot of the market
             bool alreadyInStock = false;
@@ -372,7 +379,8 @@ void Planet::updateScale(float deltaTime){
 
     if (highlighted){
         newScale = std::min(newScale, targetScale);
-    } else {
+    }
+    else {
         newScale = std::max(newScale, targetScale);
     }
     sprite->setScale({newScale, newScale});

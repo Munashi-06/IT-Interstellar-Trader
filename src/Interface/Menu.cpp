@@ -25,7 +25,7 @@ void Button::setAlignmentLeft(float margin = 15.f){
 
 void Button::draw(sf::RenderWindow& window) {
     if (selected) {
-        window.draw(shape); // We only draw the box if it is selected
+        window.draw(shape);
         text.setFillColor(selectedColor);
     }
     else {
@@ -44,21 +44,21 @@ Menu::Menu(float width, float height)
     // --- Title Configuration ---
     title.setFont(font);
     title.setString("INTERSTELLAR TRADER");
-    title.setCharacterSize(70); // Larger than buttons
-    title.setFillColor(sf::Color::White); // Distinctive color
+    title.setCharacterSize(70);
+    title.setFillColor(sf::Color::White);
     
     // Center the title horizontally
     sf::FloatRect titleBounds = title.getLocalBounds();
     title.setOrigin({titleBounds.size.x / 2.f, titleBounds.size.y / 2.f});
     title.setPosition({width / 2.f, 160.f}); // 100 pixels from the top
 
-    std::vector<std::string> labels = {"START", "SETTINGS", "EXIT"};
+    std::vector<std::string> labels = {"NEW GAME", "CONTIUE", "SETTINGS", "EXIT"};
     
     for (size_t i = 0; i < labels.size(); ++i) {
         float bWidth = 330.f;
-        float bHeight = 70.f;
+        float bHeight = 60.f;
         float xPos = (width / 2.f) - (bWidth / 2.f);
-        float yPos = (height / 2.f) + (i * 100.f);
+        float yPos = (height / 2.f) + (i * 80.f);
 
         options.emplace_back(labels[i], sf::Vector2f{bWidth, bHeight}, sf::Vector2f{xPos, yPos}, font);
     }

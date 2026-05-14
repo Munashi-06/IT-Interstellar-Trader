@@ -66,6 +66,7 @@ public:
     bool getMonopolyCharter() const { return monopolyCharter; }
     bool getBlackMarketContacts() const { return blackMarketContacts; }
     bool getSyndicateBoss() const { return syndicateBoss; }
+    const sf::Texture& getShipTexture() const { return texture; }
 
     void levelUpShip() { 
         if (shipLevel < MAX_SHIP_LEVEL) {

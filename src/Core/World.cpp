@@ -1,5 +1,4 @@
 #include "Core/World.hpp"
-#include <algorithm>
 
 bool World::update(Player& player) {
     // This is called in each frame of the main loop to handle time counters (such as event duration).
@@ -28,9 +27,9 @@ void World::forceRadarUpdate() {
         display.push_back(p);
     }
 
-    // 2. We order the entire vector using your cmp function
+    // 2. We order the entire vector
     // This guarantees perfect linear ordering for the UI
-    std::sort(display.begin(), display.end(), cmp);
+    StockSorter::hybridSort(display.begin(), display.end(), cmp);
 
     // 3. We pass this sorted vector to the Radar
     // Note: The radar will now receive a sorted vector from 0 to N,

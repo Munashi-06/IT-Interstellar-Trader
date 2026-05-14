@@ -6,8 +6,6 @@ namespace Interface {
         : active(false), displayTimer(0.f), baseScale(1.0f), 
           showButtons(false), currentMenu(PirateMenu::Main), selectedButton(0) 
     {
-        std::random_device rd;
-        rng.seed(rd());
         mainOptions = {"Defenderse", "Sobornar", "Rendirse"};
         briberyOptions = {"Dar el 80% (Seguro)", "Dar el 40% (Arriesgado)", "Volver"};
     }
@@ -72,8 +70,13 @@ namespace Interface {
     }
 
     bool PirateEncounter::rollForEncounter(float chance) {
-        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        if (dist(rng) < chance) { active = true; reset(); return true; }
+    // Convertimos el 'chance' (ej. 0.3f) a un porcentaje (30)
+        float roll = (rand() % 100) / 100.0f; 
+        if (roll < chance) { 
+            active = true; 
+            reset(); 
+            return true; 
+        }
         return false;
     }
     void PirateEncounter::update(float dt) {

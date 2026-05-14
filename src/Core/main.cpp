@@ -11,6 +11,8 @@
 #include "Interface/PirateEncounter.hpp"
 #include "Interface/GameIntroAnimation.hpp"
 
+#include "Systems/SaveSystem.hpp"
+
 #include <iostream>
 #include <optional>
 #include <SFML/Audio.hpp>
@@ -19,15 +21,18 @@
 
 GameConfig mainConfig;
 
-
 void ejecuteAction(std::string option, State& state, sf::RenderWindow& window) {
-    if (option == "START") {
-        // state = State::DifficultySelection; // Submenu of the Main Menu
-        state = State::GameIntro; // NUEVO: Cambiado de State::Playing a State::GameIntro
-        // state = State::Playing; // Temporary, to test the change of states
-    } else if (option == "SETTINGS") {
+    if (option == "NEW GAME") {
+        
+        state = State::GameIntro;
+    }
+    else if(option == "CONTINUE"){
+        
+    }
+    else if (option == "SETTINGS") {
         state = State::Options;
-    } else if (option == "EXIT") {
+    }
+    else if (option == "EXIT") {
         window.close();
     }
 }
@@ -56,6 +61,7 @@ int main() {
         window.setVerticalSyncEnabled(false);
         window.setFramerateLimit(mainConfig.fpsLimit);
     }
+
     sf::Font font;
     if(!font.openFromFile("assets/fonts/04B_03__.TTF")) {
         std::cerr << "Error loading source" << std::endl;
@@ -91,14 +97,6 @@ int main() {
     // The player controls a spaceship, which is initialized at the center of the screen with a specific texture
     Player spaceShip(640.f + 132.f, 360.f, "assets/player.png");
 
-    // Inventory shipInventory; // Player's inventory
-
-    // // To test the ship's inventory and interface, we give the player some items from the global catalog.
-    // auto galaxyItems = ItemFactory::loadDatabase("assets/data/items.txt");
-    // for (const auto& [id, itemPtr] : galaxyItems) {
-    //     shipInventory.addItem(id, 3, itemPtr->getMaxStackSize(), itemPtr->getPrice());
-    // }
-
     sf::Clock clock; // To measure the time between frames
 
     sf::Vector2f mousePos; // To store the mouse position in world coordinates, useful for interactions with the menu and the game world
@@ -108,6 +106,7 @@ int main() {
     
     // Priority Radar with the same charged source
     RadarUI radarUI(font);
+#pragma region "test"
 
     // We load the base vector of planets
     std::vector<Planet> basePlanets = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
@@ -130,13 +129,19 @@ int main() {
     World world(0.0f, std::move(radar), std::move(basePlanets));
 
     // Generate initial stock for all planets
-    for (auto& planet : world.getPlanets()) {
-        planet.refreshMarket(world.getCatalog());
-    }
-
-    // Now 'world' has control of the planets and the radar
+    // for (auto& planet : world.getPlanets()) {
+    //     planet.refreshMarket(world.getCatalog());
+    // }
     
-    BackgroundStars bgStars;
+    bool showRadar = false;
+    ShipMenuUI shipMenu(font, spaceShip.getShipTexture()); // Ship Menu
+    TradeMenuUI tradeMenu(font); // Trade Menu
+
+    UpgradeManager upgrades;
+    upgrades.initTrees(spaceShip);
+    UpgradeTreeUI upgradeTree(font);
+
+#pragma endregion
     
     sf::Texture alertTexture;
     if (!alertTexture.loadFromFile("assets/alert_icon.png")) {
@@ -144,20 +149,6 @@ int main() {
     }
     sf::Sprite alertSprite(alertTexture);
     alertSprite.setPosition({1100.f, 600.f}); 
-
-    sf::Texture shipMenuTexture;
-    if (!shipMenuTexture.loadFromFile("assets/player.png")) {
-        std::cerr << "Error cargando textura de previsualización" << std::endl;
-    }
-
-    ShipMenuUI shipMenu(font, shipMenuTexture); // Ship Menu
-    TradeMenuUI tradeMenu(font); // Trade Menu
-
-    std::cout << "Loading Upgrades" << std::endl;
-    UpgradeManager upgrades;
-    upgrades.initTrees(spaceShip);
-    UpgradeTreeUI upgradeTree(font); // Upgrade Menu
-    std::cout << "Upgrades Loaded" << std::endl;
 
     DebugMenuUI debugMenu(font);
     debugMenu.initCatalog(world.getCatalog());
@@ -235,7 +226,7 @@ int main() {
     shipMenuTitle.setFillColor(sf::Color::Cyan);
     shipMenuTitle.setPosition({480.f, 180.f});
 
-    sf::Sprite shipPreview(shipMenuTexture); 
+    sf::Sprite shipPreview(spaceShip.getShipTexture()); 
     shipPreview.setScale({2.f, 2.f});
     shipPreview.setPosition({210.f, 120.f});
 
@@ -251,13 +242,12 @@ int main() {
 
     int selectedPlanetIndex = 2;
     sf::Vector2f targetPosition(640.f + 132.f, 360.f); 
-    float travelSpeed = 400.f; 
+    float travelSpeed = 400.f;
     float shipAnimX = -100.f;
 
-    bool showRadar = false; // Variable to control radar visibility
-    bool aux = true; // Auxiliary variable to display the radar only once at the beginning
-    
-    std::string currentAudioContext = "menu"; // "menu", "gameplay", "none"
+    bool aux = true;
+    BackgroundStars bgStars;
+    std::string currentAudioContext = "menu";
 
     while (window.isOpen()) {
         mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
@@ -362,6 +352,7 @@ int main() {
                 }
 
             }
+
         // --- INPUT LOGIC ---
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
@@ -380,7 +371,16 @@ int main() {
 
                     // Confirm with Enter or Space
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                        ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
+                        std::string opt = mainMenu.getSelectedOption();
+                        ejecuteAction(opt, currentState, window);
+                        
+                        if (opt == "NEW GAME") {
+                            SaveSystem::setGameSeed("ALFA-77"); 
+                            for (auto& planet : world.getPlanets()) {
+                                planet.refreshMarket(world.getCatalog());
+                            }
+                        }
+
                         audio.playClick();
                     }
                 }
@@ -392,8 +392,16 @@ int main() {
                 }
                 else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
-                        // If the mouse is over the current button
-                        ejecuteAction(mainMenu.getSelectedOption(), currentState, window);
+                        std::string opt = mainMenu.getSelectedOption();
+                        ejecuteAction(opt, currentState, window);
+                        
+                        if (opt == "NEW GAME") {
+                            SaveSystem::setGameSeed("ALFA-77"); 
+                            for (auto& planet : world.getPlanets()) {
+                                planet.refreshMarket(world.getCatalog());
+                            }
+                        }
+
                         audio.playClick();
                     }
                 }
@@ -460,21 +468,6 @@ int main() {
                     audio.setSFXVolume((float)settingsMenu.getTempSfxVolume());
                 }
             }
-            else if(currentState == State::DifficultySelection) {
-            // Here would go the input logic for the difficulty selection submenu
-                if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // Allow returning to the menu with Escape
-                    if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                        currentState = State::Menu;
-                    }
-                    
-                    if(keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
-                        // Here's how to confirm the difficulty selection and start playing
-                        currentState = State::Playing;
-                    }
-                }
-            }
-            // NUEVO: Input para GameIntro
             else if (currentState == State::GameIntro) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     gameIntro.handleInput(keyPressed->code);

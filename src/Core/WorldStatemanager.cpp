@@ -63,25 +63,25 @@ bool WorldStateManager::triggerRandomEvent(std::vector<Planet>& planets, Player&
     // Piracy: More likely if securityLevel is low (< 4)
     if (target.getSecurityLevel() < 4 && roll < baseProbability + 25.f) {
         target.setEvent(PlanetEvent::Piracy);
-        target.setEventDuration(40 + rand() % 40 + (player.getEventFrequencyBonus() ? 30 : 0)); // Minimum duration of 40 seconds, maximum 80 seconds
+        target.setEventDuration(40 + rand() % 40 + (player.getEventDurationBonus() ? 30 : 0)); // Minimum duration of 40 seconds, maximum 80 seconds
         return true;
     }
     // Famine: More likely if resource abundance is low (< 3)
     else if (target.getResourceAbundance() <= 3 && roll < baseProbability + 15.f) {
         target.setEvent(PlanetEvent::Famine);
-        target.setEventDuration(60 + rand() % 60 + (player.getEventFrequencyBonus() ? 30 : 0)); // Minimum duration of 60 seconds, maximum 120 seconds
+        target.setEventDuration(60 + rand() % 60 + (player.getEventDurationBonus() ? 30 : 0)); // Minimum duration of 60 seconds, maximum 120 seconds
         return true;
     }
     // Plague: More likely if medicalTech is low (< 4)
     else if (target.getMedicalTech() <= 4 && roll < baseProbability + 10.f) {
         target.setEvent(PlanetEvent::Plague);
-        target.setEventDuration(50 + rand() % 60 + (player.getEventFrequencyBonus() ? 30 : 0)); // Minimum duration of 50 seconds, maximum 110 seconds
+        target.setEventDuration(50 + rand() % 60 + (player.getEventDurationBonus() ? 30 : 0)); // Minimum duration of 50 seconds, maximum 110 seconds
         return true;
     }
     // Technological Boom: More likely if techLevel is high (> 7)
     else if (target.getTechLevel() >= 7 && roll < baseProbability) {
         target.setEvent(PlanetEvent::TechBoom);
-        target.setEventDuration(30 + rand() % 60 + (player.getEventFrequencyBonus() ? 30 : 0)); // Minimum duration of 30 seconds, maximum 90 seconds
+        target.setEventDuration(30 + rand() % 60 + (player.getEventDurationBonus() ? 30 : 0)); // Minimum duration of 30 seconds, maximum 90 seconds
         return true;
     }
 

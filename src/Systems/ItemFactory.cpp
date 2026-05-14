@@ -1,7 +1,8 @@
 #include "Systems/ItemFactory.hpp"
 
 std::unordered_map<std::string, std::unique_ptr<Item>> ItemFactory::loadDatabase(const std::string& path) {
-    std::unordered_map<std::string, std::unique_ptr<Item>> db;
+    std::unordered_map<std::string,
+    std::unique_ptr<Item>> db;
     std::ifstream file(path);
     std::string line;
 
@@ -51,7 +52,8 @@ std::unordered_map<std::string, std::unique_ptr<Item>> ItemFactory::loadDatabase
                     std::cerr << "Unknown category for item: " << name << std::endl;
                     break;
             }
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << "Error parsing line: " << line << " - " << e.what() << std::endl;
         }
     }

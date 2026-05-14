@@ -43,7 +43,6 @@ namespace Interface {
         std::string resultMessage; 
         std::vector<std::string> mainOptions;
         std::vector<std::string> briberyOptions;
-        std::mt19937 rng;
     };
 }
 #endif
