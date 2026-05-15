@@ -13,6 +13,8 @@ private:
     std::shared_ptr<BinNode<Upgrade>> propulsionTree;
     std::shared_ptr<BinNode<Upgrade>> tradingTree;
 
+    private:
+    void collectPurchasedWithDepth(std::shared_ptr<BinNode<Upgrade>> node, int depth, std::vector<std::pair<std::string, int>>& output);
     void collectPurchased(std::shared_ptr<BinNode<Upgrade>> node, std::vector<std::string>& list) const;
     bool findNodeAndSibling(std::shared_ptr<BinNode<Upgrade>> current, std::shared_ptr<BinNode<Upgrade>> sibling,
         const std::string& targetID, std::shared_ptr<BinNode<Upgrade>>& outNode, std::shared_ptr<BinNode<Upgrade>>& outSibling) const;
@@ -43,5 +45,5 @@ public:
     // treeType: 1 = Propulsion, 2 = Logistics, 3 = Trade
     // Returns ‘true’ if it successfully disabled something.
     // branch (Optional): 0 = Any, 1 = Left branch, 2 = Right branch
-    bool deactivateDeepestUpgrade(Player& player, int treeType, int branch = 0);
+    bool deactivateDeepestUpgrade(Player& player, int treeType, int branch);
 };

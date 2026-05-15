@@ -330,7 +330,7 @@ namespace Game {
                         
                         executeAction(opt);
                         if (opt == "NEW GAME") {
-                            SaveSystem::setGameSeed("ALFA-77");
+                            SaveSystem::setGameSeed("");
                             spaceShip.resetToDefaults();
                             upgrades.resetTrees();
                             for (auto& planet : world->getPlanets()) planet.refreshMarket(world->getCatalog());
@@ -505,7 +505,7 @@ namespace Game {
                     if (mouseButton->button == sf::Mouse::Button::Left) {
                         sf::Vector2f mousePos = window.mapPixelToCoords(mouseButton->position);
                         bool gameOverTriggered = false;
-                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered)) {
+                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered, upgrades)) {
                             if (gameOverTriggered) {
                                 if (gameOverScene) {
                                     gameOverScene->setActive(true);
@@ -522,7 +522,7 @@ namespace Game {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     bool gameOverTriggered = false;
                     
-                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered);
+                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered, upgrades);
                     
                     bool shouldGameOver = Game::GameOverScene::checkCondition(spaceShip, world->getCatalog());
                     

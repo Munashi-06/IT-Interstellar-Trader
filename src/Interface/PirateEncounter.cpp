@@ -1,4 +1,5 @@
 #include "Interface/PirateEncounter.hpp"
+#include "Systems/UpgradeManager.hpp"
 #include <cmath>
 #include <iostream>
 #include <cstdlib>
@@ -130,7 +131,7 @@ namespace Interface {
         }
     }
     
-    bool PirateEncounter::handleMouseClick(const sf::Vector2f& mousePos, Player& player, bool& gameOverTriggered) {
+    bool PirateEncounter::handleMouseClick(const sf::Vector2f& mousePos, Player& player, bool& gameOverTriggered, UpgradeManager& upgrades) {
         if (!active || currentMenu == PirateMenu::Result || !showButtons) return false;
         
         const auto& opts = (currentMenu == PirateMenu::Main) ? mainOptions : briberyOptions;
@@ -144,7 +145,6 @@ namespace Interface {
             if (btnBounds.contains(mousePos)) {
                 selectedButton = i;
                 
-                // Procesar el clic como si fuera Enter
                 int sel = selectedButton;
                 int roll = rand() % 100;
                 int playerLevel = player.getLevel();
@@ -155,8 +155,25 @@ namespace Interface {
                         if (roll < winChance) {
                             setResult("VICTORY: You defended your ship!");
                         } else {
+                            // DERROTA - Perder dinero
                             player.setMoney(0.0f);
-                            setResult("DEFEAT: They looted all your credits!");
+                            
+                            // 40% de probabilidad de perder una mejora de propulsión
+                            int loseUpgradeRoll = rand() % 100;
+                            if (loseUpgradeRoll < 40) {
+                                // Intentar desactivar la mejora de propulsión más profunda
+                                bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 0);
+                                
+                                if (upgradeRemoved) {
+                                    setResult("DEFEAT: They looted your credits AND damaged your propulsion system!");
+                                } else {
+                                    // No hay mejoras de propulsión para quitar -> Game Over
+                                    setResult("DEFEAT: They destroyed your ship! You have no upgrades to protect you.");
+                                    gameOverTriggered = true;
+                                }
+                            } else {
+                                setResult("DEFEAT: They looted all your credits!");
+                            }
                         }
                     }
                     else if (sel == 1) {  // Bribe
@@ -219,7 +236,7 @@ namespace Interface {
     int PirateEncounter::getSelectedButton() const { return selectedButton; }
     bool PirateEncounter::isActive() const { return active; }
 
-    void PirateEncounter::handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered) {
+    void PirateEncounter::handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered, UpgradeManager& upgrades) {
         if (!active) return;
         
         if (currentMenu == PirateMenu::Result) {
@@ -241,8 +258,26 @@ namespace Interface {
                         if (roll < winChance) {
                             setResult("VICTORY: You defended your ship!");
                         } else {
+                            // DERROTA - Perder dinero
                             player.setMoney(0.0f);
-                            setResult("DEFEAT: They looted all your credits!");
+                            /////////////////////////////////////////////////////
+                            // 40% de probabilidad de perder una mejora de propulsión
+                            int loseUpgradeRoll = rand() % 100;
+                            if (loseUpgradeRoll < 100) {
+                                ///////////////////////////
+                                // Intentar desactivar la mejora de propulsión más profunda
+                                bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 2);
+                                
+                                if (upgradeRemoved) {
+                                    setResult("DEFEAT: They looted your credits AND damaged your propulsion system!");
+                                } else {
+                                    // No hay mejoras de propulsión para quitar -> Game Over
+                                    setResult("DEFEAT: They destroyed your ship! You have no upgrades to protect you.");
+                                    gameOverTriggered = true;
+                                }
+                            } else {
+                                setResult("DEFEAT: They looted all your credits!");
+                            }
                         }
                     }
                     else if (sel == 1) {  // Bribe
