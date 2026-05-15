@@ -11,6 +11,7 @@
 #include "Interface/DebugMenuUI.hpp"
 #include "Interface/PirateEncounter.hpp"
 #include "Interface/GameIntroAnimation.hpp"
+#include "Interface/GameOverScene.hpp"
 
 #include "Systems/SaveSystem.hpp"
 #include "Systems/UpgradeManager.hpp"
@@ -45,6 +46,7 @@ namespace Game {
         UpgradeManager upgrades;
         BackgroundStars bgStars;
         Interface::PirateEncounter pirates;
+        std::unique_ptr<Game::GameOverScene> gameOverScene;
 
         // --- UI MENUS & ANIMATIONS ---
         std::unique_ptr<Menu> mainMenu;

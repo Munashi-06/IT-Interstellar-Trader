@@ -15,13 +15,22 @@ namespace Game {
           currentAudioContext("menu"), 
           intro(1280.f, 720.f),
           gameIntro(1280.f, 720.f),
-          spaceShip(640.f + 132.f, 360.f, "assets/player.png")
-    {}
+          spaceShip(640.f + 132.f, 360.f, "assets/player.png"),
+          gameOverScene(nullptr)
+    {
+        std::cout << "[ENGINE] Constructor llamado" << std::endl;
+    }
 
     bool Engine::init() {
+        std::cout << "[ENGINE] Iniciando init()..." << std::endl;
+        
         // 1. CARGAR TODOS LOS ARCHIVOS PRIMERO
         if (!AssetManager::loadAll()) {
-            return false; // Si falta algún archivo, el juego no arranca
+            std::cerr << "[ENGINE] Error: AssetManager::loadAll() fallo" << std::endl;
+
+            gameOverScene = std::make_unique<Game::GameOverScene>(mainFont);
+
+            return false;
         }
 
         config.loadFromSavedFile("config.txt");
@@ -115,6 +124,15 @@ namespace Game {
 
         intro.loadAssets(mainFont);
         gameIntro.loadAssets(mainFont);
+        
+        // CREAR GAMEOVERSCENE AQUÍ
+        std::cout << "[ENGINE] Creando GameOverScene..." << std::endl;
+        gameOverScene = std::make_unique<Game::GameOverScene>(mainFont);
+        if (!gameOverScene) {
+            std::cerr << "[ENGINE] Error: Failed to create GameOverScene" << std::endl;
+            return false;
+        }
+        std::cout << "[ENGINE] GameOverScene creado correctamente" << std::endl;
 
         return true;
     }
@@ -130,9 +148,9 @@ namespace Game {
             dt = clock.restart().asSeconds();
             world->setDeltaTime(dt);
             
-            update();        // Handles audio, positions, and timings
-            processEvents(); // Handles keyboard and mouse input
-            render();        // Handles rendering everything
+            update();
+            processEvents();
+            render();
         }
     }
 
@@ -155,6 +173,13 @@ namespace Game {
         }
         else if (currentState == State::GameIntro) {
             if (currentAudioContext != "gameintro") currentAudioContext = "gameintro";
+        }
+        else if (currentState == State::GameOver) {
+            if (currentAudioContext != "none") {
+                audio.stopMusic();
+                audio.stopTheme();
+                currentAudioContext = "none";
+            }
         }
         else {
             if (currentAudioContext != "gameplay") {
@@ -194,13 +219,12 @@ namespace Game {
                 }
             }
 
-            // --- ¡NUEVO!: ACTUALIZACIÓN ORIENTADA A OBJETOS PARA PLANETAS Y NAVE ---
             float time = worldClock.getElapsedTime().asSeconds();
             sf::Vector2f center(640.f, 360.f);
             auto& planets = world->getPlanets();
 
             for (size_t i = 0; i < planets.size(); ++i) {
-                planets[i].updateOrbitPosition(time, center); // El planeta calcula su órbita
+                planets[i].updateOrbitPosition(time, center);
                 
                 if (planets[i].getOrbit() == spaceShip.getCurrentOrbit()) {
                     targetPosition = planets[i].getPosition();
@@ -218,8 +242,8 @@ namespace Game {
                 planets[i].updateScale(dt);
             }
 
-            spaceShip.travelTo(targetPosition, dt, travelSpeed); // La nave se mueve hacia el objetivo
-            spaceShip.update(dt); // La nave sincroniza su hitbox
+            spaceShip.travelTo(targetPosition, dt, travelSpeed);
+            spaceShip.update(dt);
         }
         else if (currentState == State::GameIntro) {
             gameIntro.update(dt);
@@ -238,6 +262,11 @@ namespace Game {
         }
         else if (currentState == State::PirateEncounter) {
             pirates.update(dt);
+        }
+        else if (currentState == State::GameOver) {
+            if (gameOverScene) {
+                gameOverScene->update(dt);
+            }
         }
         else if (currentState == State::TradeMenu) tradeMenu->update(mousePos);
         else if (currentState == State::ShipMenu) shipMenu->update(mousePos);
@@ -389,7 +418,6 @@ namespace Game {
                 }
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                        // Here would go the Save Menu
                         currentState = State::Menu;
                     }
                     else if(keyPressed->code == sf::Keyboard::Key::G || keyPressed->code == sf::Keyboard::Key::S) SaveSystem::saveGame(spaceShip, upgrades);
@@ -465,14 +493,59 @@ namespace Game {
                 }
                 upgradeTree->handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
             }
+
             else if (currentState == State::PirateEncounter) {
+
+                if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(mouseMoved->position);
+                    pirates.handleMouseMove(mousePos);
+                }
+                
+                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseButton->button == sf::Mouse::Button::Left) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouseButton->position);
+                        bool gameOverTriggered = false;
+                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered)) {
+                            if (gameOverTriggered) {
+                                if (gameOverScene) {
+                                    gameOverScene->setActive(true);
+                                    currentState = State::GameOver;
+                                }
+                            } else if (!pirates.isActive()) {
+                                pirateEncounterActive = false;
+                                currentState = State::Playing;
+                            }
+                        }
+                    }
+                }
+                
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    // ¡El pirata se encarga de todo por sí mismo!
-                    pirates.handleEncounterLogic(keyPressed->code, spaceShip);
+                    bool gameOverTriggered = false;
                     
-                    if (!pirates.isActive()) {
+                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered);
+                    
+                    bool shouldGameOver = Game::GameOverScene::checkCondition(spaceShip, world->getCatalog());
+                    
+                    if (shouldGameOver) {
+                        if (gameOverScene) {
+                            gameOverScene->setActive(true);
+                            currentState = State::GameOver;
+                        }
+                    } else if (!pirates.isActive()) {
                         pirateEncounterActive = false; 
                         currentState = State::Playing;
+                    }
+                }
+            }
+            
+            else if (currentState == State::GameOver) {
+                if (gameOverScene && gameOverScene->handleInput(*event)) {
+                    std::cout << "[ENGINE] Returning to main menu from Game Over" << std::endl;
+                    currentState = State::Menu;
+                    spaceShip.resetToDefaults();
+                    upgrades.resetTrees();
+                    for (auto& planet : world->getPlanets()) {
+                        planet.refreshMarket(world->getCatalog());
                     }
                 }
             }
@@ -492,6 +565,21 @@ namespace Game {
         }
         else if (currentState == State::GameIntro) {
             gameIntro.draw(window);
+        }
+        else if (currentState == State::GameOver) {
+            if (gameOverScene) {
+                gameOverScene->draw(window);
+            } else {
+                // Fallback si gameOverScene es null
+                sf::RectangleShape blackScreen({1280.f, 720.f});
+                blackScreen.setFillColor(sf::Color::Black);
+                window.draw(blackScreen);
+                
+                sf::Text fallbackText(mainFont, "GAME OVER\nPress ENTER", 40);
+                fallbackText.setOrigin({fallbackText.getLocalBounds().size.x / 2.f, 0});
+                fallbackText.setPosition({640.f, 360.f});
+                window.draw(fallbackText);
+            }
         }
         else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation) {
             window.draw(generalBackground); 
