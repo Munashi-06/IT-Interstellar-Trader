@@ -17,42 +17,7 @@ namespace Interface {
     }
 
     bool GameIntroAnimation::loadAssets(const sf::Font& font) {
-        // 1. Cargar texturas de fondos
-        if (!bgTex1.loadFromFile("assets/anim04.png")) {
-            std::cerr << "Error: assets/anim04.png not found" << std::endl;
-            return false;
-        }
-        
-        if (!bgTex2.loadFromFile("assets/anim09.png")) {
-            std::cerr << "Error: assets/anim09.png not found" << std::endl;
-            // No retornamos false, solo warning
-            bgTex2 = bgTex1;
-        }
-        
-        if (!bgTex3.loadFromFile("assets/anim07.png")) {
-            std::cerr << "Error: assets/anim07.png not found" << std::endl;
-            bgTex3 = bgTex1;
-        }
-        
-        if (!bgTex4.loadFromFile("assets/anim10.png")) {
-            std::cerr << "Error: assets/anim10.png not found" << std::endl;
-            bgTex4 = bgTex1;
-        }
-        
-        // 2. Cargar música de Undertale
-        backgroundMusic = std::make_unique<sf::Music>();
-        if (!backgroundMusic->openFromFile("assets/audio/undertale_dogsong.ogg")) {
-            std::cerr << "Error: assets/audio/undertale_dogsong.ogg not found" << std::endl;
-            return false;
-        } else {
-            backgroundMusic->setLooping(true);  // Loop para que suene toda la animación
-        }
-        
-        // 3. Crear sprite de fondo
-        backgroundSprite = std::make_unique<sf::Sprite>(bgTex1);
-        backgroundSprite->setScale({1280.f / bgTex1.getSize().x, 720.f / bgTex1.getSize().y});
-        
-        // 4. Configurar cuadro de diálogo
+        // --- 1. CREAR LOS OBJETOS QUE NO DEPENDEN DE TEXTURAS ---
         dialogueBox = std::make_unique<sf::RectangleShape>(sf::Vector2f(1000.f, 150.f));
         dialogueBox->setFillColor(sf::Color(0, 0, 0, 210));
         dialogueBox->setOutlineThickness(2);
@@ -60,9 +25,45 @@ namespace Interface {
         dialogueBox->setOrigin({500.f, 75.f});
         dialogueBox->setPosition({640.f, 600.f});
         
-        // 5. Configurar texto
         mainText = std::make_unique<sf::Text>(font, "", 26);
         mainText->setFillColor(sf::Color::White);
+
+        backgroundMusic = std::make_unique<sf::Music>();
+
+        // --- 2. CARGAR TEXTURA PRINCIPAL PRIMERO ---
+        if (!bgTex1.loadFromFile("assets/anim04.png")) {
+            std::cerr << "[GameIntro] Error: assets/anim04.png not found" << std::endl;
+            return false; // Si falla, abortamos (El check en el draw evitará el crasheo)
+        }
+        
+        // --- 3. CREAR EL SPRITE CON LA TEXTURA (Regla de SFML 3) ---
+        backgroundSprite = std::make_unique<sf::Sprite>(bgTex1);
+        backgroundSprite->setScale({1280.f / bgTex1.getSize().x, 720.f / bgTex1.getSize().y});
+
+        // --- 4. CARGAR EL RESTO DE TEXTURAS ---
+        if (!bgTex2.loadFromFile("assets/anim09.png")) {
+            std::cerr << "[GameIntro] Error: assets/anim09.png not found" << std::endl;
+            bgTex2 = bgTex1;
+        }
+        
+        if (!bgTex3.loadFromFile("assets/anim07.png")) {
+            std::cerr << "[GameIntro] Error: assets/anim07.png not found" << std::endl;
+            bgTex3 = bgTex1;
+        }
+        
+        if (!bgTex4.loadFromFile("assets/anim10.png")) {
+            std::cerr << "[GameIntro] Error: assets/anim10.png not found" << std::endl;
+            bgTex4 = bgTex1;
+        }
+        
+        // --- 5. LOAD MUSIC ---
+        if (!backgroundMusic->openFromFile("assets/audio/undertale_dogsong.ogg")) {
+            std::cerr << "[GameIntro] Error: assets/audio/undertale_dogsong.ogg not found" << std::endl;
+            return false; 
+        }
+        else {
+            backgroundMusic->setLooping(true);
+        }
         
         return true;
     }
@@ -200,10 +201,13 @@ namespace Interface {
     }
 
     void GameIntroAnimation::draw(sf::RenderWindow& window) {
-        // Dibujar fondo
+        // SAFETY: If something is null, we abort the drawing instead of crashing
+        if (!backgroundSprite || !dialogueBox || !mainText) return;
+
+        // Draw background
         window.draw(*backgroundSprite);
         
-        // Dibujar diálogo
+        // Draw dialog
         if (state == GameIntroState::Intro1 || 
             state == GameIntroState::Intro2 || 
             state == GameIntroState::Intro3 || 
@@ -212,7 +216,7 @@ namespace Interface {
             window.draw(*mainText);
         }
         
-        // Dibujar overlay de fade si está activo
+        // Draw the fade overlay if it is active
         if (isFading) {
             window.draw(fadeOverlay);
         }

@@ -159,7 +159,6 @@ namespace Game {
         if (currentState == State::Menu || currentState == State::Options) {
             if (currentAudioContext != "menu") {
                 audio.stopTheme();
-                audio.loadMusic("assets/audio/undertale_dogsong.ogg");
                 audio.playMusic();
                 currentAudioContext = "menu";
             }
@@ -300,7 +299,7 @@ namespace Game {
                         executeAction(opt);
                         
                         if (opt == "NEW GAME") {
-                            SaveSystem::setGameSeed("ALFA-77");
+                            SaveSystem::setGameSeed("");
                             spaceShip.resetToDefaults();
                             upgrades.resetTrees();
                             for (auto& planet : world->getPlanets()) {
@@ -492,7 +491,7 @@ namespace Game {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) {
                         currentState = State::Playing; 
                         audio.playHover();
-                        if (pirates.rollForEncounter(0.3f)) {
+                        if (pirates.rollForEncounter(0.25f)) {
                             pirateEncounterActive = true; pirates.reset();
                             currentState = State::PirateEncounter;
                         }
