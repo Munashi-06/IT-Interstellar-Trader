@@ -8,7 +8,7 @@ bool World::update(Player& player) {
     static float restockTimer = 0.0f;
     restockTimer += deltaTime;
     
-    if (restockTimer >= 60.0f) {
+    if (restockTimer >= 300.0f) {
         for (auto& planet : solarSystem) {
             planet.restockMarket(globalCatalog, player.getShipLevel());
         }
