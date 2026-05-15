@@ -1,51 +1,45 @@
-#ifndef PIRATE_ENCOUNTER_HPP
-#define PIRATE_ENCOUNTER_HPP
-
-#include "Entities/Player.hpp"
+#pragma once
 #include <SFML/Graphics.hpp>
-#include <random>
 #include <memory>
 #include <vector>
 #include <string>
+#include "../Entities/Player.hpp"
 
 namespace Interface {
     enum class PirateMenu { Main, Bribery, Result };
-
+    
     class PirateEncounter {
     public:
         PirateEncounter();
+        
         bool loadAssets();
-        void update(float dt);
         void draw(sf::RenderWindow& window, sf::Font& font);
-        
+        void update(float dt);
+        void handleInput(sf::Keyboard::Key k);
+        void handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered);
         bool rollForEncounter(float chance);
-        void reset(); 
-        void stop();  
-
         void setResult(const std::string& message);
-
-        void handleInput(sf::Keyboard::Key key);
-        void setShowButtons(bool show);
+        void reset();
+        void stop();
+        void setShowButtons(bool s);
         bool isShowingButtons() const;
+        void setMenu(PirateMenu menu);
+        PirateMenu getCurrentMenu() const;
+        int getSelectedButton() const;
+        bool isActive() const;
         
-        PirateMenu getCurrentMenu() const { return currentMenu; }
-        int getSelectedButton() const { return selectedButton; }
-        void setMenu(PirateMenu menu) { currentMenu = menu; selectedButton = 0; }
-
-        void handleEncounterLogic(sf::Keyboard::Key key, Player& player);
-        bool isActive() const { return active; }
     private:
-        sf::Texture pirateTex;
-        std::unique_ptr<sf::Sprite> pirateSprite;
         bool active;
         float displayTimer;
         float baseScale;
         bool showButtons;
         PirateMenu currentMenu;
         int selectedButton;
-        std::string resultMessage; 
         std::vector<std::string> mainOptions;
         std::vector<std::string> briberyOptions;
+        std::string resultMessage;
+        
+        sf::Texture pirateTex;
+        std::unique_ptr<sf::Sprite> pirateSprite;
     };
 }
-#endif
