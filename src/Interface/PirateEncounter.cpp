@@ -60,9 +60,20 @@ namespace Interface {
                 sf::RectangleShape btn(sf::Vector2f(380.f, 45.f));
                 btn.setOrigin(sf::Vector2f(190.f, 22.5f));
                 btn.setPosition(sf::Vector2f(640.f, 420.f + (i * 65.f)));
-                btn.setFillColor(i == selectedButton ? sf::Color(150,0,0,230) : sf::Color(20,20,20,230));
+                
+                // Cambiar color si el mouse está sobre el botón
+                sf::FloatRect btnBounds = btn.getGlobalBounds();
+                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                bool isHover = btnBounds.contains(mousePos);
+                
+                if (isHover) {
+                    btn.setFillColor(sf::Color(200, 0, 0, 230));
+                } else {
+                    btn.setFillColor(i == selectedButton ? sf::Color(150,0,0,230) : sf::Color(20,20,20,230));
+                }
+                
                 btn.setOutlineThickness(2);
-                btn.setOutlineColor(i == selectedButton ? sf::Color::Red : sf::Color::White);
+                btn.setOutlineColor((isHover || i == selectedButton) ? sf::Color::Red : sf::Color::White);
                 
                 sf::Text txt(font, opts[i]);
                 txt.setCharacterSize(18);
@@ -99,6 +110,98 @@ namespace Interface {
         if (currentMenu == PirateMenu::Result) return;
         if (k == sf::Keyboard::Key::Up) selectedButton = (selectedButton - 1 + 3) % 3;
         if (k == sf::Keyboard::Key::Down) selectedButton = (selectedButton + 1) % 3;
+    }
+    
+    void PirateEncounter::handleMouseMove(const sf::Vector2f& mousePos) {
+        if (!active || currentMenu == PirateMenu::Result || !showButtons) return;
+        
+        const auto& opts = (currentMenu == PirateMenu::Main) ? mainOptions : briberyOptions;
+        
+        for (int i = 0; i < static_cast<int>(opts.size()); ++i) {
+            sf::RectangleShape btn(sf::Vector2f(380.f, 45.f));
+            btn.setOrigin(sf::Vector2f(190.f, 22.5f));
+            btn.setPosition(sf::Vector2f(640.f, 420.f + (i * 65.f)));
+            
+            sf::FloatRect btnBounds = btn.getGlobalBounds();
+            if (btnBounds.contains(mousePos)) {
+                selectedButton = i;
+                break;
+            }
+        }
+    }
+    
+    bool PirateEncounter::handleMouseClick(const sf::Vector2f& mousePos, Player& player, bool& gameOverTriggered) {
+        if (!active || currentMenu == PirateMenu::Result || !showButtons) return false;
+        
+        const auto& opts = (currentMenu == PirateMenu::Main) ? mainOptions : briberyOptions;
+        
+        for (int i = 0; i < static_cast<int>(opts.size()); ++i) {
+            sf::RectangleShape btn(sf::Vector2f(380.f, 45.f));
+            btn.setOrigin(sf::Vector2f(190.f, 22.5f));
+            btn.setPosition(sf::Vector2f(640.f, 420.f + (i * 65.f)));
+            
+            sf::FloatRect btnBounds = btn.getGlobalBounds();
+            if (btnBounds.contains(mousePos)) {
+                selectedButton = i;
+                
+                // Procesar el clic como si fuera Enter
+                int sel = selectedButton;
+                int roll = rand() % 100;
+                int playerLevel = player.getLevel();
+
+                if (currentMenu == PirateMenu::Main) {
+                    if (sel == 0) {  // Defend
+                        int winChance = 40 + (playerLevel * 12);
+                        if (roll < winChance) {
+                            setResult("VICTORY: You defended your ship!");
+                        } else {
+                            player.setMoney(0.0f);
+                            setResult("DEFEAT: They looted all your credits!");
+                        }
+                    }
+                    else if (sel == 1) {  // Bribe
+                        currentMenu = PirateMenu::Bribery;
+                        selectedButton = 0;
+                        showButtons = true;
+                    }
+                    else if (sel == 2) {  // Surrender
+                        player.getInventory().clearAll();
+                        setResult("SURRENDER: They took all your cargo.");
+                        if (player.getMoney() <= 0) {
+                            gameOverTriggered = true;
+                        }
+                    }
+                } 
+                else if (currentMenu == PirateMenu::Bribery) {
+                    float currentMoney = player.getMoney();
+                    if (sel == 0) {  // 80% bribe
+                        player.setMoney(currentMoney * 0.2f);
+                        if (roll < 5) {
+                            player.setMoney(0.0f);
+                            setResult("BETRAYAL: They took all your money!");
+                        } else {
+                            setResult("PAID: You are free to go.");
+                        }
+                    }
+                    else if (sel == 1) {  // 40% bribe
+                        player.setMoney(currentMoney * 0.6f);
+                        if (roll < 45) {
+                            player.setMoney(0.0f);
+                            setResult("REJECTED: They took all your money!");
+                        } else {
+                            setResult("LUCKY: They accepted the minimum deal.");
+                        }
+                    }
+                    else {  // Back
+                        currentMenu = PirateMenu::Main;
+                        selectedButton = 0;
+                        showButtons = true;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
     
     void PirateEncounter::reset() { 
@@ -138,7 +241,6 @@ namespace Interface {
                         if (roll < winChance) {
                             setResult("VICTORY: You defended your ship!");
                         } else {
-                            // DERROTA - Solo perder dinero, NO el inventario
                             player.setMoney(0.0f);
                             setResult("DEFEAT: They looted all your credits!");
                         }

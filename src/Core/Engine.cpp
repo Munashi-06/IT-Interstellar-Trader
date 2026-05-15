@@ -493,13 +493,37 @@ namespace Game {
                 }
                 upgradeTree->handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
             }
+
             else if (currentState == State::PirateEncounter) {
+
+                if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(mouseMoved->position);
+                    pirates.handleMouseMove(mousePos);
+                }
+                
+                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseButton->button == sf::Mouse::Button::Left) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouseButton->position);
+                        bool gameOverTriggered = false;
+                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered)) {
+                            if (gameOverTriggered) {
+                                if (gameOverScene) {
+                                    gameOverScene->setActive(true);
+                                    currentState = State::GameOver;
+                                }
+                            } else if (!pirates.isActive()) {
+                                pirateEncounterActive = false;
+                                currentState = State::Playing;
+                            }
+                        }
+                    }
+                }
+                
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     bool gameOverTriggered = false;
                     
                     pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered);
                     
-                    // Verificar condición real de Game Over
                     bool shouldGameOver = Game::GameOverScene::checkCondition(spaceShip, world->getCatalog());
                     
                     if (shouldGameOver) {
@@ -513,6 +537,7 @@ namespace Game {
                     }
                 }
             }
+            
             else if (currentState == State::GameOver) {
                 if (gameOverScene && gameOverScene->handleInput(*event)) {
                     std::cout << "[ENGINE] Returning to main menu from Game Over" << std::endl;

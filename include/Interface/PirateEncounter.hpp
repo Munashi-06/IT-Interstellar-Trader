@@ -16,6 +16,8 @@ namespace Interface {
         void draw(sf::RenderWindow& window, sf::Font& font);
         void update(float dt);
         void handleInput(sf::Keyboard::Key k);
+        void handleMouseMove(const sf::Vector2f& mousePos);
+        bool handleMouseClick(const sf::Vector2f& mousePos, Player& player, bool& gameOverTriggered);
         void handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered);
         bool rollForEncounter(float chance);
         void setResult(const std::string& message);
