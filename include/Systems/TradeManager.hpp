@@ -14,5 +14,5 @@ public:
 
     // Helper functions to calculate final prices applying player's Trading Tree skills
     static float getFinalBuyPrice(const Item& item, float basePlanetPrice, const Player& player);
-    static float getFinalSellPrice(const Item& item, float basePlanetPrice, const Player& player);
+    static float getFinalSellPrice(const Item& item, float basePlanetPrice, const Player& player, float originalBuyPrice, const std::string& originPlanet, const std::string& currentPlanet);
 };

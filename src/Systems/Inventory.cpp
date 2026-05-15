@@ -2,7 +2,7 @@
 #include "Systems/PlanetManager.hpp"
 
 // We use the catalog to validate the item, but we only store the ID
-bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice) {
+bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice, const std::string& originPlanet) {
     // Try to stack in existing slots
     for (auto& slot : slots) {
         if (slot.has_value() && slot->itemID == itemID) {
@@ -14,7 +14,7 @@ bool Inventory::addItem(const std::string& itemID, int qty, int maxStackSize, fl
     // If stacking was not possible, look for an empty slot (nullopt)
     for (auto& slot : slots) {
         if (slot == std::nullopt) {
-            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice };
+            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice, originPlanet };
             return true;
         }
     }

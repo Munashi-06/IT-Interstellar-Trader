@@ -239,51 +239,80 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
 
                 // --- DICE ROLL ---
                 if (probability > 0 && (rand() % 100 < probability)) {
-                    slot = ItemStack{ id, quantity, itemPtr->getMaxStackSize(), itemPtr->getBasePrice() }; 
+                    slot = ItemStack{ id, quantity, itemPtr->getMaxStackSize(), itemPtr->getBasePrice(), this->name, quantity };
                 }
             }
         }
     }
 }
 
-float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
+float Planet::getLocalBasePrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
     const auto& item = globalCatalog.at(itemID);
     float price = item->getBasePrice();
     float modifier = 1.0f;
-
-    // --- Influence of Planet Attributes ---
+    
+    // SOLO atributos del planeta, SIN eventos
     if (item->isTechnology()) {
-        // Higher tech level means more supply, lower price (-20% maximum)
-        modifier -= (this->techLevel / 50.0f); 
+        if (this->techLevel >= 8) modifier -= 0.40f;
+        else if (this->techLevel <= 3) modifier += 0.40f;
     }
-    if (item->isFood() && this->resourceAbundance > 7) {
-        modifier -= 0.15f; // Cheap food on agricultural planets
+    if (item->isResource() || item->isFood()) {
+        if (this->resourceAbundance >= 8) modifier -= 0.35f;
+        else if (this->resourceAbundance <= 3) modifier += 0.35f;
     }
     if (item->isLuxury()) {
-        // High luxury demand raises the price
-        modifier += (this->luxuryDemand / 20.0f);
+        if (this->luxuryDemand >= 8) modifier -= 0.30f;
+        else if (this->luxuryDemand <= 3) modifier += 0.30f;
     }
+    if (item->isMedical()) {
+        if (this->medicalTech >= 8) modifier -= 0.35f;
+        else if (this->medicalTech <= 3) modifier += 0.35f;
+    }
+    if (item->isIllegal()) {
+        if (this->securityLevel >= 8) modifier += 0.50f;
+        else if (this->securityLevel <= 3) modifier -= 0.50f;
+    }
+    
+    return price * std::max(0.05f, modifier);
+}
 
-    // --- Influence of Events ---
+float Planet::getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
+    const auto& item = globalCatalog.at(itemID);
+    float localBase = getLocalBasePrice(itemID, globalCatalog);
+    float eventModifier = 0.0f;
+    
+    // Solo eventos
     switch (this->currentEvent) {
         case PlanetEvent::War:
-            if (item->isMedical()) modifier += 1.5f;   // Medicine goes up
-            if (item->isTechnology()) modifier += 0.5f; // Components go up
+            if (item->isMedical()) eventModifier += 2.5f;
+            if (item->isTechnology()) eventModifier += 1.0f;
+            if (item->isLuxury()) eventModifier += 0.3f;
+            if (item->isFood()) eventModifier += 0.5f;
             break;
         case PlanetEvent::Plague:
-            if (item->isMedical()) modifier += 2.0f;
-            if (item->isFood()) modifier += 0.4f;
+            if (item->isMedical()) eventModifier += 3.5f;
+            if (item->isFood()) eventModifier += 0.8f;
+            if (item->isLuxury()) eventModifier -= 0.4f;
             break;
         case PlanetEvent::Famine:
-            if (item->isFood()) modifier += 2.5f;
+            if (item->isFood()) eventModifier += 3.5f;
+            if (item->isResource()) eventModifier += 0.3f;
+            if (item->isMedical()) eventModifier += 0.5f;
+            if (item->isLuxury()) eventModifier -= 0.5f;
             break;
         case PlanetEvent::TechBoom:
-            if (item->isTechnology()) modifier -= 0.3f; // Excess supply
+            if (item->isTechnology()) eventModifier -= 0.6f;
+            if (item->isResource()) eventModifier -= 0.2f;
+            break;
+        case PlanetEvent::Piracy:
+            if (item->isIllegal()) eventModifier -= 0.7f;
+            if (item->isLuxury()) eventModifier += 0.4f;
+            if (item->isTechnology()) eventModifier += 0.3f;
             break;
         default: break;
     }
-
-    return price * std::max(0.1f, modifier); // Never a negative or 0 price
+    
+    return localBase * std::max(0.01f, (1.0f + eventModifier));
 }
 
 bool Planet::addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice) {
@@ -297,7 +326,7 @@ bool Planet::addItem(const std::string& itemID, int qty, int maxStackSize, float
     // If it couldn't be stacked, look for an empty slot
     for (auto& slot : localStock) {
         if (!slot.has_value()) {
-            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice };
+            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice, this->name, qty };
             return true;
         }
     }
@@ -309,7 +338,7 @@ void Planet::removeItem(const std::string& itemID, int qty) {
         if (slot.has_value() && slot->itemID == itemID) {
             slot->quantity -= qty;
             if (slot->quantity <= 0) {
-                slot = std::nullopt; // Free the slot if it reaches 0
+                slot->quantity = 0; 
             }
             return;
         }
@@ -396,4 +425,66 @@ void Planet::updateOrbitPosition(float time, const sf::Vector2f& center) {
     if (sprite) {
         sprite->setPosition(currentPosition);
     }
+}
+
+float Planet::getBaseItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
+    const auto& item = globalCatalog.at(itemID);
+    return item->getBasePrice();  // Precio puro del archivo items.txt
+}
+
+float Planet::getVisibilityPercent(Rarity rarity, int shipLevel) const {
+    switch (rarity){
+        case Rarity::Common:
+            if (shipLevel == 1) return 0.60f;
+            if(shipLevel == 2) return 0.85f;
+            return 1.0f;
+        case Rarity::Rare:
+            if (shipLevel == 1) return 0.55f;
+            if(shipLevel == 2) return 0.75f;
+            return 1.0f;
+        case Rarity::Exotic:
+            if (shipLevel == 1) return 0.50f;
+            if(shipLevel == 2) return 0.70f;
+            return 1.0f;
+        case Rarity::Legendary:
+            if (shipLevel == 1) return 0.45f;
+            if(shipLevel == 2) return 0.70f;
+            return 1.0f;
+        default: return 1.0f;
+    }
+}
+
+void Planet::restockMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, int shipLevel) {
+    int itemsRestocked = 0;
+    int itemsSkippedFull = 0;
+    int itemsAtZero = 0;
+    
+    for (auto& slot : localStock) {
+        if (slot.has_value()) {
+            const auto& itemData = catalog.at(slot->itemID);
+            
+            if (slot->quantity == 0) itemsAtZero++;
+            
+            if (slot->quantity < slot->maxStackSize / 2 || slot->quantity == 0) {
+                int restockAmount;
+                switch (itemData->getRarity()) {
+                    case Rarity::Common:    restockAmount = 20; break;
+                    case Rarity::Rare:      restockAmount = 10; break;
+                    case Rarity::Exotic:    restockAmount = 5;  break;
+                    case Rarity::Legendary: restockAmount = 2;  break;
+                    default:                restockAmount = 5;  break;
+                }
+                int oldQty = slot->quantity;
+                int maxRestock = std::min(slot->initialQuantity, slot->maxStackSize);
+                slot->quantity = std::min(slot->quantity + restockAmount, maxRestock);
+                itemsRestocked++;
+                std::cout << "  [RESTOOK] " << itemData->getName() << ": " << oldQty << " -> " << slot->quantity << std::endl;
+            } else {
+                itemsSkippedFull++;
+            }
+        }
+    }
+    
+    std::cout << "[RESTOOK] " << name << ": " << itemsRestocked << " reabastecidos, "
+              << itemsSkippedFull << " llenos, " << itemsAtZero << " en cero." << std::endl;
 }
