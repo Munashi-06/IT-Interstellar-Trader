@@ -232,7 +232,7 @@ void Planet::refreshMarket(const std::unordered_map<std::string, std::unique_ptr
 
                 // --- DICE ROLL ---
                 if (probability > 0 && (rand() % 100 < probability)) {
-                    slot = ItemStack{ id, quantity, itemPtr->getMaxStackSize(), itemPtr->getBasePrice() }; 
+                    slot = ItemStack{ id, quantity, itemPtr->getMaxStackSize(), itemPtr->getBasePrice(), this->name, quantity };
                 }
             }
         }
@@ -319,7 +319,7 @@ bool Planet::addItem(const std::string& itemID, int qty, int maxStackSize, float
     // If it couldn't be stacked, look for an empty slot
     for (auto& slot : localStock) {
         if (!slot.has_value()) {
-            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice, this->name };
+            slot = ItemStack{ itemID, qty, maxStackSize, buyPrice, this->name, qty };
             return true;
         }
     }
@@ -331,7 +331,7 @@ void Planet::removeItem(const std::string& itemID, int qty) {
         if (slot.has_value() && slot->itemID == itemID) {
             slot->quantity -= qty;
             if (slot->quantity <= 0) {
-                slot = std::nullopt; // Free the slot if it reaches 0
+                slot->quantity = 0; 
             }
             return;
         }
@@ -410,4 +410,61 @@ void Planet::updateScale(float deltaTime){
 float Planet::getBaseItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const {
     const auto& item = globalCatalog.at(itemID);
     return item->getBasePrice();  // Precio puro del archivo items.txt
+}
+
+float Planet::getVisibilityPercent(Rarity rarity, int shipLevel) const {
+    switch (rarity){
+        case Rarity::Common:
+            if (shipLevel == 1) return 0.60f;
+            if(shipLevel == 2) return 0.85f;
+            return 1.0f;
+        case Rarity::Rare:
+            if (shipLevel == 1) return 0.55f;
+            if(shipLevel == 2) return 0.75f;
+            return 1.0f;
+        case Rarity::Exotic:
+            if (shipLevel == 1) return 0.50f;
+            if(shipLevel == 2) return 0.70f;
+            return 1.0f;
+        case Rarity::Legendary:
+            if (shipLevel == 1) return 0.45f;
+            if(shipLevel == 2) return 0.70f;
+            return 1.0f;
+        default: return 1.0f;
+    }
+}
+
+void Planet::restockMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, int shipLevel) {
+    int itemsRestocked = 0;
+    int itemsSkippedFull = 0;
+    int itemsAtZero = 0;
+    
+    for (auto& slot : localStock) {
+        if (slot.has_value()) {
+            const auto& itemData = catalog.at(slot->itemID);
+            
+            if (slot->quantity == 0) itemsAtZero++;
+            
+            if (slot->quantity < slot->maxStackSize / 2 || slot->quantity == 0) {
+                int restockAmount;
+                switch (itemData->getRarity()) {
+                    case Rarity::Common:    restockAmount = 20; break;
+                    case Rarity::Rare:      restockAmount = 10; break;
+                    case Rarity::Exotic:    restockAmount = 5;  break;
+                    case Rarity::Legendary: restockAmount = 2;  break;
+                    default:                restockAmount = 5;  break;
+                }
+                int oldQty = slot->quantity;
+                int maxRestock = std::min(slot->initialQuantity, slot->maxStackSize);
+                slot->quantity = std::min(slot->quantity + restockAmount, maxRestock);
+                itemsRestocked++;
+                std::cout << "  [RESTOOK] " << itemData->getName() << ": " << oldQty << " -> " << slot->quantity << std::endl;
+            } else {
+                itemsSkippedFull++;
+            }
+        }
+    }
+    
+    std::cout << "[RESTOOK] " << name << ": " << itemsRestocked << " reabastecidos, "
+              << itemsSkippedFull << " llenos, " << itemsAtZero << " en cero." << std::endl;
 }

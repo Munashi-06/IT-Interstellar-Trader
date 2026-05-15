@@ -2,16 +2,25 @@
 #include <algorithm>
 
 bool World::update(Player& player) {
-    // This is called in each frame of the main loop to handle time counters (such as event duration).
-    // Here you could update the world state, such as advancing active events, managing missions, etc.
-    // We only update the radar if something actually changed in the events.
-    // This avoids recalculating the heap every frame, which improves performance.
     bool hasChanged = stateManager.update(deltaTime, solarSystem, player);
+    
+    // RESTOCK TIMER: Restock markets every 60 seconds, influenced by the player's ship level (higher level = more frequent restocks)
+    static float restockTimer = 0.0f;
+    restockTimer += deltaTime;
+    
+    if (restockTimer >= 60.0f) {
+        for (auto& planet : solarSystem) {
+            planet.restockMarket(globalCatalog, player.getShipLevel());
+        }
+        restockTimer = 0.0f;
+        std::cout << "[ECONOMIA] Restock de mercados planetarios (nivel " << player.getShipLevel() << ")." << std::endl;
+        hasChanged = true;
+    }
     
     if (hasChanged) {
         forceRadarUpdate();
     }
-    return hasChanged; // Returns whether there were changes to the main method so that the interface can be updated if necessary
+    return hasChanged;
 }
 
 void World::updateRadar(Planet& plnt) noexcept {

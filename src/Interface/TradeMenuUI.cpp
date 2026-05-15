@@ -915,60 +915,19 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
     }
 }
 
-float TradeMenuUI::getVisibilityPercent(Rarity rarity, int shipLevel) const{
-    switch (rarity){
-        case Rarity::Common:
-            switch(shipLevel){
-                case 1: return 0.60f;
-                case 2: return 0.85f;
-                case 3: return 1.00f;
-                default: return 1.00f;
-            }
-
-        case Rarity::Rare:
-            switch(shipLevel){
-                case 1: return 0.55f;
-                case 2: return 0.75f;
-                case 3: return 1.00f;
-                default: return 1.00f;
-            }
-        
-        case Rarity::Exotic:
-            switch(shipLevel){
-                case 1: return 0.50f;
-                case 2: return 0.70f;
-                case 3: return 1.00f;
-                default: return 1.00f;
-            }
-        
-        case Rarity::Legendary:
-            switch(shipLevel){
-                case 1: return 0.45f;
-                case 2: return 0.70f;
-                case 3: return 1.00f;
-                default: return 1.00f;
-            }
-        
-        default: return 1.00f;
-
-    }
+float TradeMenuUI::getVisibilityPercent(Rarity rarity, int shipLevel) const {
+    Planet temp;
+    return temp.getVisibilityPercent(rarity, shipLevel);
 }
 
 std::vector<const ItemStack*> TradeMenuUI::getVisiblePlanetItems(const Planet& planet, int shipLevel, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) const {
     std::vector<const ItemStack*> visibleItems;
     
-    for(const auto& slot : planet.getLocalStock()){
-        if(slot.has_value()){
-            const auto& itemData = catalog.at(slot->itemID);
-            float visibility = getVisibilityPercent(itemData->getRarity(), shipLevel);
-
-            std::hash<std::string> hasher;
-            size_t hashValue = hasher(slot->itemID + std::to_string(shipLevel));
-            bool isVisible = (hashValue % 100) < (visibility * 100);
-            if (isVisible){
-                visibleItems.push_back(&*slot);
-            }
+    for (const auto& slot : planet.getLocalStock()) {
+        if (slot.has_value() && slot->quantity > 0) {
+            visibleItems.push_back(&*slot);
         }
     }
+    
     return visibleItems;
 }

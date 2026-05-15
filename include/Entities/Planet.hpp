@@ -58,6 +58,8 @@ public:
     void setHighlighted(bool h);
 
     void refreshMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog); // Updates local stock based on planet specialization and current events
+    void restockMarket(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, int shipLevel); // Restocks items based on supply/demand and planet characteristics
+    float getVisibilityPercent(Rarity rarity, int shipLevel) const; // Determines the percentage chance of an item of a certain rarity being visible in the market, based on planet characteristics and ship's scanner level
     bool canBuyItem(const Item& item) const; // Lógica de "necesito esto?"
     float getItemPrice(const std::string& itemID, const std::unordered_map<std::string, std::unique_ptr<Item>>& globalCatalog) const; // Calculates the price of an item based on supply/demand and current events
     bool addItem(const std::string& itemID, int qty, int maxStackSize, float buyPrice);
