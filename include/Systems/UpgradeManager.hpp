@@ -4,6 +4,7 @@
 #include "Entities/Player.hpp"
 #include <memory>
 #include <iostream>
+#include <algorithm>
 
 class UpgradeManager {
 private:
@@ -16,6 +17,9 @@ private:
     bool findNodeAndSibling(std::shared_ptr<BinNode<Upgrade>> current, std::shared_ptr<BinNode<Upgrade>> sibling,
         const std::string& targetID, std::shared_ptr<BinNode<Upgrade>>& outNode, std::shared_ptr<BinNode<Upgrade>>& outSibling) const;
     void resetNodeStatus(std::shared_ptr<BinNode<Upgrade>> node, bool isRoot);
+
+    // Find the improvement at the end of the branch
+    std::string findDeepestPurchased(std::shared_ptr<BinNode<Upgrade>> node) const;
 public:
     UpgradeManager();
     
@@ -35,4 +39,9 @@ public:
     std::vector<std::string> getPurchasedUpgrades() const;
     void loadPurchasedUpgrades(const std::vector<std::string>& purchasedIDs);
     void resetTrees();
+
+    // treeType: 1 = Propulsion, 2 = Logistics, 3 = Trade
+    // Returns ‘true’ if it successfully disabled something.
+    // branch (Optional): 0 = Any, 1 = Left branch, 2 = Right branch
+    bool deactivateDeepestUpgrade(Player& player, int treeType, int branch = 0);
 };

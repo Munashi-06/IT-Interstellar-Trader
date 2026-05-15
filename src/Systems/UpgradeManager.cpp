@@ -512,3 +512,84 @@ void UpgradeManager::resetTrees() {
     resetNodeStatus(logisticsTree, true);
     resetNodeStatus(tradingTree, true);
 }
+
+std::string UpgradeManager::findDeepestPurchased(std::shared_ptr<BinNode<Upgrade>> node) const {
+    // Si el nodo es nulo o no está comprado, esta rama no nos sirve
+    if (!node || K(node).status != UpgradeStatus::PURCHASED) return "";
+    
+    // Buscamos primero en los hijos (queremos la mejora más profunda)
+    std::string leftDeep = findDeepestPurchased(L(node));
+    if (!leftDeep.empty()) return leftDeep;
+    
+    std::string rightDeep = findDeepestPurchased(R(node));
+    if (!rightDeep.empty()) return rightDeep;
+    
+    // Si no tiene hijos comprados, significa que ESTE nodo es la última mejora de la rama
+    return K(node).id;
+}
+
+
+bool UpgradeManager::deactivateDeepestUpgrade(Player& player, int treeType, int branch) {
+    // 1. Select the root tree
+    std::shared_ptr<BinNode<Upgrade>> rootToSearch = nullptr;
+    if (treeType == 1) rootToSearch = propulsionTree;
+    else if (treeType == 2) rootToSearch = logisticsTree;
+    else if (treeType == 3) rootToSearch = tradingTree;
+
+    if (!rootToSearch) return false;
+
+    // 2. Define which branch to search (Left, Right, or All)
+    std::shared_ptr<BinNode<Upgrade>> startNode = rootToSearch;
+    if (branch == 1 && L(rootToSearch)) {
+        startNode = L(rootToSearch); // Force search only on left children
+    } 
+    else if (branch == 2 && R(rootToSearch)) {
+        startNode = R(rootToSearch); // Force search only on the right children
+    }
+
+    // 3. Find the latest upgrade in that area
+    std::string idToRemove = findDeepestPurchased(startNode);
+    if (idToRemove.empty()) {
+        std::cout << "[SYSTEM] No upgrades purchased in the specified branch.\n";
+        return false; 
+    }
+
+    // 4. Get ALL global upgrades and remove the victim from the list
+    std::vector<std::string> currentUpgrades = getPurchasedUpgrades();
+    currentUpgrades.erase(std::remove(currentUpgrades.begin(), currentUpgrades.end(), idToRemove), currentUpgrades.end());
+
+    // 5. Save the current state that we do NOT want to lose
+    float savedMoney = player.getMoney();
+    short savedOrbit = player.getCurrentOrbit();
+    auto savedItems = player.getInventory().getSlots(); // Copy the physical items
+
+    // 6. FACTORY RESET!
+    player.resetToDefaults();
+    resetTrees();
+
+    // 7. Reapply the remaining upgrades (This recalculates everything correctly)
+    loadPurchasedUpgrades(currentUpgrades);
+
+    // 8. Restore the saved state
+    player.setMoney(savedMoney);
+
+    // Orbit Safety
+    short minLegal = player.getMinOrbitReach();
+    short maxLegal = player.getMaxOrbitReach();
+    if (savedOrbit < minLegal) savedOrbit = minLegal;
+    if (savedOrbit > maxLegal) savedOrbit = maxLegal;
+    player.setCurrentOrbit(savedOrbit);
+
+    // Restore items in the inventory
+    player.getInventory().clearAll();
+    for (const auto& slot : savedItems) {
+        if (slot.has_value()) {
+            // COMPILER FIX: We use buyPrice instead of basePrice
+            // If you still get an error here, change ‘buyPrice’ to ‘price’ depending on how it's defined in your ItemStack
+            player.getInventory().addItem(slot->itemID, slot->quantity, slot->maxStackSize, slot->buyPrice);
+        }
+    }
+
+    std::cout << "[SYSTEM] The upgrade " << idToRemove << " has been destroyed and deactivated.\n";
+    return true;
+}
