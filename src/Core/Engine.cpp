@@ -162,7 +162,8 @@ namespace Game {
                 audio.loadMusic("assets/audio/undertale_dogsong.ogg");
                 audio.playMusic();
                 currentAudioContext = "menu";
-            } else if (!audio.isMusicPlaying()) audio.playMusic();
+            }
+            else if (!audio.isMusicPlaying()) audio.playMusic();
         }
         else if (currentState == State::Animation1 || currentState == State::PirateEncounter) {
             if (currentAudioContext != "none") {
@@ -204,7 +205,8 @@ namespace Game {
             if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
                 adminShipBtn.setFillColor(sf::Color(80, 80, 80, 255));
                 adminShipBtn.setOutlineColor(sf::Color::Cyan);
-            } else {
+            }
+            else {
                 adminShipBtn.setFillColor(sf::Color(50, 50, 50, 200));
                 adminShipBtn.setOutlineColor(sf::Color::White);
             }
@@ -213,7 +215,8 @@ namespace Game {
                 if (animBtn.getGlobalBounds().contains(mousePos)) {
                     animBtn.setFillColor(sf::Color(150, 0, 200, 255));
                     animBtn.setOutlineColor(sf::Color::Cyan);
-                } else {
+                }
+                else {
                     animBtn.setFillColor(sf::Color(100, 0, 150, 200));
                     animBtn.setOutlineColor(sf::Color::White);
                 }
@@ -236,7 +239,8 @@ namespace Game {
                     bool engineOk = (tOrbit >= spaceShip.getMinOrbit() && tOrbit <= spaceShip.getMaxOrbit());
                     bool hullOk = (tOrbit >= spaceShip.getMinOrbitReach() && tOrbit <= spaceShip.getMaxOrbitReach());
                     if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) targetPosition = planets[i].getPosition();
-                } else {
+                }
+                else {
                     planets[i].setHighlighted(false);
                 }
                 planets[i].updateScale(dt);
@@ -282,10 +286,12 @@ namespace Game {
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
-                        mainMenu->moveUp(); audio.playHover();
+                        mainMenu->moveUp();
+                        audio.playHover();
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
-                        mainMenu->moveDown(); audio.playHover();
+                        mainMenu->moveDown();
+                        audio.playHover();
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         std::string opt = mainMenu->getSelectedOption();
@@ -297,7 +303,9 @@ namespace Game {
                             SaveSystem::setGameSeed("ALFA-77");
                             spaceShip.resetToDefaults();
                             upgrades.resetTrees();
-                            for (auto& planet : world->getPlanets()) planet.refreshMarket(world->getCatalog());
+                            for (auto& planet : world->getPlanets()) {
+                                planet.refreshMarket(world->getCatalog());
+                            }
                             SaveSystem::saveGame(spaceShip, upgrades);
                         }
                         else if (opt == "CONTINUE") {
@@ -314,7 +322,9 @@ namespace Game {
 
                                 upgrades.resetTrees(); 
                                 upgrades.loadPurchasedUpgrades(data.purchasedUpgrades); 
-                                for (auto& planet : world->getPlanets()) planet.refreshMarket(world->getCatalog());
+                                for (auto& planet : world->getPlanets()) {
+                                    planet.refreshMarket(world->getCatalog());
+                                }
                             }
                         }
                         audio.playClick();
@@ -333,7 +343,9 @@ namespace Game {
                             SaveSystem::setGameSeed("");
                             spaceShip.resetToDefaults();
                             upgrades.resetTrees();
-                            for (auto& planet : world->getPlanets()) planet.refreshMarket(world->getCatalog());
+                            for (auto& planet : world->getPlanets()) {
+                                planet.refreshMarket(world->getCatalog());
+                            }
                             SaveSystem::saveGame(spaceShip, upgrades);
                         }
                         else if (opt == "CONTINUE") {
@@ -349,7 +361,9 @@ namespace Game {
                                 }
                                 upgrades.resetTrees(); 
                                 upgrades.loadPurchasedUpgrades(data.purchasedUpgrades); 
-                                for (auto& planet : world->getPlanets()) planet.refreshMarket(world->getCatalog());
+                                for (auto& planet : world->getPlanets()) {
+                                    planet.refreshMarket(world->getCatalog());
+                                }
                             }
                         }
                         audio.playClick();
@@ -359,24 +373,30 @@ namespace Game {
             else if (currentState == State::Options){
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()){
                     if(keyPressed->code == sf::Keyboard::Key::W || keyPressed->code == sf::Keyboard::Key::Up){
-                        settingsMenu->moveUp(); audio.playHover();
+                        settingsMenu->moveUp();
+                        audio.playHover();
                     }
                     else if(keyPressed->code == sf::Keyboard::Key::S || keyPressed->code == sf::Keyboard::Key::Down){
-                        settingsMenu->moveDown(); audio.playHover();
+                        settingsMenu->moveDown();
+                        audio.playHover();
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Escape){
-                        settingsMenu->resetTempConfig(config); currentState = State::Menu;
+                        settingsMenu->resetTempConfig(config);
+                        currentState = State::Menu;
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space){
-                        settingsMenu->handleAction(currentState, window, config, audio); audio.playClick();
+                        settingsMenu->handleAction(currentState, window, config, audio);
+                        audio.playClick();
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::D || keyPressed->code == sf::Keyboard::Key::Right){
-                        settingsMenu->changeValue(1); audio.playHover();
+                        settingsMenu->changeValue(1);
+                        audio.playHover();
                         audio.setMusicVolume((float)settingsMenu->getTempMusicVolume());
                         audio.setSFXVolume((float)settingsMenu->getTempSfxVolume());
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::A || keyPressed->code == sf::Keyboard::Key::Left){
-                        settingsMenu->changeValue(-1); audio.playHover();
+                        settingsMenu->changeValue(-1);
+                        audio.playHover();
                         audio.setMusicVolume((float)settingsMenu->getTempMusicVolume());
                         audio.setSFXVolume((float)settingsMenu->getTempSfxVolume());
                     }
@@ -387,7 +407,10 @@ namespace Game {
                         settingsMenu->handleMouseClick(mousePos);
                         std::string opt = settingsMenu->getSelectedOption();
                         if(opt == "APPLY") settingsMenu->applySettings(window, config, audio);
-                        else if(opt == "BACK") { settingsMenu->resetTempConfig(config); currentState = State::Menu; }
+                        else if(opt == "BACK") {
+                            settingsMenu->resetTempConfig(config);
+                            currentState = State::Menu;
+                        }
                     }
                 }
                 else if (event->is<sf::Event::MouseButtonReleased>()){
@@ -410,9 +433,13 @@ namespace Game {
                 if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
                         if (adminShipBtn.getGlobalBounds().contains(mousePos)) {
-                            audio.playClick(); currentState = State::ShipMenu; 
-                        } else if(spaceShip.getHasWarpDrive() && animBtn.getGlobalBounds().contains(mousePos)) {
-                            audio.playClick(); intro.reset(); currentState = State::Animation1; 
+                            audio.playClick();
+                            currentState = State::ShipMenu;
+                        }
+                        else if(spaceShip.getHasWarpDrive() && animBtn.getGlobalBounds().contains(mousePos)) {
+                            audio.playClick();
+                            intro.reset();
+                            currentState = State::Animation1;
                         }
                     }
                 }
@@ -440,7 +467,8 @@ namespace Game {
                             bool hullOk = (targetOrbit >= spaceShip.getMinOrbitReach() && targetOrbit <= spaceShip.getMaxOrbitReach());
 
                             if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) {
-                                audio.playClick(); currentState = State::TravelConfirmation; 
+                                audio.playClick();
+                                currentState = State::TravelConfirmation; 
                             }
                             else {
                                 std::cout << "[SYSTEM] No puedes viajar a esa orbita.\n";
@@ -453,7 +481,8 @@ namespace Game {
             else if (currentState == State::TravelConfirmation) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Y) {
-                        shipAnimX = -100.f; currentState = State::InPlanet; 
+                        shipAnimX = -100.f;
+                        currentState = State::InPlanet; 
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::N) currentState = State::Playing;  
                 }
@@ -464,7 +493,8 @@ namespace Game {
                         currentState = State::Playing; 
                         audio.playHover();
                         if (pirates.rollForEncounter(0.3f)) {
-                            pirateEncounterActive = true; pirates.reset(); currentState = State::PirateEncounter;
+                            pirateEncounterActive = true; pirates.reset();
+                            currentState = State::PirateEncounter;
                         }
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::T) {
@@ -511,7 +541,8 @@ namespace Game {
                                     gameOverScene->setActive(true);
                                     currentState = State::GameOver;
                                 }
-                            } else if (!pirates.isActive()) {
+                            }
+                            else if (!pirates.isActive()) {
                                 pirateEncounterActive = false;
                                 currentState = State::Playing;
                             }
@@ -531,7 +562,8 @@ namespace Game {
                             gameOverScene->setActive(true);
                             currentState = State::GameOver;
                         }
-                    } else if (!pirates.isActive()) {
+                    }
+                    else if (!pirates.isActive()) {
                         pirateEncounterActive = false; 
                         currentState = State::Playing;
                     }
@@ -569,7 +601,8 @@ namespace Game {
         else if (currentState == State::GameOver) {
             if (gameOverScene) {
                 gameOverScene->draw(window);
-            } else {
+            }
+            else {
                 // Fallback si gameOverScene es null
                 sf::RectangleShape blackScreen({1280.f, 720.f});
                 blackScreen.setFillColor(sf::Color::Black);
@@ -596,19 +629,23 @@ namespace Game {
             for (size_t i = 0; i < planets.size(); ++i) {
                 if (planets[i].hasSprite()) {
                     window.draw(*planets[i].getSprite());
-                } else {
+                }
+                else {
                     sf::CircleShape planetShape(8.f);
                     planetShape.setOrigin({8.f, 8.f});
                     planetShape.setPosition(planets[i].getPosition());
                     planetShape.setFillColor(i == (size_t)selectedPlanetIndex ? sf::Color::Cyan : sf::Color(150, 150, 150));
-                    if(i == (size_t)selectedPlanetIndex) { planetShape.setOutlineThickness(2); planetShape.setOutlineColor(sf::Color::White); }
+                    if(i == (size_t)selectedPlanetIndex) {
+                        planetShape.setOutlineThickness(2);
+                        planetShape.setOutlineColor(sf::Color::White);
+                    }
                     window.draw(planetShape);
                 }
             }
 
             if (!planets.empty()) {
                 planetNameText.setString(planets[selectedPlanetIndex].getName());
-                if (planets[selectedPlanetIndex].hasSprite()){
+                if (planets[selectedPlanetIndex].hasSprite()) {
                     sf::Sprite uiSprite = *planets[selectedPlanetIndex].getSprite();
                     float uiScale = 150.f / std::max(uiSprite.getTexture().getSize().x, uiSprite.getTexture().getSize().y);
                     uiSprite.setScale({uiScale, uiScale});
@@ -631,7 +668,8 @@ namespace Game {
                 radarUI->draw(window);
             }
             if (spaceShip.getHasWarpDrive()) {
-                window.draw(animBtn); window.draw(animBtnText);
+                window.draw(animBtn);
+                window.draw(animBtnText);
             }
 
             if (currentState == State::TravelConfirmation) {

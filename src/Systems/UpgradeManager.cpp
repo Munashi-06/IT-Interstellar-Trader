@@ -551,11 +551,8 @@ std::string UpgradeManager::findDeepestPurchased(std::shared_ptr<BinNode<Upgrade
     return deepestId;
 }
 
-// ==========================================
-// FUNCIÓN CORREGIDA: Desactiva la mejora más profunda
-// ==========================================
 bool UpgradeManager::deactivateDeepestUpgrade(Player& player, int treeType, int branch) {
-    // 1. Select the root tree
+    // 1. Elegir el árbol raíz
     std::shared_ptr<BinNode<Upgrade>> rootToSearch = nullptr;
     if (treeType == 1) rootToSearch = propulsionTree;
     else if (treeType == 2) rootToSearch = logisticsTree;
@@ -566,63 +563,69 @@ bool UpgradeManager::deactivateDeepestUpgrade(Player& player, int treeType, int 
         return false;
     }
 
-    // 2. Define which branch to search (Left, Right, or All)
+    // 2. Definir en qué rama vamos a buscar inicialmente
     std::shared_ptr<BinNode<Upgrade>> startNode = rootToSearch;
     if (branch == 1 && L(rootToSearch)) {
         startNode = L(rootToSearch);
-        std::cout << "[SYSTEM] Searching only LEFT branch" << std::endl;
     } 
     else if (branch == 2 && R(rootToSearch)) {
         startNode = R(rootToSearch);
-        std::cout << "[SYSTEM] Searching only RIGHT branch" << std::endl;
-    } else {
-        std::cout << "[SYSTEM] Searching ALL branches" << std::endl;
+    } 
+
+    // 3. Encontrar la última mejora de esa zona
+    std::string idToRemove = findDeepestPurchased(startNode);
+    
+    // Si no encontró nada en la rama específica, el daño rebota y busca en TODO el árbol
+    if (idToRemove.empty()) {
+        std::cout << "[SYSTEM] Rama vacia. Redirigiendo el daño al resto del sistema..." << std::endl;
+        // Al buscar desde rootToSearch, revisará automáticamente la rama contraria y,
+        // si la contraria también está vacía, ¡seleccionará al mismísimo Nodo Padre!
+        idToRemove = findDeepestPurchased(rootToSearch);
     }
 
-    // 3. Find the deepest upgrade in that area
-    std::string idToRemove = findDeepestPurchased(startNode);
+    // Si después de buscar en todo el árbol sigue vacío, es que no hay absolutamente nada comprado
     if (idToRemove.empty()) {
-        std::cout << "[SYSTEM] No upgrades purchased in the specified branch.\n";
+        std::cout << "[SYSTEM] No hay mejoras compradas en este arbol.\n";
         return false; 
     }
 
-    std::cout << "[SYSTEM] Removing deepest upgrade: " << idToRemove << std::endl;
+    std::cout << "[SYSTEM] Eliminando la mejora: " << idToRemove << std::endl;
 
-    // 4. Get ALL global upgrades and remove the victim from the list
+    // 4. Obtener TODAS las mejoras globales y borrar la víctima de la lista
     std::vector<std::string> currentUpgrades = getPurchasedUpgrades();
     
     // Verificar que el upgrade existe en la lista
     auto it = std::find(currentUpgrades.begin(), currentUpgrades.end(), idToRemove);
     if (it == currentUpgrades.end()) {
-        std::cout << "[SYSTEM] Error: Upgrade " << idToRemove << " not found in purchased list!" << std::endl;
+        std::cout << "[SYSTEM] Error: Mejora no encontrada en la lista!" << std::endl;
         return false;
     }
     
-    currentUpgrades.erase(it, currentUpgrades.end());
+    currentUpgrades.erase(it);
 
-    // 5. Save the current state that we do NOT want to lose
+    // 5. Guardar el estado actual que NO queremos perder
     float savedMoney = player.getMoney();
     short savedOrbit = player.getCurrentOrbit();
     auto savedItems = player.getInventory().getSlots();
 
-    // 6. FACTORY RESET!
+    // 6. ¡FORMATEO DE FÁBRICA!
     player.resetToDefaults();
     resetTrees();
 
-    // 7. Reapply the remaining upgrades
+    // 7. Re-aplicar el resto de mejoras
     loadPurchasedUpgrades(currentUpgrades);
 
-    // 8. Restore the saved state
+    // 8. Restaurar el estado guardado
     player.setMoney(savedMoney);
 
-    // Orbit Safety
+    // Seguridad de Órbita
     short minLegal = player.getMinOrbitReach();
     short maxLegal = player.getMaxOrbitReach();
     if (savedOrbit < minLegal) savedOrbit = minLegal;
     if (savedOrbit > maxLegal) savedOrbit = maxLegal;
     player.setCurrentOrbit(savedOrbit);
 
-    // Restore items in the inventory
+    // Restaurar los items en el inventario
     player.getInventory().clearAll();
     for (const auto& slot : savedItems) {
         if (slot.has_value()) {
@@ -630,6 +633,6 @@ bool UpgradeManager::deactivateDeepestUpgrade(Player& player, int treeType, int 
         }
     }
 
-    std::cout << "[SYSTEM] The upgrade " << idToRemove << " has been destroyed and deactivated.\n";
+    std::cout << "[SYSTEM] La mejora " << idToRemove << " ha sido destruida.\n";
     return true;
 }

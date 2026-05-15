@@ -145,82 +145,14 @@ namespace Interface {
             if (btnBounds.contains(mousePos)) {
                 selectedButton = i;
                 
-                int sel = selectedButton;
-                int roll = rand() % 100;
-                int playerLevel = player.getLevel();
-
-                if (currentMenu == PirateMenu::Main) {
-                    if (sel == 0) {  // Defend
-                        int winChance = 40 + (playerLevel * 12);
-                        if (roll < winChance) {
-                            setResult("VICTORY: You defended your ship!");
-                        } else {
-                            // DERROTA - Perder dinero
-                            player.setMoney(0.0f);
-                            
-                            // 40% de probabilidad de perder una mejora de propulsión
-                            int loseUpgradeRoll = rand() % 100;
-                            if (loseUpgradeRoll < 40) {
-                                // Intentar desactivar la mejora de propulsión más profunda
-                                bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 0);
-                                
-                                if (upgradeRemoved) {
-                                    setResult("DEFEAT: They looted your credits AND damaged your propulsion system!");
-                                } else {
-                                    // No hay mejoras de propulsión para quitar -> Game Over
-                                    setResult("DEFEAT: They destroyed your ship! You have no upgrades to protect you.");
-                                    gameOverTriggered = true;
-                                }
-                            } else {
-                                setResult("DEFEAT: They looted all your credits!");
-                            }
-                        }
-                    }
-                    else if (sel == 1) {  // Bribe
-                        currentMenu = PirateMenu::Bribery;
-                        selectedButton = 0;
-                        showButtons = true;
-                    }
-                    else if (sel == 2) {  // Surrender
-                        player.getInventory().clearAll();
-                        setResult("SURRENDER: They took all your cargo.");
-                        if (player.getMoney() <= 0) {
-                            gameOverTriggered = true;
-                        }
-                    }
-                } 
-                else if (currentMenu == PirateMenu::Bribery) {
-                    float currentMoney = player.getMoney();
-                    if (sel == 0) {  // 80% bribe
-                        player.setMoney(currentMoney * 0.2f);
-                        if (roll < 5) {
-                            player.setMoney(0.0f);
-                            setResult("BETRAYAL: They took all your money!");
-                        } else {
-                            setResult("PAID: You are free to go.");
-                        }
-                    }
-                    else if (sel == 1) {  // 40% bribe
-                        player.setMoney(currentMoney * 0.6f);
-                        if (roll < 45) {
-                            player.setMoney(0.0f);
-                            setResult("REJECTED: They took all your money!");
-                        } else {
-                            setResult("LUCKY: They accepted the minimum deal.");
-                        }
-                    }
-                    else {  // Back
-                        currentMenu = PirateMenu::Main;
-                        selectedButton = 0;
-                        showButtons = true;
-                    }
-                }
+                // Ejecutamos la acción del botón clickeado
+                executeSelection(player, gameOverTriggered, upgrades);
                 return true;
             }
         }
         return false;
     }
-    
+
     void PirateEncounter::reset() { 
         showButtons = false; 
         currentMenu = PirateMenu::Main; 
@@ -236,6 +168,105 @@ namespace Interface {
     int PirateEncounter::getSelectedButton() const { return selectedButton; }
     bool PirateEncounter::isActive() const { return active; }
 
+    void PirateEncounter::executeSelection(Player& player, bool& gameOver, UpgradeManager& upgrades) {
+        int sel = selectedButton;
+        int roll = rand() % 100;
+        int playerLevel = player.getLevel();
+
+        if (currentMenu == PirateMenu::Main) {
+            if (sel == 0) {  // DEFENDERSE
+                int winChance = 40 + (playerLevel * 12);
+                if (roll < winChance) {
+                    setResult("VICTORY: You defended your ship!");
+                }
+                else {
+                    // Primero verificamos el estado de tus mejoras de propulsión (Árbol 1)
+                    // Intentamos desactivar la más profunda.
+                    bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 0);
+                    
+                    if (!upgradeRemoved) {
+                        // ¡CRÍTICO! Si no tienes ninguna mejora comprada, mueres DIRECTAMENTE.
+                        // No importa el dinero ni los objetos.
+                        player.setMoney(0.0f);
+                        player.getInventory().clearAll();
+                        setResult("DEFEAT: You tried to fight with a stock ship and lost. Your hull collapsed. GAME OVER.");
+                        gameOver = true;
+                    }
+                    else {
+                        // Si tenías mejoras, la más avanzada absorbió el impacto y se destruyó.
+                        // Además, te saquean los créditos por la derrota.
+                        player.setMoney(0.0f);
+                        setResult("DEFEAT: They looted your credits AND damaged your propulsion system!");
+                        
+                        // Verificación estándar por si te quedaste en la quiebra absoluta
+                        if (player.getInventory().getUsedSlots() == 0) {
+                            gameOver = true;
+                        }
+                    }
+                }
+            }
+            else if (sel == 1) {  // IR A MENÚ DE SOBORNO
+                currentMenu = PirateMenu::Bribery;
+                selectedButton = 0;
+                showButtons = true;
+            }
+            else if (sel == 2) {  // RENDIRSE
+                player.getInventory().clearAll();
+                setResult("SURRENDER: They took all your cargo.");
+                
+                if (player.getMoney() <= 0.f) {
+                    setResult("SURRENDER: You gave up your inventory but have 0 credits. Stranded forever.");
+                    gameOver = true;
+                }
+            }
+        } 
+        else if (currentMenu == PirateMenu::Bribery) {
+            float currentMoney = player.getMoney();
+            
+            if (sel == 0) {  // SOBORNO SEGURO (80%)
+                player.setMoney(currentMoney * 0.2f);
+                if (roll < 5) { // Traición catastrófica
+                    player.setMoney(0.0f);
+                    
+                    bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 0);
+                    if (!upgradeRemoved) {
+                        player.getInventory().clearAll();
+                        setResult("BETRAYAL: They took everything and blasted your basic engines. Game Over.");
+                        gameOver = true;
+                    } else {
+                        setResult("BETRAYAL: They broke your treaty and looted your vault completely!");
+                    }
+                }
+                else {
+                    setResult("PAID: You are free to go.");
+                }
+            }
+            else if (sel == 1) {  // SOBORNO ARRIESGADO (40%)
+                player.setMoney(currentMoney * 0.6f);
+                if (roll < 45) { // Rechazo agresivo
+                    player.setMoney(0.0f);
+                    
+                    bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 0);
+                    if (!upgradeRemoved) {
+                        player.getInventory().clearAll();
+                        setResult("REJECTED: They opened fire, leaving you without funds or propulsion.");
+                        gameOver = true;
+                    } else {
+                        setResult("REJECTED: They dynamic-shredded your systems. You lost your credits.");
+                    }
+                }
+                else {
+                    setResult("LUCKY: They accepted the minimum deal.");
+                }
+            }
+            else {  // VOLVER ATRÁS
+                currentMenu = PirateMenu::Main;
+                selectedButton = 0;
+                showButtons = true;
+            }
+        }
+    }
+
     void PirateEncounter::handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered, UpgradeManager& upgrades) {
         if (!active) return;
         
@@ -245,80 +276,10 @@ namespace Interface {
             }
         } 
         else if (showButtons) {
-            handleInput(key);
+            handleInput(key); // Mueve selección mediante teclado
             
             if (key == sf::Keyboard::Key::Enter) {
-                int sel = selectedButton;
-                int roll = rand() % 100;
-                int playerLevel = player.getLevel(); 
-
-                if (currentMenu == PirateMenu::Main) {
-                    if (sel == 0) {  // Defend
-                        int winChance = 40 + (playerLevel * 12);
-                        if (roll < winChance) {
-                            setResult("VICTORY: You defended your ship!");
-                        } else {
-                            // DERROTA - Perder dinero
-                            player.setMoney(0.0f);
-                            /////////////////////////////////////////////////////
-                            // 40% de probabilidad de perder una mejora de propulsión
-                            int loseUpgradeRoll = rand() % 100;
-                            if (loseUpgradeRoll < 100) {
-                                ///////////////////////////
-                                // Intentar desactivar la mejora de propulsión más profunda
-                                bool upgradeRemoved = upgrades.deactivateDeepestUpgrade(player, 1, 2);
-                                
-                                if (upgradeRemoved) {
-                                    setResult("DEFEAT: They looted your credits AND damaged your propulsion system!");
-                                } else {
-                                    // No hay mejoras de propulsión para quitar -> Game Over
-                                    setResult("DEFEAT: They destroyed your ship! You have no upgrades to protect you.");
-                                    gameOverTriggered = true;
-                                }
-                            } else {
-                                setResult("DEFEAT: They looted all your credits!");
-                            }
-                        }
-                    }
-                    else if (sel == 1) {  // Bribe
-                        currentMenu = PirateMenu::Bribery;
-                        selectedButton = 0;
-                        showButtons = true;
-                    }
-                    else if (sel == 2) {  // Surrender
-                        player.getInventory().clearAll();
-                        setResult("SURRENDER: They took all your cargo.");
-                        if (player.getMoney() <= 0) {
-                            gameOverTriggered = true;
-                        }
-                    }
-                } 
-                else if (currentMenu == PirateMenu::Bribery) {
-                    float currentMoney = player.getMoney();
-                    if (sel == 0) {  // 80% bribe
-                        player.setMoney(currentMoney * 0.2f);
-                        if (roll < 5) {
-                            player.setMoney(0.0f);
-                            setResult("BETRAYAL: They took all your money!");
-                        } else {
-                            setResult("PAID: You are free to go.");
-                        }
-                    }
-                    else if (sel == 1) {  // 40% bribe
-                        player.setMoney(currentMoney * 0.6f);
-                        if (roll < 45) {
-                            player.setMoney(0.0f);
-                            setResult("REJECTED: They took all your money!");
-                        } else {
-                            setResult("LUCKY: They accepted the minimum deal.");
-                        }
-                    }
-                    else {  // Back
-                        currentMenu = PirateMenu::Main;
-                        selectedButton = 0;
-                        showButtons = true;
-                    }
-                }
+                executeSelection(player, gameOverTriggered, upgrades);
             }
         } 
         else if (key == sf::Keyboard::Key::Enter) {

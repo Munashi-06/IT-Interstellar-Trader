@@ -44,5 +44,7 @@ namespace Interface {
         
         sf::Texture pirateTex;
         std::unique_ptr<sf::Sprite> pirateSprite;
+
+        void executeSelection(Player& player, bool& gameOver, UpgradeManager& upgrades);
     };
 }
