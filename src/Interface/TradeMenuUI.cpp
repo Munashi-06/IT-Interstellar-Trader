@@ -311,11 +311,31 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                     case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
                 }
 
-                sf::Text nameT(font, itemData->getName());
+                std::string fullName = itemData->getName();
+                sf::Text nameT(font, "");
                 nameT.setCharacterSize(14);
                 nameT.setFillColor(sf::Color::White);
-                nameT.setPosition({ 60.f, yPos });
-                window.draw(nameT);
+
+                if (fullName.length() > 22) {
+                    size_t splitPos = fullName.find(' ', fullName.length() / 2);
+                    if (splitPos == std::string::npos) splitPos = 22;
+                    
+                    std::string line1 = fullName.substr(0, splitPos);
+                    std::string line2 = fullName.substr(splitPos + 1);
+                    if (line2.length() > 22) line2 = line2.substr(0, 19) + "...";
+                    
+                    nameT.setString(line1);
+                    nameT.setPosition({ 60.f, yPos - 6.f });
+                    window.draw(nameT);
+                    
+                    nameT.setString(line2);
+                    nameT.setPosition({ 60.f, yPos + 8.f });
+                    window.draw(nameT);
+                } else {
+                    nameT.setString(fullName);
+                    nameT.setPosition({ 60.f, yPos });
+                    window.draw(nameT);
+                }
                 
                 sf::Text catT(font, itemData->getCategoryString().substr(0, 8)); // Truncate if too long
                 catT.setCharacterSize(14);
@@ -418,11 +438,31 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 case Rarity::Quest: rarityColor = sf::Color(255, 215, 0); break;
             }
 
-            sf::Text nameT(font, itemData->getName());
+            std::string fullName = itemData->getName();
+            sf::Text nameT(font, "");
             nameT.setCharacterSize(14);
             nameT.setFillColor(sf::Color::White);
-            nameT.setPosition({ 680.f, yPos });
-            window.draw(nameT);
+
+            if (fullName.length() > 22) {
+                size_t splitPos = fullName.find(' ', fullName.length() / 2);
+                if (splitPos == std::string::npos) splitPos = 22;
+                
+                std::string line1 = fullName.substr(0, splitPos);
+                std::string line2 = fullName.substr(splitPos + 1);
+                if (line2.length() > 22) line2 = line2.substr(0, 19) + "...";
+                
+                nameT.setString(line1);
+                nameT.setPosition({ 680.f, yPos - 6.f });
+                window.draw(nameT);
+                
+                nameT.setString(line2);
+                nameT.setPosition({ 680.f, yPos + 8.f });
+                window.draw(nameT);
+            } else {
+                nameT.setString(fullName);
+                nameT.setPosition({ 680.f, yPos });
+                window.draw(nameT);
+            }
 
             sf::Text catT(font, itemData->getCategoryString().substr(0, 8));
             catT.setCharacterSize(14);
