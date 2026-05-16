@@ -1,30 +1,30 @@
 BUILD_DIR = build
-EXE_NAME = IT-Interstellar-Trader.exe
-# En Windows usamos la ruta con Debug, en Linux sería solo $(BUILD_DIR)/$(EXE_NAME)
-EXE_PATH = $(BUILD_DIR)/Debug/$(EXE_NAME)
+EXE_NAME = IT-Interstellar-Trader
 
-.PHONY: all setup build run clean
+ifeq ($(OS),Windows_NT)
+    EXE_FILE = $(EXE_NAME).exe
+    CMAKE_GEN = -G "MinGW Makefiles"
+else
+    EXE_FILE = $(EXE_NAME)
+    CMAKE_GEN =
+endif
 
-# Comando por defecto: Configura, compila y corre
+.PHONY: all setup build run clean test
+
 all: setup build run
 
-# 1. Crear carpeta y configurar CMake
 setup:
-	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
-	cd $(BUILD_DIR) && cmake ..
+	mkdir -p $(BUILD_DIR)
+	cd $(BUILD_DIR) && cmake $(CMAKE_GEN) ..
 
-# 2. Compilar
 build:
-	cmake --build $(BUILD_DIR) --config Debug
+	cmake --build $(BUILD_DIR)
 
-# 3. Ejecutar
 run:
-	cd $(BUILD_DIR)/Debug && .\$(EXE_NAME)
+	cd $(BUILD_DIR) && ./$(EXE_FILE)
 
-# Compilar y ejecutar en un solo paso
 test: build run
 
-# 4. Limpiar la compilación
 clean:
-	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
-	@echo Proyecto limpio.
+	rm -rf $(BUILD_DIR)
+	@echo "Proyecto limpio."
