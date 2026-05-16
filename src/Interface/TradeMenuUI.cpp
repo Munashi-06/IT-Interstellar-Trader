@@ -364,10 +364,11 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 if (showingOriginalPrices) {
                     // show the original buy price instead of the calculated sell price
                     finalSellPrice = slot->buyPrice;
-                } else {
+                } 
+                else {
                     finalSellPrice = TradeManager::getFinalSellPrice(*itemData, planetPrice, player, slot->buyPrice, slot->originPlanet, currentPlanet.getName());
                     
-                    // Comparar contra el precio de compra (buyPrice)
+                    // Compare to the purchase price (buyPrice)
                     if (slot->originPlanet == currentPlanet.getName()) {
                         priceT.setFillColor(sf::Color::White);  // same planet = no bonus or penalty
                     } else if (finalSellPrice > slot->buyPrice) {
@@ -398,7 +399,7 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
             }
         }
         if (!stillExists) {
-            selectedItemID = "";  // Deseleccionar item fantasma
+            selectedItemID = "";
         }
     }
 
