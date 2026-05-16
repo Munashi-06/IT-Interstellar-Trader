@@ -3,6 +3,7 @@ build/
 bin/
 obj/
 out/
+Makefile
 
 # --- Visual Studio & Herramientas de C++ ---
 .vs/

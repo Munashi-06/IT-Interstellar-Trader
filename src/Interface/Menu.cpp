@@ -1,7 +1,7 @@
 #include "Interface/Menu.hpp"
 
 Button::Button(const std::string& label, sf::Vector2f size, sf::Vector2f pos, sf::Font& font)
-    : text(font, label, 35) // Fixed C2512 here
+    : text(font, label, 35)
 {
     shape.setSize(size);
     shape.setPosition(pos);
@@ -115,4 +115,13 @@ bool Menu::updateHover(sf::Vector2f mousePos) {
 
 std::string Menu::getSelectedOption() const {
     return options[selectedItemIndex].text.getString();
+}
+
+std::string Menu::getClickedOption(const sf::Vector2f& mousePos) const {
+    for (const auto& btn : options) {
+        if (btn.shape.getGlobalBounds().contains(mousePos)) {
+            return btn.text.getString();
+        }
+    }
+    return ""; // Returns null if the click was on an empty area
 }

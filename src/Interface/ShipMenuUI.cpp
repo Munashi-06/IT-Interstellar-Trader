@@ -1,5 +1,6 @@
 #include "Interface/ShipMenuUI.hpp"
 #include "Entities/Player.hpp"
+#include "Systems/SaveSystem.hpp"
 
 ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex) 
     : font(f),                          // Initialize font reference
@@ -14,7 +15,9 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
       slotsText(f, ""),
       money(f, ""),
       minAndMaxOrbit(f, ""),
-      minAndMaxOrbitReach(f, "")
+      minAndMaxOrbitReach(f, ""),
+      closeText(f, ""),
+      saveExitText(f, "")
 {
     float tableStartX = 450.f;
     float headerY = 200.f;
@@ -108,6 +111,30 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
     minAndMaxOrbitReach.setCharacterSize(15);
     minAndMaxOrbitReach.setPosition({infoPosition.x, infoPosition.y + 90.f});
     minAndMaxOrbitReach.setFillColor(sf::Color::White);
+
+    // --- EXIT BUTTON ---
+    closeBtn.setSize({200.f, 40.f});
+    closeBtn.setFillColor(sf::Color(150, 0, 0));
+    closeBtn.setPosition({170.f, 500.f});
+
+    closeText.setString("CLOSE MENU");
+    closeText.setCharacterSize(18);
+    closeText.setFillColor(sf::Color::White);
+    sf::FloatRect eRect = closeText.getLocalBounds();
+    closeText.setOrigin({eRect.size.x / 2.f, eRect.size.y / 2.f});
+    closeText.setPosition({270.f, 520.f});
+
+    // --- SAVE & EXIT BUTTON ---
+    saveExitBtn.setSize({200.f, 40.f});
+    saveExitBtn.setFillColor(sf::Color(0, 0, 150));
+    saveExitBtn.setPosition({170.f, 550.f});
+
+    saveExitText.setString("SAVE & EXIT");
+    saveExitText.setCharacterSize(18);
+    saveExitText.setFillColor(sf::Color::White);
+    sf::FloatRect seRect = saveExitText.getLocalBounds();
+    saveExitText.setOrigin({seRect.size.x / 2.f, seRect.size.y / 2.f});
+    saveExitText.setPosition({270.f, 570.f});
 }
 
 void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
@@ -118,6 +145,10 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std:
     window.draw(tableBackground);
     window.draw(upgradeBtn);
     window.draw(upgradeText);
+    window.draw(closeBtn);
+    window.draw(closeText);
+    window.draw(saveExitBtn);
+    window.draw(saveExitText);
     
     window.draw(headerName);
     window.draw(headerCategory);
@@ -217,8 +248,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std:
     window.draw(minAndMaxOrbitReach);
 }
 
-void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player) {
-    // Detect mouse scroll
+void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player, UpgradeManager& upgrades) {    // Detect mouse scroll
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
             if (mouseWheel->delta > 0) {
@@ -238,7 +268,7 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseBtn->button == sf::Mouse::Button::Left) {
             
-            // click on Header NAME
+            // Click on Header NAME
             if (headerName.getGlobalBounds().contains(mousePos)) {
                 if (currentSort == SortColumn::Name) sortAscending = !sortAscending;
                 else { currentSort = SortColumn::Name; sortAscending = true; }
@@ -266,13 +296,23 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
                 inventory.sortByPrice(sortAscending, catalog);
             }
 
-            // Click in UPGRADE
+            // Click on UPGRADE
             if (upgradeBtn.getGlobalBounds().contains(mousePos)) {
-                // Use This for adding more upgrades (More item Stock)
-                // if (player.upgradeShip()) {
-                //     std::cout << "Ship Level: " << player.getShipLevel() << std::endl;
-                // }
                 currentState = State::UpgradeTree;
+                return;
+            }
+
+            // Clic on CLOSE
+            if (closeBtn.getGlobalBounds().contains(mousePos)) {
+                currentState = State::Playing;
+                return;
+            }
+            
+            // Clic on SAVE & EXIT
+            if (saveExitBtn.getGlobalBounds().contains(mousePos)) {
+                SaveSystem::saveGame(player, upgrades);
+                std::cout << "[SYSTEM] Game successfully saved from the in-game console.\n";
+                currentState = State::Menu;
                 return;
             }
         }
@@ -302,4 +342,11 @@ void ShipMenuUI::update(const sf::Vector2f& mousePos) {
 
     if (headerPrice.getGlobalBounds().contains(mousePos)) headerPrice.setFillColor(hoverColor);
     else headerPrice.setFillColor(normalColor);
+
+    // --- HOVER FOR SAVE & EXIT BUTTONS ---
+    if (closeBtn.getGlobalBounds().contains(mousePos)) closeBtn.setFillColor(sf::Color(200, 0, 0));
+    else closeBtn.setFillColor(sf::Color(150, 0, 0));
+
+    if (saveExitBtn.getGlobalBounds().contains(mousePos)) saveExitBtn.setFillColor(sf::Color(0, 0, 200));
+    else saveExitBtn.setFillColor(sf::Color(0, 0, 150));
 }

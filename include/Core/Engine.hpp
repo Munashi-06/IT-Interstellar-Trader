@@ -12,6 +12,8 @@
 #include "Interface/PirateEncounter.hpp"
 #include "Interface/GameIntroAnimation.hpp"
 #include "Interface/GameOverScene.hpp"
+#include "Interface/PauseMenuUI.hpp"
+#include "Interface/Popup.hpp"
 
 #include "Systems/SaveSystem.hpp"
 #include "Systems/UpgradeManager.hpp"
@@ -32,8 +34,8 @@ namespace Game {
         // --- CORE WINDOW & TIMING ---
         sf::RenderWindow window;
         sf::Clock clock;
-        sf::Clock worldClock;
         float dt;
+        float globalGameTime = 0.f; // The universe's internal time
 
         // --- GAME STATE & CONFIG ---
         State currentState;
@@ -56,6 +58,8 @@ namespace Game {
         std::unique_ptr<TradeMenuUI> tradeMenu;
         std::unique_ptr<UpgradeTreeUI> upgradeTree;
         std::unique_ptr<DebugMenuUI> debugMenu;
+        std::unique_ptr<PauseMenuUI> pauseMenu;
+        std::unique_ptr<Popup> popup;
         Interface::IntroAnimation intro;
         Interface::GameIntroAnimation gameIntro;
 

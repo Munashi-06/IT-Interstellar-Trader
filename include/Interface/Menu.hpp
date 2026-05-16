@@ -36,7 +36,7 @@ public:
     void moveDown();
     bool updateHover(sf::Vector2f mousePos);
     std::string getSelectedOption() const;
-
+    std::string getClickedOption(const sf::Vector2f& mousePos) const;
 private:
     int selectedItemIndex = 0;
     sf::Font font;

@@ -13,43 +13,45 @@ Si al hacer doble clic en `IT-Interstellar-Trader.exe` el juego no abre o lanza 
 
 ---
 
-## Desarrollo (Cómo compilar el código)
-Si deseas clonar el repositorio y compilar el código fuente por tu cuenta, sigue estas instrucciones:
+## Desarrollo (Cómo clonar y compilar el código)
+Hemos estandarizado la compilación utilizando Makefiles y MSYS2/Linux para que todos los desarrolladores tengan el mismo entorno. Sigue estas instrucciones:
 
-### Requisitos Previos
+### Requisitos Previos e Instalación
 
-**Windows**
-1. Tener instalado **Visual Studio Build Tools 2022** con el paquete "Desarrollo para el escritorio con C++" (incluye MSVC y CMake).
-2. **CMake**: Asegúrate de que esté agregado al PATH del sistema.
+**Windows (Usando MSYS2 - RECOMENDADO)**
+1. Descarga e instala [MSYS2](https://www.msys2.org/).
+2. Abre la terminal **MSYS2 UCRT64** (es importante que sea la de color amarillo que dice UCRT64).
+3. Ejecuta el siguiente comando para instalar el control de versiones (Git), el compilador, CMake y SFML precompilado:
+   - pacman -S git mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-sfml
 
 **Linux (Ubuntu/Debian)**
-Ejecuta el siguiente comando para instalar el compilador, CMake y todas las dependencias multimedia que requiere SFML:
+
+Abre tu terminal y ejecuta el siguiente comando para instalar Git, el compilador, CMake y las dependencias de SFML:
 
 - sudo apt update && sudo apt install -y build-essential cmake libx11-dev libxrandr-dev libudev-dev libopengl-dev libflac-dev libvorbis-dev libopenal-dev libfreetype-dev libxcursor-dev libxi-dev libgl1-mesa-dev libglu1-mesa-dev git
 
-### Pasos para Compilar
-#### En Linux:
-1. **Crear carpeta de compilación:**
-   - mkdir build
-   - cd build
-2. **Configurar el proyecto (Descarga SFML automáticamente):**
-   - cmake ..
-3. **Compilar el codigo:**
-   - cmake --build . --config Release
-4. **Ejecutar el Juego:**
-   - ./IT-Interstellar-Trader
+### Pasos para Clonar el Repositorio
 
-#### En Windows:
-1. Abre el menú inicio de Windows, busca y abre el **Developer PowerShell for VS 2022**.
-2. Navega con el comando `cd` hasta la carpeta raíz del proyecto.
-3. Ejecuta los siguientes comandos uno por uno:
+Ve a la raiz de la carpeta donde quieras guardar el proyecto y ejecuta:
+   - git clone https://github.com/Munashi-06/IT-Interstellar-Trader.git
+   
+### Pasos para Compilar
+Una vez tengas las herramientas instaladas, navega con la terminal hasta la carpeta raíz del repositorio clonado y ejecuta los siguientes comandos:
+1. Crear el directorio de construcción y entrar en él:
    - mkdir build
    - cd build
-   - cmake -G "Visual Studio 17 2022" ..
-   - cmake --build . --config Release
-4. Ejecuta el programa
-   - cd Release
-   - .\IT-Interstellar-Trader.exe
+2. Configurar el proyecto con CMake:
+   - En Windows (MSYS2 UCRT64):
+      - cmake -G "MinGW Makefiles" ..
+   - En Linux:
+      - cmake ..
+3. Compilar el código:
+   - cmake --build .
+4. Ejecutar el Juego
+   - **En Windows**:
+      - ./IT-Interstellar-Trader.exe
+   - **En Linux**:
+      - ./IT-Interstellar-Trader
 
 ---
 

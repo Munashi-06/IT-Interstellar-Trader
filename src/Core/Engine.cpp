@@ -76,6 +76,8 @@ namespace Game {
         upgradeTree = std::make_unique<UpgradeTreeUI>(mainFont);
         debugMenu = std::make_unique<DebugMenuUI>(mainFont);
         debugMenu->initCatalog(world->getCatalog());
+        pauseMenu = std::make_unique<PauseMenuUI>(mainFont);
+        popup = std::make_unique<Popup>(mainFont);
 
         alertSprite.setTexture(AssetManager::getTexture("alert_icon"));
         alertSprite.setPosition({1100.f, 600.f}); 
@@ -221,7 +223,9 @@ namespace Game {
                 }
             }
 
-            float time = worldClock.getElapsedTime().asSeconds();
+            globalGameTime += dt;
+
+            float time = globalGameTime;
             sf::Vector2f center(640.f, 360.f);
             auto& planets = world->getPlanets();
 
@@ -274,6 +278,9 @@ namespace Game {
         else if (currentState == State::TradeMenu) tradeMenu->update(mousePos);
         else if (currentState == State::ShipMenu) shipMenu->update(mousePos);
         else if (currentState == State::UpgradeTree) upgradeTree->update(mousePos, upgrades);
+        if (popup && popup->isActive()) {
+            popup->update(dt);
+        }
     }
 
     void Engine::processEvents() {
@@ -281,7 +288,20 @@ namespace Game {
         
         while (const std::optional event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) window.close();
-
+            
+            // --- POP-UP SHIELD ---
+            // If the pop-up is active, we intercept the input and prevent the rest of the game from reading it
+            if (popup && popup->isActive()) {
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    popup->handleInput(keyPressed->code);
+                } else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseEvent->button == sf::Mouse::Button::Left) {
+                        popup->handleMouseClick(window.mapPixelToCoords(mouseEvent->position));
+                    }
+                }
+                continue; // Forces the loop to skip the rest of the events!
+            }
+            // -------------------------
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
@@ -334,7 +354,12 @@ namespace Game {
                 }
                 else if (const auto* mouseEvent = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseEvent->button == sf::Mouse::Button::Left) {
-                        std::string opt = mainMenu->getSelectedOption();
+                        sf::Vector2f mPos = window.mapPixelToCoords(mouseEvent->position);
+                        std::string opt = mainMenu->getClickedOption(mPos); 
+                        
+                        // If the click was on an empty area, we ignore the event
+                        if (opt == "") continue;
+
                         if (opt == "CONTINUE" && !SaveSystem::saveExists()) continue;
                         
                         executeAction(opt);
@@ -444,9 +469,8 @@ namespace Game {
                 }
                 if(const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if(keyPressed->code == sf::Keyboard::Key::Escape) {
-                        currentState = State::Menu;
+                        currentState = State::Pause;
                     }
-                    else if(keyPressed->code == sf::Keyboard::Key::G || keyPressed->code == sf::Keyboard::Key::S) SaveSystem::saveGame(spaceShip, upgrades);
                     
                     const auto& planetas = world->getPlanets();
                     if (!planetas.empty()) {
@@ -470,7 +494,11 @@ namespace Game {
                                 currentState = State::TravelConfirmation; 
                             }
                             else {
-                                std::cout << "[SYSTEM] No puedes viajar a esa orbita.\n";
+                                // We pass it 3.5f so it closes automatically after 3.5 seconds,
+                                // or the player can close it by pressing Enter.
+                                std::string msg = "You cannot travel to orbit " + std::to_string(targetOrbit) + ". Upgrade your engines or heat shields!";
+                                popup->show(msg, 3.5f);
+                                audio.playClick(); // Optional: If you had an audio.playError(), this would be the ideal place for it
                             }
                         }
                     }
@@ -514,15 +542,22 @@ namespace Game {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) currentState = State::Playing;
                 }
-                shipMenu->handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world->getCatalog(), currentState, spaceShip);
+                shipMenu->handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world->getCatalog(), currentState, spaceShip, upgrades);
             }
             else if (currentState == State::UpgradeTree) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) currentState = State::ShipMenu;
                 }
-                upgradeTree->handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
+                
+                // We catch the message
+                std::string popupMsg = upgradeTree->handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
+                
+                // If the tree returned an error message, display the popup
+                if (!popupMsg.empty()) {
+                    popup->show(popupMsg, 3.5f); // Display for 3.5 seconds
+                    audio.playClick(); // Optional: Error sound
+                }
             }
-
             else if (currentState == State::PirateEncounter) {
 
                 if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
@@ -567,8 +602,7 @@ namespace Game {
                         currentState = State::Playing;
                     }
                 }
-            }
-            
+            }      
             else if (currentState == State::GameOver) {
                 if (gameOverScene && gameOverScene->handleInput(*event)) {
                     std::cout << "[ENGINE] Returning to main menu from Game Over" << std::endl;
@@ -577,6 +611,44 @@ namespace Game {
                     upgrades.resetTrees();
                     for (auto& planet : world->getPlanets()) {
                         planet.refreshMarket(world->getCatalog());
+                    }
+                }
+            }
+            else if (currentState == State::Pause) {
+                if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                    if (pauseMenu->updateHover(window.mapPixelToCoords(mouseMoved->position))) audio.playHover();
+                }
+                else if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseButton->button == sf::Mouse::Button::Left) {
+                        std::string opt = pauseMenu->getSelectedOption();
+                        if (opt == "CONTINUE") currentState = State::Playing;
+                        else if (opt == "SAVE") {
+                            SaveSystem::saveGame(spaceShip, upgrades);
+                            std::cout << "[SYSTEM] Game saved from Pause Menu.\n";
+                        }
+                        else if (opt == "EXIT TO MENU") currentState = State::Menu;
+                        audio.playClick();
+                    }
+                }
+                else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
+                        pauseMenu->moveUp(); audio.playHover();
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Down || keyPressed->code == sf::Keyboard::Key::S) {
+                        pauseMenu->moveDown(); audio.playHover();
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Escape) {
+                        currentState = State::Playing;
+                    }
+                    else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
+                        std::string opt = pauseMenu->getSelectedOption();
+                        if (opt == "CONTINUE") currentState = State::Playing;
+                        else if (opt == "SAVE") {
+                            SaveSystem::saveGame(spaceShip, upgrades);
+                            std::cout << "[SYSTEM] Game saved from Pause Menu.\n";
+                        }
+                        else if (opt == "EXIT TO MENU") currentState = State::Menu;
+                        audio.playClick();
                     }
                 }
             }
@@ -613,7 +685,7 @@ namespace Game {
                 window.draw(fallbackText);
             }
         }
-        else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation) {
+        else if (currentState == State::Playing || currentState == State::ShipMenu || currentState == State::TravelConfirmation || currentState == State::Pause) {
             window.draw(generalBackground); 
             bgStars.draw(window, spaceShip.getPosition());
 
@@ -681,6 +753,10 @@ namespace Game {
             }
             if (currentState == State::ShipMenu) shipMenu->draw(window, spaceShip, world->getGlobalCatalog());
 
+            if (currentState == State::Pause) {
+                pauseMenu->draw(window);
+            }
+
             debugMenu->draw(window);
         }
         else if (currentState == State::Animation1) {
@@ -745,6 +821,9 @@ namespace Game {
                 continueText.setPosition({640.f, 650.f});
                 window.draw(continueText);
             }
+        }
+        if (popup && popup->isActive()) {
+            popup->draw(window);
         }
         window.display();
     }

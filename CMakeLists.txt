@@ -5,15 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Forzar enlazado estático" FORCE)
 
-include(FetchContent)
+find_package(SFML 3 COMPONENTS Graphics Window System Audio REQUIRED)
 
-FetchContent_Declare(
-    SFML
-    GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG        3.0.2
-)
-
-FetchContent_MakeAvailable(SFML)
 add_executable(IT-Interstellar-Trader 
     src/Core/main.cpp
     src/Core/Engine.cpp
@@ -45,6 +38,8 @@ add_executable(IT-Interstellar-Trader
     src/Interface/PirateEncounter.cpp
     src/Interface/GameIntroAnimation.cpp
     src/Interface/GameOverScene.cpp
+    src/Interface/PauseMenuUI.cpp
+    src/Interface/Popup.cpp
     
     src/DataStructures/Heap.cpp
 )
@@ -57,4 +52,4 @@ add_custom_command(TARGET IT-Interstellar-Trader POST_BUILD
     "$<TARGET_FILE_DIR:IT-Interstellar-Trader>/assets"
 )
 
-target_link_libraries(IT-Interstellar-Trader PRIVATE sfml-graphics sfml-window sfml-system sfml-audio)
+target_link_libraries(IT-Interstellar-Trader PRIVATE SFML::Graphics SFML::Window SFML::System SFML::Audio)
