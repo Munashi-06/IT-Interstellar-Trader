@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Systems/Inventory.hpp"
+#include "Systems/UpgradeManager.hpp"
 #include "Entities/Item.hpp"
 #include "Entities/Player.hpp"
 #include "Core/State.hpp"
@@ -20,6 +21,12 @@ private:
     // Upgrade button
     sf::RectangleShape upgradeBtn;
     sf::Text upgradeText;
+
+    // Save & Exit Buttons
+    sf::RectangleShape closeBtn;
+    sf::Text closeText;
+    sf::RectangleShape saveExitBtn;
+    sf::Text saveExitText;
 
     // Table header texts
     sf::Text headerName, headerCategory, headerQuality, headerPrice;
@@ -46,7 +53,7 @@ public:
     void draw(sf::RenderWindow& window, const Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
     // Handles clicks (for sorting headers or upgrade button)
-    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player);
+    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player, UpgradeManager& upgrades);
     
     // For button hover
     void update(const sf::Vector2f& mousePos);

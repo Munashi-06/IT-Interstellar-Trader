@@ -38,6 +38,8 @@ add_executable(IT-Interstellar-Trader
     src/Interface/PirateEncounter.cpp
     src/Interface/GameIntroAnimation.cpp
     src/Interface/GameOverScene.cpp
+    src/Interface/PauseMenuUI.cpp
+    src/Interface/Popup.cpp
     
     src/DataStructures/Heap.cpp
 )

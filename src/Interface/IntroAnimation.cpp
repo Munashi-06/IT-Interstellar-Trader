@@ -68,8 +68,10 @@ namespace Interface {
 
         // 6. Configure Credits
         std::string creditsStr = "IT: INTERSTELLAR TRADER\n\n"
-                                 "STORY AND CODE\nJuan Jose Josefino\n\n"
-                                 "VISUAL ART\nAngel\n\n"
+                                 "STORY AND CODE\nAngel Garcia\nAbraham Vergara\nReinier Manrique\n\n"
+                                 "VISUAL ART\nReinier Manrique\n\n"
+                                 "HEAD OF TRADING STRATEGY\nAbraham Vergara\n\n"
+                                 "PROJECT MANAGER\nAngel Garcia\n\n"
                                  "SYSTEMS\nProject IT 2026\n\n\n"
                                  "THANKS FOR PLAYING";
         creditsText = std::make_unique<sf::Text>(font, creditsStr, 28);

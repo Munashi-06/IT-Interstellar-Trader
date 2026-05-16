@@ -41,11 +41,11 @@ public:
     void draw(sf::RenderWindow& window, UpgradeManager& manager);
     
     // Handles tab switching and upgrade purchasing clicks
-    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney);
+    std::string handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney);
     
     // Helper for detecting clicks on nodes and handling mutually exclusive siblings
-    void handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std::shared_ptr<BinNode<Upgrade>> sibling, sf::Vector2f pos, float hSpacing, float vSpacing, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney);
-
+    void handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std::shared_ptr<BinNode<Upgrade>> sibling, sf::Vector2f pos, float hSpacing, float vSpacing, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney, std::string& outMessage);
+    
     // Handles hover effects for tabs and upgrade nodes
     void update(const sf::Vector2f& mousePos, UpgradeManager& manager);
 };

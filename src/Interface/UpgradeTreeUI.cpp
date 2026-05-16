@@ -248,36 +248,50 @@ void UpgradeTreeUI::draw(sf::RenderWindow& window, UpgradeManager& manager) {
 }
 
 // Recursive helper to check if a node was clicked
-void UpgradeTreeUI::handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std::shared_ptr<BinNode<Upgrade>> sibling, sf::Vector2f pos, float hSpacing, float vSpacing, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney) {
+void UpgradeTreeUI::handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std::shared_ptr<BinNode<Upgrade>> sibling, sf::Vector2f pos, float hSpacing, float vSpacing, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney, std::string& outMessage) {
     if (!node) return;
 
-    // Recreate the bounding box mathematically based on the exact same logic as drawNode
-    // Size is 140x50, origin is centered (70, 25)
     sf::FloatRect nodeBounds({pos.x - 70.f, pos.y - 25.f}, {140.f, 50.f});
 
     if (nodeBounds.contains(mousePos)) {
-        // Attempt to purchase. The UpgradeManager handles money and locking logic!
-        if (manager.purchaseUpgrade(node, sibling, playerMoney)) {
-            std::cout << "[UPGRADE] Successfully purchased: " << K(node).name << "\n";
-        } else {
-            std::cout << "[UPGRADE] Cannot purchase: " << K(node).name << " (Locked or Not enough money)\n";
+        // Check the status before attempting to purchase
+        if (K(node).status == UpgradeStatus::PURCHASED) {
+            outMessage = "You already have this upgrade installed.";
+        } 
+        else if (K(node).status == UpgradeStatus::LOCKED) {
+            outMessage = "Upgrade blocked. You must purchase the prerequisites.";
+        } 
+        else if (K(node).status == UpgradeStatus::BLOCKED_BY_CHOICE) {
+            outMessage = "Incompatible. You chose the opposing branch, and this option has been permanently blocked.";
+        } 
+        else if (K(node).status == UpgradeStatus::AVAILABLE) {
+            if (playerMoney >= K(node).cost) {
+                // There is enough money; purchase the upgrade
+                manager.purchaseUpgrade(node, sibling, playerMoney);
+                std::cout << "[UPGRADE] Successfully purchased: " << K(node).name << "\n";
+            } else {
+                // No money
+                outMessage = "Insufficient funds. You need: " + std::to_string(static_cast<int>(K(node).cost)) + " Bs.";
+            }
         }
-        return; // Click handled, no need to check children
+        return; // Click processed, no further search
     }
 
-    // Recurse children (Notice how we pass the opposite child as the 'sibling' argument)
+    // Search children and pass the outMessage
     if (L(node)) {
         sf::Vector2f leftChildPos(pos.x - hSpacing, pos.y + vSpacing);
-        handleNodeClick(L(node), R(node), leftChildPos, hSpacing * 0.55f, vSpacing, mousePos, manager, playerMoney);
+        handleNodeClick(L(node), R(node), leftChildPos, hSpacing * 0.55f, vSpacing, mousePos, manager, playerMoney, outMessage);
     }
-    
     if (R(node)) {
         sf::Vector2f rightChildPos(pos.x + hSpacing, pos.y + vSpacing);
-        handleNodeClick(R(node), L(node), rightChildPos, hSpacing * 0.55f, vSpacing, mousePos, manager, playerMoney);
+        handleNodeClick(R(node), L(node), rightChildPos, hSpacing * 0.55f, vSpacing, mousePos, manager, playerMoney, outMessage);
     }
 }
+        
 
-void UpgradeTreeUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney) {
+std::string UpgradeTreeUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney) {
+    std::string popupMessage = ""; // Initialize the message as empty
+
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseBtn->button == sf::Mouse::Button::Left) {
             
@@ -286,23 +300,23 @@ void UpgradeTreeUI::handleInput(const sf::Event& event, const sf::Vector2f& mous
             else if (tabPropulsion.getGlobalBounds().contains(mousePos)) currentTab = 1;
             else if (tabTrading.getGlobalBounds().contains(mousePos)) currentTab = 2;
 
-            // 2. Check Node Clicks on the currently active tree
+            // 2. Check Node Clicks
             std::shared_ptr<BinNode<Upgrade>> currentRoot = nullptr;
             if (currentTab == 0) currentRoot = manager.getLogisticsRoot();
             else if (currentTab == 1) currentRoot = manager.getPropulsionRoot();
             else if (currentTab == 2) currentRoot = manager.getTradingRoot();
 
             if (currentRoot) {
-                // Must perfectly match the starting math from draw()
                 sf::Vector2f startPos(640.f, 200.f); 
                 float initialHSpacing = 220.f;       
                 float vSpacing = 100.f;              
                 
-                // The root node has no sibling, so we pass nullptr
-                handleNodeClick(currentRoot, nullptr, startPos, initialHSpacing, vSpacing, mousePos, manager, playerMoney);
+                // We pass our popupMessage variable at the end
+                handleNodeClick(currentRoot, nullptr, startPos, initialHSpacing, vSpacing, mousePos, manager, playerMoney, popupMessage);
             }
         }
     }
+    return popupMessage; // We return whatever happened
 }
 
 void UpgradeTreeUI::update(const sf::Vector2f& mousePos, UpgradeManager& manager) {
