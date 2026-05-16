@@ -12,6 +12,8 @@ class DebugMenuUI {
 private:
     sf::Font font;
     bool isExpanded = false;
+    std::string secretBuffer = "";
+    bool isUnlocked = false;
 
     // Elementos visuales
     sf::RectangleShape toggleBtnBg;

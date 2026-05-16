@@ -529,7 +529,7 @@ namespace Game {
                                 // We pass it 3.5f so it closes automatically after 3.5 seconds,
                                 // or the player can close it by pressing Enter.
                                 std::string msg = "You cannot travel to orbit " + std::to_string(targetOrbit) + ". Upgrade your engines or heat shields!";
-                                popup->show(msg, 3.5f);
+                                popup->show(msg, 1.5f);
                                 audio.playClick();
                             }
                         }
@@ -577,7 +577,7 @@ namespace Game {
                 
                 // 2. If an error occurred (insufficient funds or space), display the pop-up
                 if (!popupMsg.empty()) {
-                    popup->show(popupMsg, 3.5f);
+                    popup->show(popupMsg, 1.5f);
                     audio.playClick(); // Optional: Error sound
                 }
             }
@@ -597,7 +597,7 @@ namespace Game {
                 
                 // If the tree returned an error message, display the popup
                 if (!popupMsg.empty()) {
-                    popup->show(popupMsg, 3.5f); // Display for 3.5 seconds
+                    popup->show(popupMsg, 1.5f); // Display for 3.5 seconds
                     audio.playClick(); // Optional: Error sound
                 }
             }

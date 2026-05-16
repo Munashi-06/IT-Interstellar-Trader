@@ -9,41 +9,42 @@ DebugMenuUI::DebugMenuUI(const sf::Font& f) :
     nextItemText(font, ""),
     prevItemText(font, ""),
     currentItemDisplay(font, ""),
-    toggleBtnText(font, "")
+    toggleBtnText(font, ""),
+    isUnlocked(false) // Starts completely hidden
     {
-    // --- BOTÓN TOGGLE (Esquina superior derecha) ---
+    // --- TOGGLE BUTTON (Bottom right corner) ---
     toggleBtnBg.setSize({80.f, 30.f});
-    toggleBtnBg.setFillColor(sf::Color(200, 0, 0, 180)); // Rojo alerta
-    toggleBtnBg.setPosition({1180.f, 10.f});
+    toggleBtnBg.setFillColor(sf::Color(200, 0, 0, 180));
+    toggleBtnBg.setPosition({1180.f, 680.f});
     
     toggleBtnText.setString("DEBUG");
     toggleBtnText.setCharacterSize(14);
     toggleBtnText.setFillColor(sf::Color::White);
     centerText(toggleBtnText, toggleBtnBg);
 
-    // --- PANEL DESPLEGABLE ---
+    // --- DROPDOWN PANEL ---
     panelBg.setSize({250.f, 200.f});
     panelBg.setFillColor(sf::Color(20, 20, 20, 240));
     panelBg.setOutlineThickness(2.f);
     panelBg.setOutlineColor(sf::Color::Red);
-    panelBg.setPosition({1010.f, 50.f});
+    panelBg.setPosition({1010.f, 470.f});
 
-    // --- BOTÓN DINERO ---
+    // --- MONEY BUTTON ---
     moneyBtnBg.setSize({210.f, 30.f});
     moneyBtnBg.setFillColor(sf::Color(0, 150, 0));
-    moneyBtnBg.setPosition({1030.f, 70.f});
+    moneyBtnBg.setPosition({1030.f, 490.f});
     moneyBtnText.setFont(font); moneyBtnText.setString("+ 10,000 Bs"); moneyBtnText.setCharacterSize(14);
     centerText(moneyBtnText, moneyBtnBg);
 
-    // --- BOTÓN VICTORIA ---
+    // --- VICTORY BUTTON ---
     winBtnBg.setSize({210.f, 30.f});
     winBtnBg.setFillColor(sf::Color(150, 0, 150));
-    winBtnBg.setPosition({1030.f, 110.f});
+    winBtnBg.setPosition({1030.f, 530.f});
     winBtnText.setFont(font); winBtnText.setString("TRIGGER ENDING"); winBtnText.setCharacterSize(14);
     centerText(winBtnText, winBtnBg);
 
-    // --- SELECTOR DE ITEMS ---
-    float itemY = 160.f;
+    // --- ITEM SELECTOR ---
+    float itemY = 580.f;
     prevItemBtn.setSize({30.f, 30.f});
     prevItemBtn.setFillColor(sf::Color(80, 80, 80));
     prevItemBtn.setPosition({1030.f, itemY});
@@ -68,7 +69,7 @@ DebugMenuUI::DebugMenuUI(const sf::Font& f) :
     currentItemDisplay.setString("Loading...");
     currentItemDisplay.setCharacterSize(12);
     currentItemDisplay.setFillColor(sf::Color::Yellow);
-    currentItemDisplay.setPosition({1030.f, 200.f});
+    currentItemDisplay.setPosition({1030.f, 620.f});
 }
 
 void DebugMenuUI::initCatalog(const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
@@ -89,27 +90,50 @@ void DebugMenuUI::centerText(sf::Text& text, const sf::RectangleShape& rect) {
 }
 
 void DebugMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Player& player, Inventory& playerInv) {
+    
+    // 1. LISTEN FOR SECRET CODE (If not yet unlocked)
+    if (!isUnlocked) {
+        if (const auto* textEntered = event.getIf<sf::Event::TextEntered>()) {
+            // Filter only printable characters (ASCII code between 32 and 126)
+            if (textEntered->unicode >= 32 && textEntered->unicode <= 126) {
+                secretBuffer += static_cast<char>(textEntered->unicode);
+                
+                // If buffer gets too long, keep only the last 5 characters
+                if (secretBuffer.length() > 5) {
+                    secretBuffer.erase(0, secretBuffer.length() - 5);
+                }
+                
+                // Check if they typed "admin"
+                if (secretBuffer == "admin") {
+                    isUnlocked = true;
+                    std::cout << "[DEBUG] Menu unlocked via secret code!\n";
+                }
+            }
+        }
+        return; 
+    }
+
+    // 2. NORMAL CLICK LOGIC (Only works if isUnlocked is true)
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouseBtn->button == sf::Mouse::Button::Left) {
             
-            // Abrir/Cerrar menú
+            // Open/Close menu
             if (toggleBtnBg.getGlobalBounds().contains(mousePos)) {
                 isExpanded = !isExpanded;
                 return;
             }
 
             if (isExpanded) {
-                // Dinero
+                // Money
                 if (moneyBtnBg.getGlobalBounds().contains(mousePos)) {
                     player.setMoney(player.getMoney() + 10000.f);
                     std::cout << "[DEBUG] +10,000 Bs added.\n";
                 }
-                // Victoria
+                // Victory
                 else if (winBtnBg.getGlobalBounds().contains(mousePos)) {
                     std::cout << "[DEBUG] TRIGGERING WARP DRIVE VICTORY!\n";
-                    // Aquí puedes cambiar el estado a State::VictoryScene o llamar a tu lógica de fin de juego
                 }
-                // Navegar Ítems
+                // Navigate Items
                 else if (prevItemBtn.getGlobalBounds().contains(mousePos)) {
                     if (!itemIDs.empty()) {
                         currentItemIndex = (currentItemIndex - 1 + itemIDs.size()) % itemIDs.size();
@@ -122,11 +146,10 @@ void DebugMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                         currentItemDisplay.setString("ID: " + itemIDs[currentItemIndex]);
                     }
                 }
-                // Dar Ítem
+                // Give Item
                 else if (giveItemBtn.getGlobalBounds().contains(mousePos)) {
                     if (!itemIDs.empty()) {
                         std::string id = itemIDs[currentItemIndex];
-                        // Asumimos maxStack 99 y precio 0 para el debug
                         if(playerInv.addItem(id, 10, 99, 0.0f)) {
                             std::cout << "[DEBUG] 10x " << id << " added to inventory.\n";
                         } else {
@@ -139,11 +162,10 @@ void DebugMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
     }
 }
 
-void DebugMenuUI::update(const sf::Vector2f& mousePos) {
-    // Aquí puedes añadir efectos de hover (cambiar color si el mouse está encima) como hicimos en TradeMenuUI
-}
-
 void DebugMenuUI::draw(sf::RenderWindow& window) {
+    // If not unlocked, draws ABSOLUTELY NOTHING
+    if (!isUnlocked) return;
+
     window.draw(toggleBtnBg);
     window.draw(toggleBtnText);
 
@@ -158,4 +180,8 @@ void DebugMenuUI::draw(sf::RenderWindow& window) {
         
         window.draw(currentItemDisplay);
     }
+}
+
+void DebugMenuUI::update(const sf::Vector2f& mousePos) {
+    // Here you can add hover effects (change color when mouse is over) like we did in TradeMenuUI
 }
