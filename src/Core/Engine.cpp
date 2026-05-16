@@ -6,6 +6,7 @@ namespace Game {
         : window(sf::VideoMode({1280, 720}), "IT: Interstellar Trader"),
           currentState(State::Menu),
           selectedPlanetIndex(2),
+          trackingPlanetIndex(2),
           targetPosition(640.f + 132.f, 360.f),
           travelSpeed(400.f), 
           shipAnimX(-100.f),
@@ -225,29 +226,34 @@ namespace Game {
 
             globalGameTime += dt;
 
-            float time = globalGameTime;
+            float time = globalGameTime; 
             sf::Vector2f center(640.f, 360.f);
             auto& planets = world->getPlanets();
 
             for (size_t i = 0; i < planets.size(); ++i) {
                 planets[i].updateOrbitPosition(time, center);
-                
-                if (planets[i].getOrbit() == spaceShip.getCurrentOrbit()) {
-                    targetPosition = planets[i].getPosition();
-                }
 
+                // If this is the planet the player is pointing at with the cyan cursor
                 if (i == (size_t)selectedPlanetIndex) {
                     planets[i].setHighlighted(true);
                     short tOrbit = planets[i].getOrbit();
                     bool engineOk = (tOrbit >= spaceShip.getMinOrbit() && tOrbit <= spaceShip.getMaxOrbit());
                     bool hullOk = (tOrbit >= spaceShip.getMinOrbitReach() && tOrbit <= spaceShip.getMaxOrbitReach());
-                    if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) targetPosition = planets[i].getPosition();
+                    
+                    // If it meets the requirements, the selection is valid and we update our tracker
+                    if (spaceShip.getHasWarpDrive() || (engineOk && hullOk)) {
+                        trackingPlanetIndex = i; // <--- THE MAGIC HAPPENS HERE: We remember this valid planet
+                    }
                 }
                 else {
                     planets[i].setHighlighted(false);
                 }
+                
                 planets[i].updateScale(dt);
             }
+
+            // The ship will always fly (or remain in orbit) at the position of the last valid planet we tracked
+            targetPosition = planets[trackingPlanetIndex].getPosition();
 
             spaceShip.travelTo(targetPosition, dt, travelSpeed);
             spaceShip.update(dt);
@@ -302,6 +308,7 @@ namespace Game {
                 continue; // Forces the loop to skip the rest of the events!
             }
             // -------------------------
+
             if (currentState == State::Menu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Up || keyPressed->code == sf::Keyboard::Key::W) {
@@ -526,6 +533,7 @@ namespace Game {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Y) {
                         shipAnimX = -100.f;
+                        spaceShip.setCurrentOrbit(world->getPlanets()[selectedPlanetIndex].getOrbit());
                         currentState = State::InPlanet; 
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::N) currentState = State::Playing;  
@@ -537,12 +545,14 @@ namespace Game {
                         currentState = State::Playing; 
                         audio.playHover();
                         if (pirates.rollForEncounter(0.25f)) {
-                            pirateEncounterActive = true; pirates.reset();
+                            pirateEncounterActive = true;
+                            pirates.reset();
                             currentState = State::PirateEncounter;
                         }
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::T) {
-                        currentState = State::TradeMenu; audio.playHover();
+                        currentState = State::TradeMenu;
+                        audio.playHover();
                     }
                 }
             }
@@ -553,7 +563,15 @@ namespace Game {
                         else currentState = State::InPlanet;
                     }
                 }
-                tradeMenu->handleInput(*event, mousePos, spaceShip.getInventory(), world->getPlanets()[selectedPlanetIndex], spaceShip, world->getCatalog());
+                
+                // 1. We capture the message
+                std::string popupMsg = tradeMenu->handleInput(*event, mousePos, spaceShip.getInventory(), world->getPlanets()[selectedPlanetIndex], spaceShip, world->getCatalog());
+                
+                // 2. If an error occurred (insufficient funds or space), display the pop-up
+                if (!popupMsg.empty()) {
+                    popup->show(popupMsg, 3.5f);
+                    audio.playClick(); // Optional: Error sound
+                }
             }
             else if (currentState == State::ShipMenu) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -641,9 +659,12 @@ namespace Game {
                         if (opt == "CONTINUE") currentState = State::Playing;
                         else if (opt == "SAVE") {
                             SaveSystem::saveGame(spaceShip, upgrades);
-                            std::cout << "[SYSTEM] Game saved from Pause Menu.\n";
+                            popup->show("Game saved successfully.", 1.5f);
                         }
-                        else if (opt == "EXIT TO MENU") currentState = State::Menu;
+                        else if (opt == "EXIT TO MENU") {
+                            SaveSystem::saveGame(spaceShip, upgrades);
+                            currentState = State::Menu;
+                        }
                         audio.playClick();
                     }
                 }
@@ -662,9 +683,12 @@ namespace Game {
                         if (opt == "CONTINUE") currentState = State::Playing;
                         else if (opt == "SAVE") {
                             SaveSystem::saveGame(spaceShip, upgrades);
-                            std::cout << "[SYSTEM] Game saved from Pause Menu.\n";
+                            popup->show("Game saved successfully.", 1.5f);;
                         }
-                        else if (opt == "EXIT TO MENU") currentState = State::Menu;
+                        else if (opt == "EXIT TO MENU") {
+                            SaveSystem::saveGame(spaceShip, upgrades);
+                            currentState = State::Menu;
+                        }
                         audio.playClick();
                     }
                 }
@@ -790,12 +814,12 @@ namespace Game {
             spaceShip.setPosition(originalPos);
             spaceShip.setRotation(0.f); 
 
-            sf::Text msg(mainFont, "ESTAS EN EL PLANETA: " + world->getPlanets()[selectedPlanetIndex].getName());
+            sf::Text msg(mainFont, "YOU ARE ON THE PLANET: " + world->getPlanets()[selectedPlanetIndex].getName());
             msg.setOrigin({msg.getLocalBounds().size.x / 2.f, 0.f});
             msg.setPosition({640.f, 300.f});
             window.draw(msg);
 
-            sf::Text escMsg(mainFont, "Presiona ESC para regresar, ENTER o T para ir a la tienda");
+            sf::Text escMsg(mainFont, "Press ESC to go back, or ENTER or T to go to the store");
             escMsg.setCharacterSize(15);
             escMsg.setOrigin({escMsg.getLocalBounds().size.x / 2.f, 0.f});
             escMsg.setPosition({640.f, 650.f});

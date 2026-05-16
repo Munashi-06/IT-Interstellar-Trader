@@ -88,8 +88,7 @@ public:
     void draw(sf::RenderWindow& window, const Inventory& playerInv, const Planet& currentPlanet, float playerMoney, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, const Player& player, int playerShipLevel = 1);
     
     // This is where we will process clicks for "Sell" or "Buy"
-    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
-
+    std::string handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     void update(const sf::Vector2f& mousePos);
 
     bool isInfoPopupOpen() const { return showInfoPopup; }

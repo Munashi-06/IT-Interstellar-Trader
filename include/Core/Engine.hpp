@@ -80,6 +80,7 @@ namespace Game {
         sf::RectangleShape generalBackground, animBtn, adminShipBtn, confirmBg, shipMenuBg, upgradeBtn;
 
         int selectedPlanetIndex;
+        int trackingPlanetIndex;
         sf::Vector2f targetPosition;
         float travelSpeed;
         float shipAnimX;

@@ -621,8 +621,7 @@ void TradeMenuUI::update(const sf::Vector2f& mousePos) {
     }
 }
 
-void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
-    
+std::string TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Inventory& playerInv, Planet& currentPlanet, Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
     // --- SCROLL DETECTION ---
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
@@ -757,7 +756,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
         else if (mouseBtn->button == sf::Mouse::Button::Left) {
             if (showInfoPopup) {
                 showInfoPopup = false;
-                return; // Close popup and do nothing else this frame
+                return "";
             }
 
             // Toggle Price Button Click
@@ -766,20 +765,19 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
 
                 if (showingOriginalPrices) {
                     togglePriceBtnText.setString("SHOW PLAYER DISCOUNTS");
-                    togglePriceBtnBg.setFillColor(sf::Color(255, 255, 255, 100)); // White when showing base
-                    togglePriceBtnText.setFillColor(sf::Color(0, 0, 0)); // Black text for better contrast
+                    togglePriceBtnBg.setFillColor(sf::Color(255, 255, 255, 100));
+                    togglePriceBtnText.setFillColor(sf::Color(0, 0, 0));
                 }
                 else {
                     togglePriceBtnText.setString("SHOW BASE PRICES");
-                    togglePriceBtnBg.setFillColor(sf::Color(54, 54, 217, 100)); // Blue when showing discounts
-                    togglePriceBtnText.setFillColor(sf::Color(255, 255, 255)); // White text for better contrast
+                    togglePriceBtnBg.setFillColor(sf::Color(54, 54, 217, 100));
+                    togglePriceBtnText.setFillColor(sf::Color(255, 255, 255));
                 }
 
-                // Re-center text just in case the length changed
                 sf::FloatRect newBounds = togglePriceBtnText.getLocalBounds();
                 togglePriceBtnText.setOrigin({newBounds.size.x / 2.f, newBounds.size.y / 2.f});
                 togglePriceBtnText.setPosition({1130.f, 55.f});
-                return;
+                return "";
             }
 
             // 1. CHECK CLICK ON PLAYER HEADERS (For Sorting)
@@ -787,31 +785,31 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 if (playerCurrentSort == SortColumn::Name) playerSortAscending = !playerSortAscending;
                 else { playerCurrentSort = SortColumn::Name; playerSortAscending = true; }
                 playerInv.sortByName(playerSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlayerCategory.getGlobalBounds().contains(mousePos)) {
                 if (playerCurrentSort == SortColumn::Category) playerSortAscending = !playerSortAscending;
                 else { playerCurrentSort = SortColumn::Category; playerSortAscending = true; }
                 playerInv.sortByCategory(playerSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlayerQuality.getGlobalBounds().contains(mousePos)) {
                 if (playerCurrentSort == SortColumn::Quality) playerSortAscending = !playerSortAscending;
                 else { playerCurrentSort = SortColumn::Quality; playerSortAscending = true; }
                 playerInv.sortByQuality(playerSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlayerSellPrice.getGlobalBounds().contains(mousePos)) {
                 if (playerCurrentSort == SortColumn::Price) playerSortAscending = !playerSortAscending;
                 else { playerCurrentSort = SortColumn::Price; playerSortAscending = true; }
                 playerInv.sortByPrice(playerSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlayerQty.getGlobalBounds().contains(mousePos)) {
                 if (playerCurrentSort == SortColumn::Quantity) playerSortAscending = !playerSortAscending;
                 else { playerCurrentSort = SortColumn::Quantity; playerSortAscending = true; }
                 playerInv.sortByQuantity(playerSortAscending, catalog);
-                return;
+                return "";
             }
 
             // 2. CHECK CLICK ON PLANET HEADERS (For Sorting)
@@ -819,32 +817,33 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 if (planetCurrentSort == SortColumn::Name) planetSortAscending = !planetSortAscending;
                 else { planetCurrentSort = SortColumn::Name; planetSortAscending = true; }
                 currentPlanet.sortByName(planetSortAscending, catalog); 
-                return;
+                return "";
             }
             else if (headerPlanetCategory.getGlobalBounds().contains(mousePos)) {
                 if (planetCurrentSort == SortColumn::Category) planetSortAscending = !planetSortAscending;
                 else { planetCurrentSort = SortColumn::Category; planetSortAscending = true; }
                 currentPlanet.sortByCategory(planetSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlanetQuality.getGlobalBounds().contains(mousePos)) {
                 if (planetCurrentSort == SortColumn::Quality) planetSortAscending = !planetSortAscending;
                 else { planetCurrentSort = SortColumn::Quality; planetSortAscending = true; }
                 currentPlanet.sortByQuality(planetSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlanetBuyPrice.getGlobalBounds().contains(mousePos)) {
                 if (planetCurrentSort == SortColumn::Price) planetSortAscending = !planetSortAscending;
                 else { planetCurrentSort = SortColumn::Price; planetSortAscending = true; }
                 currentPlanet.sortByPrice(planetSortAscending, catalog);
-                return;
+                return "";
             }
             else if (headerPlanetQty.getGlobalBounds().contains(mousePos)) {
                 if (planetCurrentSort == SortColumn::Quantity) planetSortAscending = !planetSortAscending;
                 else { planetCurrentSort = SortColumn::Quantity; planetSortAscending = true; }
                 currentPlanet.sortByQuantity(planetSortAscending, catalog);
-                return;
+                return "";
             }
+            
             // 3. CHECK CLICK ON ACTION BUTTONS (Buy/Sell)
             if (selectedItemID != "") {
                 if (isPlayerItem) {
@@ -858,13 +857,12 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                     }
                     if (!itemExists) {
                         selectedItemID = "";
-                        return;
+                        return "";
                     }
                     
                     if (playerActionBtnBg.getGlobalBounds().contains(mousePos)) {
                         TradeManager::sellItem(selectedItemID, player, playerInv, currentPlanet, catalog);
                         
-                        // Deseleccionar si se quedó sin unidades
                         bool stillHasItem = false;
                         for (const auto& slot : playerInv.getSlots()) {
                             if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
@@ -875,11 +873,11 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                         if (!stillHasItem) {
                             selectedItemID = "";
                         }
-                        return;
+                        return "";
                     }
                 }
                 else {
-                    // Validar BUY
+                    // Validate BUY
                     bool itemExists = false;
                     for (const auto& slot : currentPlanet.getLocalStock()) {
                         if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
@@ -889,13 +887,31 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                     }
                     if (!itemExists) {
                         selectedItemID = "";
-                        return;
+                        return "";
                     }
                     
                     if (planetActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                        TradeManager::buyItem(selectedItemID, player, playerInv, currentPlanet, catalog);
                         
-                        // Deseleccionar si el planeta se quedó sin stock
+                        // --- THIS IS WHERE THE MAGIC OF THE PURCHASE HAPPENS ---
+                        const auto& itemData = catalog.at(selectedItemID);
+                        float planetPrice = currentPlanet.getItemPrice(selectedItemID, catalog);
+                        float finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, planetPrice, player);
+
+                        if (player.getMoney() >= finalBuyPrice) {
+                            if (playerInv.getUsedSlots() < playerInv.getCapacity()) {
+                                TradeManager::buyItem(selectedItemID, player, playerInv, currentPlanet, catalog);
+                            }
+                            else {
+                                return "Inventory full: You don't have enough space in your ship for this item.";
+                            }
+                        }
+                        else {
+                            // RETURN THE MESSAGE WITH THE COLON FOR THE POPUP
+                            return "Insufficient funds: You need " + std::to_string(static_cast<int>(finalBuyPrice)) + " Bs. for this purchase.";
+                        }
+                        // ----------------------------------------
+                        
+                        // Deselect if the planet is out of stock
                         bool stillHasItem = false;
                         for (const auto& slot : currentPlanet.getLocalStock()) {
                             if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
@@ -906,10 +922,11 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                         if (!stillHasItem) {
                             selectedItemID = "";
                         }
-                        return;
+                        return "";
                     }
                 }
             }
+            
             // 4. CHECK SELECTION IN LISTS
             bool clickedOnItem = false;
             if (mousePos.y >= startY && mousePos.y < startY + (maxVisibleRows * rowHeight)) {
@@ -919,7 +936,6 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 if (mousePos.x >= 50.f && mousePos.x <= 610.f) {
                     std::string foundID = getClickedItemID(playerInv.getSlots(), playerStartIndex, clickedRow);
                     if (foundID != "") {
-                        // If we click the same one, we deselect it
                         if (selectedItemID == foundID && isPlayerItem) {
                             selectedItemID = "";
                         } else {
@@ -955,6 +971,7 @@ void TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
             }
         }
     }
+    return "";
 }
 
 float TradeMenuUI::getVisibilityPercent(Rarity rarity, int shipLevel) const {
