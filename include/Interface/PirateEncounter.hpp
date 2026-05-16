@@ -5,6 +5,7 @@
 #include <string>
 #include "Entities/Player.hpp"
 #include "Systems/UpgradeManager.hpp"
+#include "Interface/GameOverScene.hpp"
 
 namespace Interface {
     enum class PirateMenu { Main, Bribery, Result };
@@ -18,8 +19,8 @@ namespace Interface {
         void update(float dt);
         void handleInput(sf::Keyboard::Key k);
         void handleMouseMove(const sf::Vector2f& mousePos);
-        bool handleMouseClick(const sf::Vector2f& mousePos, Player& player, bool& gameOverTriggered, UpgradeManager& upgrades);
-        void handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered, UpgradeManager& upgrades);
+        bool handleMouseClick(const sf::Vector2f& mousePos, Player& player, bool& gameOverTriggered, Game::DeathReason& reason, UpgradeManager& upgrades);
+        void handleEncounterLogic(sf::Keyboard::Key key, Player& player, bool& gameOverTriggered, Game::DeathReason& reason, UpgradeManager& upgrades);
         bool rollForEncounter(float chance);
         void setResult(const std::string& message);
         void reset();
@@ -45,6 +46,6 @@ namespace Interface {
         sf::Texture pirateTex;
         std::unique_ptr<sf::Sprite> pirateSprite;
 
-        void executeSelection(Player& player, bool& gameOver, UpgradeManager& upgrades);
+        void executeSelection(Player& player, bool& gameOver, Game::DeathReason& reason, UpgradeManager& upgrades);
     };
 }

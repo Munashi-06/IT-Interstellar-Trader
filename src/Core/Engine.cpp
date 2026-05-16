@@ -142,7 +142,9 @@ namespace Game {
 
     void Engine::executeAction(const std::string& option) {
         if (option == "NEW GAME" || option == "CONTINUE") currentState = State::GameIntro;
-        else if (option == "SETTINGS") currentState = State::Options;
+        else if (option == "SETTINGS") {
+            currentState = State::Options;
+        }
         else if (option == "EXIT") window.close();
     }
 
@@ -263,6 +265,9 @@ namespace Game {
             if (gameIntro.isFinished()) {
                 currentState = State::Playing;
                 gameIntro.reset();
+                // --- SHOW CONTROLS POP-UP ---
+                popup->show("CONTROLS:\n\nWASD / Arrows: Navigate\n\nENTER: Select & Travel\n\nESC: Pause & Back", 0.f);
+                
             }
         }
         else if (currentState == State::Animation1) {
@@ -353,6 +358,9 @@ namespace Game {
                                 }
                             }
                         }
+                        else if (opt == "SETTINGS") {
+                            previousStateForOptions = State::Menu;
+                        }
                         audio.playClick();
                     }
                 }
@@ -413,7 +421,7 @@ namespace Game {
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Escape){
                         settingsMenu->resetTempConfig(config);
-                        currentState = State::Menu;
+                        currentState = previousStateForOptions; // Return to wherever we came from
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space){
                         settingsMenu->handleAction(currentState, window, config, audio);
@@ -440,7 +448,7 @@ namespace Game {
                         if(opt == "APPLY") settingsMenu->applySettings(window, config, audio);
                         else if(opt == "BACK") {
                             settingsMenu->resetTempConfig(config);
-                            currentState = State::Menu;
+                            currentState = previousStateForOptions; // Return to wherever we came from
                         }
                     }
                 }
@@ -585,7 +593,7 @@ namespace Game {
                 }
                 
                 // We catch the message
-                std::string popupMsg = upgradeTree->handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef());
+                std::string popupMsg = upgradeTree->handleInput(*event, mousePos, upgrades, spaceShip.getMoneyRef(), currentState);
                 
                 // If the tree returned an error message, display the popup
                 if (!popupMsg.empty()) {
@@ -603,10 +611,16 @@ namespace Game {
                 if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseButton->button == sf::Mouse::Button::Left) {
                         sf::Vector2f mousePos = window.mapPixelToCoords(mouseButton->position);
+                        
+                        // Variables to catch the state
                         bool gameOverTriggered = false;
-                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered, upgrades)) {
+                        Game::DeathReason deathReason = Game::DeathReason::NoMoneyNoItems;
+
+                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered, deathReason, upgrades)) {
                             if (gameOverTriggered) {
                                 if (gameOverScene) {
+                                    // TELL THE SCENE WHY THE PLAYER DIED
+                                    gameOverScene->setDeathReason(deathReason);
                                     gameOverScene->setActive(true);
                                     currentState = State::GameOver;
                                 }
@@ -621,20 +635,32 @@ namespace Game {
                 
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     bool gameOverTriggered = false;
+                    Game::DeathReason deathReason = Game::DeathReason::NoMoneyNoItems;
                     
-                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered, upgrades);
+                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered, deathReason, upgrades);
                     
-                    bool shouldGameOver = Game::GameOverScene::checkCondition(spaceShip, world->getCatalog());
-                    
-                    if (shouldGameOver) {
+                    if (gameOverTriggered) {
                         if (gameOverScene) {
+                            // TELL THE SCENE WHY THE PLAYER DIED
+                            gameOverScene->setDeathReason(deathReason);
                             gameOverScene->setActive(true);
                             currentState = State::GameOver;
                         }
                     }
-                    else if (!pirates.isActive()) {
-                        pirateEncounterActive = false; 
-                        currentState = State::Playing;
+                    else {
+                        // Check normal poverty condition
+                        bool shouldGameOver = Game::GameOverScene::checkCondition(spaceShip, world->getCatalog());
+                        if (shouldGameOver) {
+                            if (gameOverScene) {
+                                gameOverScene->setDeathReason(Game::DeathReason::NoMoneyNoItems);
+                                gameOverScene->setActive(true);
+                                currentState = State::GameOver;
+                            }
+                        }
+                        else if (!pirates.isActive()) {
+                            pirateEncounterActive = false; 
+                            currentState = State::Playing;
+                        }
                     }
                 }
             }      
@@ -665,6 +691,10 @@ namespace Game {
                             SaveSystem::saveGame(spaceShip, upgrades);
                             currentState = State::Menu;
                         }
+                        else if (opt == "OPTIONS") {
+                            previousStateForOptions = State::Pause; // Remember we came from Pause
+                            currentState = State::Options;
+                        }
                         audio.playClick();
                     }
                 }
@@ -688,6 +718,10 @@ namespace Game {
                         else if (opt == "EXIT TO MENU") {
                             SaveSystem::saveGame(spaceShip, upgrades);
                             currentState = State::Menu;
+                        }
+                        else if (opt == "OPTIONS") {
+                            previousStateForOptions = State::Pause; // Remember we came from Pause
+                            currentState = State::Options;
                         }
                         audio.playClick();
                     }
@@ -835,7 +869,7 @@ namespace Game {
         else if (currentState == State::UpgradeTree) {
             window.draw(generalBackground);
             bgStars.draw(window, spaceShip.getPosition());
-            upgradeTree->draw(window, upgrades); 
+            upgradeTree->draw(window, upgrades, spaceShip.getMoney()); 
         }
         else if (currentState == State::PirateEncounter) {
             window.clear(sf::Color::Black);

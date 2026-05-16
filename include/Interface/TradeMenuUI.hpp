@@ -45,11 +45,11 @@ private:
     sf::RectangleShape selectionHighlight; // The rectangle that draws the "highlight" over the selected row
 
     // Main action buttons
-    sf::RectangleShape playerActionBtnBg;
-    sf::Text playerActionBtnText; // "SELL"
+    std::vector<sf::RectangleShape> sellBtns;
+    std::vector<sf::Text> sellTexts;
+    std::vector<sf::RectangleShape> buyBtns;
+    std::vector<sf::Text> buyTexts;
     
-    sf::RectangleShape planetActionBtnBg;
-    sf::Text planetActionBtnText; // "BUY"
 // --- CONTEXT MENU (Right Click) ---
     bool showContextMenu = false;
     sf::Vector2f contextMenuPos;

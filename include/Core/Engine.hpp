@@ -39,6 +39,7 @@ namespace Game {
 
         // --- GAME STATE & CONFIG ---
         State currentState;
+        State previousStateForOptions = State::Menu;
         GameConfig config;
 
         // --- SYSTEMS & ENTITIES ---

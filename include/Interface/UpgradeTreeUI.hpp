@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include "Systems/UpgradeManager.hpp"
+#include "Core/State.hpp"
 
 class UpgradeTreeUI {
 private:
@@ -20,6 +21,11 @@ private:
     sf::Text tooltipText;
     bool showTooltip = false;
 
+    // --- NEW: BACK BUTTON & MONEY ---
+    sf::RectangleShape backBtn;
+    sf::Text backText;
+    sf::Text moneyText;
+
     // Tracks which upgrade tree is currently visible (0 = Logistics, 1 = Propulsion, 2 = Trading)
     int currentTab = 0; 
 
@@ -38,10 +44,9 @@ public:
     UpgradeTreeUI(const sf::Font& f);
     
     // Renders the background, tabs, and calls the recursive tree drawing
-    void draw(sf::RenderWindow& window, UpgradeManager& manager);
-    
+    void draw(sf::RenderWindow& window, UpgradeManager& manager, float playerMoney);    
     // Handles tab switching and upgrade purchasing clicks
-    std::string handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney);
+    std::string handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney, State& currentState);    
     
     // Helper for detecting clicks on nodes and handling mutually exclusive siblings
     void handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std::shared_ptr<BinNode<Upgrade>> sibling, sf::Vector2f pos, float hSpacing, float vSpacing, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney, std::string& outMessage);

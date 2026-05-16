@@ -47,7 +47,7 @@ namespace Interface {
         skipButtonText->setFillColor(sf::Color::White);
         sf::FloatRect skipBounds = skipButtonText->getLocalBounds();
         skipButtonText->setOrigin({skipBounds.size.x / 2.f, skipBounds.size.y / 2.f});
-        skipButtonText->setPosition({1200.f, 40.f});
+        skipButtonText->setPosition({1200.f, 35.f});
 
         backgroundMusic = std::make_unique<sf::Music>();
 
@@ -113,7 +113,6 @@ namespace Interface {
     void GameIntroAnimation::skip() {
         if (!skipRequested && !isFading) {
             skipRequested = true;
-            std::cout << "[GameIntro] Skip requested!" << std::endl;
         }
     }
 

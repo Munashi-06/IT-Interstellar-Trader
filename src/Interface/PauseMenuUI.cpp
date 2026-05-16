@@ -19,20 +19,22 @@ PauseMenuUI::PauseMenuUI(const sf::Font& font) :
     titleText.setPosition({640.f, 200.f});
 
     // Options
-    std::vector<std::string> options = {"CONTINUE", "SAVE", "EXIT TO MENU"};
-    // Note: I've temporarily omitted “Options” because it would require additional logic in your 
-    // engine to remember whether you're coming from the Main Menu or the Pause screen when you press the back button.
+    std::vector<std::string> options = {"CONTINUE", "OPTIONS", "SAVE", "EXIT TO MENU"};
 
     for (size_t i = 0; i < options.size(); ++i) {
         sf::Text text(font, options[i], 20);
         sf::FloatRect bounds = text.getLocalBounds();
-        text.setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
-        text.setPosition({640.f, 320.f + (i * 70.f)});
+        
+        // Minor visual adjustment (+ 6.f) to perfectly center SFML text vertically
+        text.setOrigin({bounds.size.x / 2.f, (bounds.size.y / 2.f) + 6.f});
+        
+        // Set both Text and Button to the EXACT same Y position (280.f)
+        text.setPosition({640.f, 280.f + (i * 70.f)});
         menuTexts.push_back(text);
 
         sf::RectangleShape btn({300.f, 50.f});
         btn.setOrigin({150.f, 25.f});
-        btn.setPosition({640.f, 320.f + (i * 70.f)});
+        btn.setPosition({640.f, 280.f + (i * 70.f)}); // <--- FIXED ALIGNMENT
         btn.setFillColor(sf::Color(20, 20, 20, 200));
         btn.setOutlineThickness(2);
         buttonBgs.push_back(btn);

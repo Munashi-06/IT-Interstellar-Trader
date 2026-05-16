@@ -7,7 +7,9 @@ UpgradeTreeUI::UpgradeTreeUI(const sf::Font& f) :
     textLogistics(font, ""),
     textPropulsion(font, ""),
     textTrading(font, ""),
-    tooltipText(font, "")
+    tooltipText(font, ""),
+    backText(font, ""),
+    moneyText(font, "")
     {
     // --- MAIN BACKGROUND ---
     background.setSize({1280.f, 720.f});        
@@ -54,6 +56,23 @@ UpgradeTreeUI::UpgradeTreeUI(const sf::Font& f) :
     tooltipText.setFont(font);
     tooltipText.setCharacterSize(14);
     tooltipText.setFillColor(sf::Color::White);
+
+    // --- BACK BUTTON ---
+    backBtn.setSize({150.f, 40.f});
+    backBtn.setFillColor(sf::Color(150, 0, 0));
+    backBtn.setPosition({50.f, 660.f});
+
+    backText.setString("BACK");
+    backText.setCharacterSize(16);
+    backText.setFillColor(sf::Color::White);
+    sf::FloatRect bRect = backText.getLocalBounds();
+    backText.setOrigin({bRect.size.x / 2.f, bRect.size.y / 2.f});
+    backText.setPosition({125.f, 676.f});
+
+    // --- MONEY TEXT ---
+    moneyText.setCharacterSize(20);
+    moneyText.setFillColor(sf::Color::Yellow);
+    moneyText.setPosition({1050.f, 100.f});
 }
 
 void UpgradeTreeUI::drawConnection(sf::RenderWindow& window, sf::Vector2f parentPos, sf::Vector2f childPos, sf::Color color) {
@@ -204,9 +223,14 @@ std::string UpgradeTreeUI::wrapText(const std::string& text, unsigned maxCharsPe
     return result;
 }
 
-void UpgradeTreeUI::draw(sf::RenderWindow& window, UpgradeManager& manager) {
+void UpgradeTreeUI::draw(sf::RenderWindow& window, UpgradeManager& manager, float playerMoney) {
+    // Update money string dynamically
+    moneyText.setString("Bs. " + std::to_string(static_cast<int>(playerMoney)));
     // 1. Draw base panel
     window.draw(titleText);
+    window.draw(backBtn);
+    window.draw(backText);
+    window.draw(moneyText);
 
     // 2. Highlight the active tab
     sf::Color activeColor(50, 50, 100);
@@ -288,8 +312,7 @@ void UpgradeTreeUI::handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std:
     }
 }
         
-
-std::string UpgradeTreeUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney) {
+std::string UpgradeTreeUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, UpgradeManager& manager, float& playerMoney, State& currentState) {
     std::string popupMessage = ""; // Initialize the message as empty
 
     if (const auto* mouseBtn = event.getIf<sf::Event::MouseButtonPressed>()) {
@@ -314,23 +337,31 @@ std::string UpgradeTreeUI::handleInput(const sf::Event& event, const sf::Vector2
                 // We pass our popupMessage variable at the end
                 handleNodeClick(currentRoot, nullptr, startPos, initialHSpacing, vSpacing, mousePos, manager, playerMoney, popupMessage);
             }
+
+            // 3. Check Back Button
+            if (backBtn.getGlobalBounds().contains(mousePos)) {
+                currentState = State::ShipMenu;
+                return "";
+            }
         }
     }
     return popupMessage; // We return whatever happened
 }
 
 void UpgradeTreeUI::update(const sf::Vector2f& mousePos, UpgradeManager& manager) {
-    // 1. Efecto Hover de las pestañas (El código que ya tenías)
+    // 1. Tab hover effect (The code you already had)
     sf::Color hoverColor(70, 70, 120);
     sf::Color activeColor(50, 50, 100);
     sf::Color inactiveColor(30, 30, 50);
+    if (backBtn.getGlobalBounds().contains(mousePos)) backBtn.setFillColor(sf::Color(200, 0, 0));
+    else backBtn.setFillColor(sf::Color(150, 0, 0));
 
     if (currentTab != 0) tabLogistics.setFillColor(tabLogistics.getGlobalBounds().contains(mousePos) ? hoverColor : inactiveColor);
     if (currentTab != 1) tabPropulsion.setFillColor(tabPropulsion.getGlobalBounds().contains(mousePos) ? hoverColor : inactiveColor);
     if (currentTab != 2) tabTrading.setFillColor(tabTrading.getGlobalBounds().contains(mousePos) ? hoverColor : inactiveColor);
 
-    // 2. Lógica del Tooltip (Ventanita de información)
-    showTooltip = false; // Lo ocultamos por defecto cada frame
+    // 2. Tooltip Logic (Information Popup)
+    showTooltip = false; // We hide it by default on every frame
 
     std::shared_ptr<BinNode<Upgrade>> currentRoot = nullptr;
     if (currentTab == 0) currentRoot = manager.getLogisticsRoot();
@@ -347,16 +378,16 @@ void UpgradeTreeUI::update(const sf::Vector2f& mousePos, UpgradeManager& manager
         if (hoveredNode) {
             showTooltip = true;
             
-            // Construir el texto a mostrar
+            // Build the text to be displayed
             std::stringstream ss;
             
-            // Usamos nuestra función wrapText con un límite de 45 caracteres
+            // We use our wrapText function with a limit of 45 characters
             ss << K(hoveredNode).name << "\n\n"
                << wrapText(K(hoveredNode).description, 45) << "\n\n"
                << "Cost: Bs. " << K(hoveredNode).cost << "\n"
                << "Status: ";
             
-            // Mostrar el estado actual
+            // Display the current status
             switch(K(hoveredNode).status) {
                 case UpgradeStatus::AVAILABLE: ss << "AVAILABLE"; break;
                 case UpgradeStatus::PURCHASED: ss << "PURCHASED"; break;
@@ -366,15 +397,15 @@ void UpgradeTreeUI::update(const sf::Vector2f& mousePos, UpgradeManager& manager
 
             tooltipText.setString(ss.str());
 
-            // AJUSTE DINÁMICO DE TAMAÑO
+            // DYNAMIC SIZE ADJUSTMENT
             sf::FloatRect textBounds = tooltipText.getLocalBounds();
-            // Le damos 15 píxeles de "padding" (margen) por cada lado
+            // We add 15 pixels of padding on each side
             tooltipBg.setSize({textBounds.size.x + 30.f, textBounds.size.y + 30.f});
 
-            // AJUSTE DE POSICIÓN (Sigue al mouse)
-            sf::Vector2f tooltipPos = mousePos + sf::Vector2f(15.f, 15.f); // Ligeramente abajo y a la derecha del cursor
+            // POSITION ADJUSTMENT (Follows the mouse)
+            sf::Vector2f tooltipPos = mousePos + sf::Vector2f(15.f, 15.f); // Slightly below and to the right of the cursor
             
-            // Evitar que se salga de la pantalla por la derecha o abajo
+            // Prevent it from going off-screen to the right or bottom
             if (tooltipPos.x + tooltipBg.getSize().x > 1280.f) {
                 tooltipPos.x = mousePos.x - tooltipBg.getSize().x - 10.f;
             }
@@ -383,7 +414,7 @@ void UpgradeTreeUI::update(const sf::Vector2f& mousePos, UpgradeManager& manager
             }
 
             tooltipBg.setPosition(tooltipPos);
-            // El texto se posiciona basándose en la caja más el padding
+            // The text is positioned based on the box plus the padding
             tooltipText.setPosition(tooltipPos + sf::Vector2f(15.f, 15.f));
         }
     }

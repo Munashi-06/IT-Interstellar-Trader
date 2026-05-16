@@ -35,8 +35,6 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
       infoPopupText(f, ""),
       infoPopupEscText(f, "Press Esc. to close"),
       infoInputText(f, "Use Mouse Scroll to navigate through objects, RMB for more information, LMB to select, Esc. to exit."),
-      playerActionBtnText(f, "SELL"),
-      planetActionBtnText(f, "BUY"),
       headerPlayerCategory(f, "CATEGORY"),
       headerPlayerQuality(f, "QUALITY"),
       headerPlanetCategory(f, "CATEGORY"),
@@ -194,30 +192,38 @@ TradeMenuUI::TradeMenuUI(const sf::Font& f)
     selectionHighlight.setFillColor(sf::Color(0, 255, 255, 60)); // Very transparent cyan
 
 // --- ACTION BUTTONS CONFIGURATION ---
-    sf::Vector2f btnSize(150.f, 40.f);
-    float btnY = topY + 500.f; // Y position at the bottom of the table
+    std::vector<std::string> labels = {"1x", "5x", "MAX"};
+    float btnY = topY + 500.f; 
 
-    // Player Button (Sell)
-    playerActionBtnBg.setSize(btnSize);
-    playerActionBtnBg.setFillColor(sf::Color(100, 100, 100)); // Gray (Disabled by default)
-    playerActionBtnBg.setOrigin({btnSize.x / 2.f, btnSize.y / 2.f});
-    playerActionBtnBg.setPosition({leftPanelX + (panelSize.x / 2.f), btnY});
-    
-    playerActionBtnText.setCharacterSize(16);
-    sf::FloatRect pBounds = playerActionBtnText.getLocalBounds();
-    playerActionBtnText.setOrigin({pBounds.size.x / 2.f, pBounds.size.y / 2.f});
-    playerActionBtnText.setPosition({leftPanelX + (panelSize.x / 2.f), btnY - 5.f});
+    for (int i = 0; i < 3; ++i) {
+        // Sell Buttons
+        sf::RectangleShape sBtn({80.f, 40.f});
+        sBtn.setFillColor(sf::Color(100, 100, 100));
+        sBtn.setOrigin({40.f, 20.f});
+        sBtn.setPosition({leftPanelX + 150.f + (i * 100.f), btnY});
+        sellBtns.push_back(sBtn);
 
-    // Planet Button (Buy)
-    planetActionBtnBg.setSize(btnSize);
-    planetActionBtnBg.setFillColor(sf::Color(100, 100, 100)); // Gray (Disabled by default)
-    planetActionBtnBg.setOrigin({btnSize.x / 2.f, btnSize.y / 2.f});
-    planetActionBtnBg.setPosition({rightPanelX + (panelSize.x / 2.f), btnY});
-    
-    planetActionBtnText.setCharacterSize(16);
-    sf::FloatRect mBounds = planetActionBtnText.getLocalBounds();
-    planetActionBtnText.setOrigin({mBounds.size.x / 2.f, mBounds.size.y / 2.f});
-    planetActionBtnText.setPosition({rightPanelX + (panelSize.x / 2.f), btnY - 5.f});
+        sf::Text sText(font, "SELL " + labels[i], 14);
+        sText.setFillColor(sf::Color::White);
+        sf::FloatRect sBounds = sText.getLocalBounds();
+        sText.setOrigin({sBounds.size.x / 2.f, sBounds.size.y / 2.f});
+        sText.setPosition({leftPanelX + 150.f + (i * 100.f), btnY - 5.f});
+        sellTexts.push_back(sText);
+
+        // Buy Buttons
+        sf::RectangleShape bBtn({80.f, 40.f});
+        bBtn.setFillColor(sf::Color(100, 100, 100));
+        bBtn.setOrigin({40.f, 20.f});
+        bBtn.setPosition({rightPanelX + 150.f + (i * 100.f), btnY});
+        buyBtns.push_back(bBtn);
+
+        sf::Text bText(font, "BUY " + labels[i], 14);
+        bText.setFillColor(sf::Color::White);
+        sf::FloatRect bBounds = bText.getLocalBounds();
+        bText.setOrigin({bBounds.size.x / 2.f, bBounds.size.y / 2.f});
+        bText.setPosition({rightPanelX + 150.f + (i * 100.f), btnY - 5.f});
+        buyTexts.push_back(bText);
+    }
 
 // --- CONFIGURATION FOR TOGGLE PRICE BUTTON ---
     togglePriceBtnBg.setSize({200.f, 30.f});
@@ -515,43 +521,34 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
     }
 
     if (!isPlayerItem && selectedItemID != "") {
-    bool stillExists = false;
-    for (const auto& slot : currentPlanet.getLocalStock()) {
-        if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
-            stillExists = true;
-            break;
+        bool stillExists = false;
+        for (const auto& slot : currentPlanet.getLocalStock()) {
+            if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                stillExists = true;
+                break;
+            }
+        }
+        if (!stillExists) {
+            selectedItemID = "";  // Deseleccionar item fantasma
         }
     }
-    if (!stillExists) {
-        selectedItemID = "";  // Deseleccionar item fantasma
-    }
-}
 
     // Draw instruction text at the bottom
     window.draw(infoInputText);
 
-// --- UPDATE AND DRAW ACTION BUTTONS ---
-    // If a player item is selected, activate (color green) the Sell button
-    if (selectedItemID != "" && isPlayerItem) {
-        playerActionBtnBg.setFillColor(sf::Color(0, 150, 0)); // Green
-    }
-    else {
-        playerActionBtnBg.setFillColor(sf::Color(100, 100, 100)); // Gray
-    }
-    
-    // If a planet item is selected, activate (color green) the Buy button
-    if (selectedItemID != "" && !isPlayerItem) {
-        planetActionBtnBg.setFillColor(sf::Color(0, 150, 0)); // Green
-    }
-    else {
-        planetActionBtnBg.setFillColor(sf::Color(100, 100, 100)); // Gray
-    }
+// --- UPDATE AND DRAW MULTI-ACTION BUTTONS ---
+    sf::Color activeColor(0, 150, 0); // Green
+    sf::Color inactiveColor(100, 100, 100); // Gray
 
-    // Draw buttons on screen
-    window.draw(playerActionBtnBg);
-    window.draw(playerActionBtnText);
-    window.draw(planetActionBtnBg);
-    window.draw(planetActionBtnText);
+    for (int i = 0; i < 3; ++i) {
+        sellBtns[i].setFillColor((selectedItemID != "" && isPlayerItem) ? activeColor : inactiveColor);
+        buyBtns[i].setFillColor((selectedItemID != "" && !isPlayerItem) ? activeColor : inactiveColor);
+        
+        window.draw(sellBtns[i]);
+        window.draw(sellTexts[i]);
+        window.draw(buyBtns[i]);
+        window.draw(buyTexts[i]);
+    }
 
 // LAYER 4: Information Popup (Top Layer)
     // Note: Removed the "showContextMenu" logic previously here.
@@ -844,85 +841,64 @@ std::string TradeMenuUI::handleInput(const sf::Event& event, const sf::Vector2f&
                 return "";
             }
             
-            // 3. CHECK CLICK ON ACTION BUTTONS (Buy/Sell)
+            // 3. CHECK CLICK ON MULTI-ACTION BUTTONS (Buy/Sell)
             if (selectedItemID != "") {
+                std::vector<int> quantities = {1, 5, 999}; // 999 acts as "MAX" limit per click
+
                 if (isPlayerItem) {
-                    // Validar SELL
-                    bool itemExists = false;
-                    for (const auto& slot : playerInv.getSlots()) {
-                        if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
-                            itemExists = true;
-                            break;
-                        }
-                    }
-                    if (!itemExists) {
-                        selectedItemID = "";
-                        return "";
-                    }
-                    
-                    if (playerActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                        TradeManager::sellItem(selectedItemID, player, playerInv, currentPlanet, catalog);
-                        
-                        bool stillHasItem = false;
-                        for (const auto& slot : playerInv.getSlots()) {
-                            if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
-                                stillHasItem = true;
-                                break;
+                    for (int i = 0; i < 3; ++i) {
+                        if (sellBtns[i].getGlobalBounds().contains(mousePos)) {
+                            int soldCount = 0;
+                            for (int q = 0; q < quantities[i]; ++q) {
+                                // Validate if player still has the item
+                                bool hasItem = false;
+                                for (const auto& slot : playerInv.getSlots()) {
+                                    if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                                        hasItem = true; break;
+                                    }
+                                }
+                                if (!hasItem) { selectedItemID = ""; break; } // Out of stock
+
+                                TradeManager::sellItem(selectedItemID, player, playerInv, currentPlanet, catalog);
+                                soldCount++;
                             }
+                            return "";
                         }
-                        if (!stillHasItem) {
-                            selectedItemID = "";
-                        }
-                        return "";
                     }
                 }
-                else {
-                    // Validate BUY
-                    bool itemExists = false;
-                    for (const auto& slot : currentPlanet.getLocalStock()) {
-                        if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
-                            itemExists = true;
-                            break;
-                        }
-                    }
-                    if (!itemExists) {
-                        selectedItemID = "";
-                        return "";
-                    }
-                    
-                    if (planetActionBtnBg.getGlobalBounds().contains(mousePos)) {
-                        
-                        // --- THIS IS WHERE THE MAGIC OF THE PURCHASE HAPPENS ---
-                        const auto& itemData = catalog.at(selectedItemID);
-                        float planetPrice = currentPlanet.getItemPrice(selectedItemID, catalog);
-                        float finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, planetPrice, player);
+                else { // BUY logic
+                    for (int i = 0; i < 3; ++i) {
+                        if (buyBtns[i].getGlobalBounds().contains(mousePos)) {
+                            int boughtCount = 0;
+                            for (int q = 0; q < quantities[i]; ++q) {
+                                const auto& itemData = catalog.at(selectedItemID);
+                                float planetPrice = currentPlanet.getItemPrice(selectedItemID, catalog);
+                                float finalBuyPrice = TradeManager::getFinalBuyPrice(*itemData, planetPrice, player);
 
-                        if (player.getMoney() >= finalBuyPrice) {
-                            if (playerInv.getUsedSlots() < playerInv.getCapacity()) {
+                                // Stop buying if out of money or space
+                                if (player.getMoney() < finalBuyPrice) {
+                                    if (boughtCount == 0) return "Insufficient funds: You need Bs. " + std::to_string(static_cast<int>(finalBuyPrice)) + ".";
+                                    break;
+                                }
+                                if (playerInv.getUsedSlots() >= playerInv.getCapacity()) {
+                                    if (boughtCount == 0) return "Inventory full: You don't have enough space in your ship.";
+                                    break;
+                                }
+
+                                // Stop buying if planet is out of stock
+                                bool hasStock = false;
+                                for (const auto& slot : currentPlanet.getLocalStock()) {
+                                    if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
+                                        hasStock = true; break;
+                                    }
+                                }
+                                if (!hasStock) { selectedItemID = ""; break; }
+
                                 TradeManager::buyItem(selectedItemID, player, playerInv, currentPlanet, catalog);
+                                boughtCount++;
                             }
-                            else {
-                                return "Inventory full: You don't have enough space in your ship for this item.";
-                            }
+                            return "";
                         }
-                        else {
-                            // RETURN THE MESSAGE WITH THE COLON FOR THE POPUP
-                            return "Insufficient funds: You need " + std::to_string(static_cast<int>(finalBuyPrice)) + " Bs. for this purchase.";
-                        }
-                        // ----------------------------------------
-                        
-                        // Deselect if the planet is out of stock
-                        bool stillHasItem = false;
-                        for (const auto& slot : currentPlanet.getLocalStock()) {
-                            if (slot.has_value() && slot->itemID == selectedItemID && slot->quantity > 0) {
-                                stillHasItem = true;
-                                break;
-                            }
-                        }
-                        if (!stillHasItem) {
-                            selectedItemID = "";
-                        }
-                        return "";
                     }
                 }
             }

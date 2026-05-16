@@ -227,7 +227,7 @@ void UpgradeManager::initTrees(Player& player) {
     Upgrade reinforcedCargo(
         "log_cargo_3", 
         "Reinforced Cargo Holder", 
-        "Strengthens cargo hold. +25 Slots and can carry heavier items without damage.", 
+        "Strengthens cargo hold. +25 Slots.", 
         4000.0f, 
         true, 
         [&player]() {
@@ -273,7 +273,7 @@ void UpgradeManager::initTrees(Player& player) {
     Upgrade marketScanners(
         "log_scanners",
         "Deep Market Scanners", 
-        "Upgrades sensors to detect restricted and exotic goods in local markets.", 
+        "Upgrades sensors to detect restricted and exotic goods in local markets. No room for more cargo", 
         2000.0f, 
         true, 
         [&player]() {
@@ -355,7 +355,7 @@ void UpgradeManager::initTrees(Player& player) {
     Upgrade corporateLicense(
         "trade_corp_1", 
         "Corporate License", 
-        "Official trading permits. 15% better prices for Tech and Medical goods.", 
+        "Official trading permits. 15% better prices for Tech and Medical goods. Blocks Black Market Contacts", 
         3500.0f, 
         true, // Choosing this blocks the Underworld branch
         [&player]() {

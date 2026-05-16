@@ -122,7 +122,7 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
     closeText.setFillColor(sf::Color::White);
     sf::FloatRect eRect = closeText.getLocalBounds();
     closeText.setOrigin({eRect.size.x / 2.f, eRect.size.y / 2.f});
-    closeText.setPosition({270.f, 520.f});
+    closeText.setPosition({270.f, 512.5f});
 
     // --- SAVE & EXIT BUTTON ---
     saveExitBtn.setSize({200.f, 40.f});
@@ -134,7 +134,7 @@ ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex)
     saveExitText.setFillColor(sf::Color::White);
     sf::FloatRect seRect = saveExitText.getLocalBounds();
     saveExitText.setOrigin({seRect.size.x / 2.f, seRect.size.y / 2.f});
-    saveExitText.setPosition({270.f, 570.f});
+    saveExitText.setPosition({270.f, 562.5f});
 }
 
 void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog) {
