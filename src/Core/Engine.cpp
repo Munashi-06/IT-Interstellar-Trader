@@ -603,67 +603,44 @@ namespace Game {
             }
             else if (currentState == State::PirateEncounter) {
 
+                // 1. Inputs (Llamadas limpias sin variables extra)
                 if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
-                    sf::Vector2f mousePos = window.mapPixelToCoords(mouseMoved->position);
-                    pirates.handleMouseMove(mousePos);
+                    pirates.handleMouseMove(window.mapPixelToCoords(mouseMoved->position));
                 }
-                
                 if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
                     if (mouseButton->button == sf::Mouse::Button::Left) {
-                        sf::Vector2f mousePos = window.mapPixelToCoords(mouseButton->position);
-                        
-                        // Variables to catch the state
-                        bool gameOverTriggered = false;
-                        Game::DeathReason deathReason = Game::DeathReason::NoMoneyNoItems;
-
-                        if (pirates.handleMouseClick(mousePos, spaceShip, gameOverTriggered, deathReason, upgrades)) {
-                            if (gameOverTriggered) {
-                                if (gameOverScene) {
-                                    // TELL THE SCENE WHY THE PLAYER DIED
-                                    gameOverScene->setDeathReason(deathReason);
-                                    gameOverScene->setActive(true);
-                                    currentState = State::GameOver;
-                                }
-                            }
-                            else if (!pirates.isActive()) {
-                                pirateEncounterActive = false;
-                                currentState = State::Playing;
-                            }
-                        }
+                        pirates.handleMouseClick(window.mapPixelToCoords(mouseButton->position), spaceShip, upgrades);
                     }
                 }
-                
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
-                    bool gameOverTriggered = false;
-                    Game::DeathReason deathReason = Game::DeathReason::NoMoneyNoItems;
+                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, upgrades);
+                }
+
+                // 2. MAGIA AQUÍ: Solo evaluamos la muerte CUANDO EL EVENTO PIRATA TERMINA 
+                // (Es decir, cuando el jugador lee el mensaje de resultado y presiona ENTER)
+                if (!pirates.isActive()) {
+                    pirateEncounterActive = false;
                     
-                    pirates.handleEncounterLogic(keyPressed->code, spaceShip, gameOverTriggered, deathReason, upgrades);
-                    
-                    if (gameOverTriggered) {
+                    if (pirates.isGameOverPending()) {
+                        // A. Muerte directa a manos de los piratas (Nave destruida, etc.)
                         if (gameOverScene) {
-                            // TELL THE SCENE WHY THE PLAYER DIED
-                            gameOverScene->setDeathReason(deathReason);
+                            gameOverScene->setDeathReason(pirates.getPendingReason());
                             gameOverScene->setActive(true);
                             currentState = State::GameOver;
                         }
-                    }
-                    else {
-                        // Check normal poverty condition
-                        bool shouldGameOver = Game::GameOverScene::checkCondition(spaceShip, world->getCatalog());
-                        if (shouldGameOver) {
-                            if (gameOverScene) {
-                                gameOverScene->setDeathReason(Game::DeathReason::NoMoneyNoItems);
-                                gameOverScene->setActive(true);
-                                currentState = State::GameOver;
-                            }
+                    } else if (Game::GameOverScene::checkCondition(spaceShip, world->getCatalog())) {
+                        // B. Muerte por bancarrota general (El pirata te robó, pero te dejó vivo sin dinero)
+                        if (gameOverScene) {
+                            gameOverScene->setDeathReason(Game::DeathReason::NoMoneyNoItems);
+                            gameOverScene->setActive(true);
+                            currentState = State::GameOver;
                         }
-                        else if (!pirates.isActive()) {
-                            pirateEncounterActive = false; 
-                            currentState = State::Playing;
-                        }
+                    } else {
+                        // C. El jugador sobrevivió y aún tiene recursos
+                        currentState = State::Playing;
                     }
                 }
-            }      
+            }     
             else if (currentState == State::GameOver) {
                 if (gameOverScene && gameOverScene->handleInput(*event)) {
                     std::cout << "[ENGINE] Returning to main menu from Game Over" << std::endl;
