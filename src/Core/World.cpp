@@ -3,7 +3,7 @@
 bool World::update(Player& player) {
     bool hasChanged = stateManager.update(deltaTime, solarSystem, player);
     
-    // RESTOCK TIMER: Restock markets every 60 seconds, influenced by the player's ship level (higher level = more frequent restocks)
+    // RESTOCK TIMER: Restock markets every 300 seconds (5 minutes), influenced by the player's ship level (higher level = more frequent restocks)
     static float restockTimer = 0.0f;
     restockTimer += deltaTime;
     
