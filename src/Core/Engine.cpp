@@ -68,7 +68,7 @@ namespace Game {
             radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
         }
 
-        world = std::make_unique<World>(0.0f, std::move(radar), std::move(basePlanets));
+        world = nullptr;
 
         radarUI = std::make_unique<RadarUI>(mainFont);
         shipMenu = std::make_unique<ShipMenuUI>(mainFont, spaceShip.getShipTexture());
@@ -76,7 +76,7 @@ namespace Game {
         upgrades.initTrees(spaceShip);
         upgradeTree = std::make_unique<UpgradeTreeUI>(mainFont);
         debugMenu = std::make_unique<DebugMenuUI>(mainFont);
-        debugMenu->initCatalog(world->getCatalog());
+        
 
         debugMenu->setOnTriggerVictory([this]() {
 
@@ -159,7 +159,9 @@ namespace Game {
     void Engine::run() {
         while (window.isOpen()) {
             dt = clock.restart().asSeconds();
-            world->setDeltaTime(dt);
+            if (world){
+                world->setDeltaTime(dt);
+            }
             
             update();
             processEvents();
@@ -339,18 +341,39 @@ namespace Game {
                         executeAction(opt);
                         
                         if (opt == "NEW GAME") {
+                            
+                            std::vector<Planet> basePlanets = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
+                            auto radar = std::make_unique<Heap>(Planet(basePlanets[0]));
+                            for (size_t i = 1; i < basePlanets.size(); ++i) {
+                                radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
+                            }
+                            world = std::make_unique<World>(0.0f, std::move(radar), std::move(basePlanets));
+                            debugMenu->initCatalog(world->getCatalog());
+                            
                             SaveSystem::setGameSeed("");
                             spaceShip.resetToDefaults();
                             upgrades.resetTrees();
                             for (auto& planet : world->getPlanets()) {
                                 planet.refreshMarket(world->getCatalog());
                             }
-                            SaveSystem::saveGame(spaceShip, upgrades);
+                            SaveSystem::saveGame(spaceShip, upgrades, world->getPlanets());
                         }
                         else if (opt == "CONTINUE") {
                             SaveData data;
                             if (SaveSystem::loadGame(data)) {
-                                SaveSystem::setGameSeed(data.seedText); 
+                                SaveSystem::setGameSeed(data.seedText);
+                                
+                                // 🆕 Cargar los planetas guardados (por nombre)
+                                std::vector<Planet> basePlanets = PlanetManager::loadPlanetsByName("assets/data/planets.txt", data.planetNames);
+                                
+                                auto radar = std::make_unique<Heap>(Planet(basePlanets[0]));
+                                for (size_t i = 1; i < basePlanets.size(); ++i) {
+                                    radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
+                                }
+                                world = std::make_unique<World>(0.0f, std::move(radar), std::move(basePlanets));
+                                
+                                debugMenu->initCatalog(world->getCatalog());
+                                
                                 spaceShip.setMoney(data.money);
                                 spaceShip.setCurrentOrbit(data.currentOrbit);
                                 spaceShip.clearInv();
@@ -387,25 +410,45 @@ namespace Game {
                         
                         executeAction(opt);
                         if (opt == "NEW GAME") {
+                            std::vector<Planet> basePlanets = PlanetManager::loadUniqueOrbitPlanets("assets/data/planets.txt");
+                            auto radar = std::make_unique<Heap>(Planet(basePlanets[0]));
+                            for (size_t i = 1; i < basePlanets.size(); ++i) {
+                                radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
+                            }
+                            world = std::make_unique<World>(0.0f, std::move(radar), std::move(basePlanets));
+                            debugMenu->initCatalog(world->getCatalog());
                             SaveSystem::setGameSeed("");
                             spaceShip.resetToDefaults();
                             upgrades.resetTrees();
                             for (auto& planet : world->getPlanets()) {
                                 planet.refreshMarket(world->getCatalog());
                             }
-                            SaveSystem::saveGame(spaceShip, upgrades);
+                            SaveSystem::saveGame(spaceShip, upgrades, world->getPlanets());
                         }
                         else if (opt == "CONTINUE") {
                             SaveData data;
                             if (SaveSystem::loadGame(data)) {
-                                SaveSystem::setGameSeed(data.seedText); 
+                                SaveSystem::setGameSeed(data.seedText);
+                                
+                                // 🆕 Cargar los planetas guardados (por nombre)
+                                std::vector<Planet> basePlanets = PlanetManager::loadPlanetsByName("assets/data/planets.txt", data.planetNames);
+                                
+                                auto radar = std::make_unique<Heap>(Planet(basePlanets[0]));
+                                for (size_t i = 1; i < basePlanets.size(); ++i) {
+                                    radar->insert(Planet(basePlanets[i]), radar->getHeapArray(), cmp);
+                                }
+                                world = std::make_unique<World>(0.0f, std::move(radar), std::move(basePlanets));
+                                
+                                debugMenu->initCatalog(world->getCatalog());
+
                                 spaceShip.setMoney(data.money);
                                 spaceShip.setCurrentOrbit(data.currentOrbit);
-                                spaceShip.getInventory().clearAll();
+                                spaceShip.clearInv();
                                 for (const auto& pair : data.inventory) {
                                     const auto& itemData = world->getCatalog().at(pair.first);
                                     spaceShip.getInventory().addItem(pair.first, pair.second, itemData->getMaxStackSize(), itemData->getBasePrice());
                                 }
+
                                 upgrades.resetTrees(); 
                                 upgrades.loadPurchasedUpgrades(data.purchasedUpgrades); 
                                 for (auto& planet : world->getPlanets()) {
@@ -593,7 +636,7 @@ namespace Game {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
                     if (keyPressed->code == sf::Keyboard::Key::Escape) currentState = State::Playing;
                 }
-                shipMenu->handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world->getCatalog(), currentState, spaceShip, upgrades);
+                shipMenu->handleInput(*event, mousePos, spaceShip.getInventory().getUsedSlots(), spaceShip.getInventory(), world->getCatalog(), currentState, spaceShip, upgrades, world->getPlanets());
             }
             else if (currentState == State::UpgradeTree) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
@@ -669,11 +712,11 @@ namespace Game {
                         std::string opt = pauseMenu->getSelectedOption();
                         if (opt == "CONTINUE") currentState = State::Playing;
                         else if (opt == "SAVE") {
-                            SaveSystem::saveGame(spaceShip, upgrades);
+                            SaveSystem::saveGame(spaceShip, upgrades, world->getPlanets());
                             popup->show("Game saved successfully.", 1.5f);
                         }
                         else if (opt == "EXIT TO MENU") {
-                            SaveSystem::saveGame(spaceShip, upgrades);
+                            SaveSystem::saveGame(spaceShip, upgrades, world->getPlanets());
                             currentState = State::Menu;
                         }
                         else if (opt == "OPTIONS") {
@@ -697,11 +740,11 @@ namespace Game {
                         std::string opt = pauseMenu->getSelectedOption();
                         if (opt == "CONTINUE") currentState = State::Playing;
                         else if (opt == "SAVE") {
-                            SaveSystem::saveGame(spaceShip, upgrades);
+                            SaveSystem::saveGame(spaceShip, upgrades, world->getPlanets());
                             popup->show("Game saved successfully.", 1.5f);;
                         }
                         else if (opt == "EXIT TO MENU") {
-                            SaveSystem::saveGame(spaceShip, upgrades);
+                            SaveSystem::saveGame(spaceShip, upgrades, world->getPlanets());
                             currentState = State::Menu;
                         }
                         else if (opt == "OPTIONS") {

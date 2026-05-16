@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include "Entities/Player.hpp"
 #include "Systems/UpgradeManager.hpp"
+#include "Entities/Planet.hpp" 
 
 // Structure that transfers data loaded from the file to the game
 struct SaveData {
@@ -14,6 +15,7 @@ struct SaveData {
     short currentOrbit;
     std::vector<std::pair<std::string, int>> inventory;
     std::vector<std::string> purchasedUpgrades;
+    std::vector<std::string> planetNames;
 };
 
 class SaveSystem {
@@ -27,7 +29,8 @@ public:
 
     // Handling the Save File
     static bool saveExists();
-    static bool saveGame(Player& player, const UpgradeManager& upgrades);
+    static bool saveGame(Player& player, const UpgradeManager& upgrades, const std::vector<Planet>& planets);
+    static bool saveGame(Player& player, const UpgradeManager& upgrades); 
     static bool loadGame(SaveData& outData);
 
     static void handleImput();

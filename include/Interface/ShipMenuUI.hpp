@@ -4,6 +4,7 @@
 #include "Systems/UpgradeManager.hpp"
 #include "Entities/Item.hpp"
 #include "Entities/Player.hpp"
+#include "Entities/Planet.hpp"
 #include "Core/State.hpp"
 #include <vector>
 #include <string>
@@ -53,7 +54,7 @@ public:
     void draw(sf::RenderWindow& window, const Player& player, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog);
     
     // Handles clicks (for sorting headers or upgrade button)
-    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player, UpgradeManager& upgrades);
+    void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player, UpgradeManager& upgrades, const std::vector<Planet>& planets);
     
     // For button hover
     void update(const sf::Vector2f& mousePos);

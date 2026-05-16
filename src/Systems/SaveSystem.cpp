@@ -1,4 +1,5 @@
 #include "Systems/SaveSystem.hpp"
+#include "Entities/Planet.hpp"
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -29,7 +30,7 @@ bool SaveSystem::saveExists() {
     return file.good();
 }
 
-bool SaveSystem::saveGame(Player& player, const UpgradeManager& upgrades) {
+bool SaveSystem::saveGame(Player& player, const UpgradeManager& upgrades, const std::vector<Planet>& planets) {
     std::ofstream file("save.dat");
     if (!file.is_open()) {
         std::cerr << "[SAVE ERROR] Unable to open save.dat for writing.\n";
@@ -63,8 +64,20 @@ bool SaveSystem::saveGame(Player& player, const UpgradeManager& upgrades) {
     }
     file << "\n";
 
+    file << "PLANETS:";
+    for (size_t i = 0; i < planets.size(); ++i) {
+        if (i > 0) file << ",";
+        file << planets[i].getName();
+    }
+    file << "\n";
+
     std::cout << "[SAVE] Save file saved successfully.\n";
     return true;
+}
+
+bool SaveSystem::saveGame(Player& player, const UpgradeManager& upgrades) {
+    std::vector<Planet> empty;
+    return saveGame(player, upgrades, empty);
 }
 
 bool SaveSystem::loadGame(SaveData& outData) {
@@ -119,6 +132,15 @@ bool SaveSystem::loadGame(SaveData& outData) {
                     id.pop_back(); // Borra el '\r' invisible
                 }
                 if (!id.empty()) outData.purchasedUpgrades.push_back(id);
+            }
+        }
+        else if (key == "PLANETS") {
+            std::string planetsStr;
+            std::getline(ss, planetsStr);
+            std::stringstream planetStream(planetsStr);
+            std::string name;
+            while (std::getline(planetStream, name, ',')) {
+                if (!name.empty()) outData.planetNames.push_back(name);
             }
         }
     }

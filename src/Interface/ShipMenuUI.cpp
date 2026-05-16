@@ -1,6 +1,7 @@
 #include "Interface/ShipMenuUI.hpp"
 #include "Entities/Player.hpp"
 #include "Systems/SaveSystem.hpp"
+#include "Entities/Planet.hpp"
 
 ShipMenuUI::ShipMenuUI(const sf::Font& f, const sf::Texture& shipTex) 
     : font(f),                          // Initialize font reference
@@ -248,7 +249,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std:
     window.draw(minAndMaxOrbitReach);
 }
 
-void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player, UpgradeManager& upgrades) {    // Detect mouse scroll
+void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePos, int totalItems, Inventory& inventory, const std::unordered_map<std::string, std::unique_ptr<Item>>& catalog, State& currentState, Player& player, UpgradeManager& upgrades, const std::vector<Planet>& planets) {    // Detect mouse scroll
     if (const auto* mouseWheel = event.getIf<sf::Event::MouseWheelScrolled>()) {
         if (mouseWheel->wheel == sf::Mouse::Wheel::Vertical) {
             if (mouseWheel->delta > 0) {
@@ -310,7 +311,7 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
             
             // Clic on SAVE & EXIT
             if (saveExitBtn.getGlobalBounds().contains(mousePos)) {
-                SaveSystem::saveGame(player, upgrades);
+                SaveSystem::saveGame(player, upgrades, planets);
                 std::cout << "[SYSTEM] Game successfully saved from the in-game console.\n";
                 currentState = State::Menu;
                 return;

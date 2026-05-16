@@ -9,4 +9,5 @@
 class PlanetManager {
 public:
     static std::vector<Planet> loadUniqueOrbitPlanets(const std::string& filename);
+    static std::vector<Planet> loadPlanetsByName(const std::string& filename, const std::vector<std::string>& names);
 };
