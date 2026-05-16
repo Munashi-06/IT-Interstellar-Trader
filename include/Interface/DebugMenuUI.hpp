@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <memory>
+#include <functional>
 #include "Entities/Player.hpp"
 #include "Systems/Inventory.hpp"
 #include "Entities/Item.hpp"
@@ -44,6 +45,8 @@ private:
     std::vector<std::string> itemIDs;
     int currentItemIndex = 0;
 
+    std::function<void()> onTriggerVictory;
+
     // Función auxiliar para centrar texto
     void centerText(sf::Text& text, const sf::RectangleShape& rect);
 
@@ -56,4 +59,8 @@ public:
     void handleInput(const sf::Event& event, const sf::Vector2f& mousePos, Player& player, Inventory& playerInv);
     void update(const sf::Vector2f& mousePos);
     void draw(sf::RenderWindow& window);
+
+    void setOnTriggerVictory(std::function<void()> callback) {
+        onTriggerVictory = callback;
+    }
 };

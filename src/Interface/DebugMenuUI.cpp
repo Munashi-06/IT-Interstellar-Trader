@@ -132,6 +132,10 @@ void DebugMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mouseP
                 // Victory
                 else if (winBtnBg.getGlobalBounds().contains(mousePos)) {
                     std::cout << "[DEBUG] TRIGGERING WARP DRIVE VICTORY!\n";
+                    
+                    if (onTriggerVictory) {
+                        onTriggerVictory(); 
+                    }
                 }
                 // Navigate Items
                 else if (prevItemBtn.getGlobalBounds().contains(mousePos)) {

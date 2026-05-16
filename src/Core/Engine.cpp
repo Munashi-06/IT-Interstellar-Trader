@@ -77,6 +77,14 @@ namespace Game {
         upgradeTree = std::make_unique<UpgradeTreeUI>(mainFont);
         debugMenu = std::make_unique<DebugMenuUI>(mainFont);
         debugMenu->initCatalog(world->getCatalog());
+
+        debugMenu->setOnTriggerVictory([this]() {
+
+            this->intro.reset();
+    
+            this->currentState = State::Animation1; 
+        });
+
         pauseMenu = std::make_unique<PauseMenuUI>(mainFont);
         popup = std::make_unique<Popup>(mainFont);
 

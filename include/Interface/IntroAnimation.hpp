@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <memory>
+#include <vector>
 
 namespace Interface {
     enum class AnimState {
@@ -13,6 +14,7 @@ namespace Interface {
         Dialogue2,
         Transition,
         Credits,
+        ThankYou,
         Finished
     };
 
@@ -30,11 +32,21 @@ namespace Interface {
         bool isMusicPlaying() const;
 
     private:
+        // Función para centrar textos
+        void centerText(sf::Text& text, float y);
+        void centerText(sf::Text& text, const sf::RectangleShape& rect);
+        
+        // NUEVO: Crear líneas de créditos individuales
+        void createCreditsLines(const sf::Font& font);
+        
         AnimState state;
         float fadeAlpha;
         float scrollSpeed;
         float screenHeight;
         float screenWidth;
+        float thankYouTimer;
+        float musicDuration;
+        float creditsScrollY;  // Posición Y para el scroll de créditos
         
         // Textures and sprites
         sf::Texture bgTex;
@@ -49,9 +61,16 @@ namespace Interface {
         
         // UI Elements
         std::unique_ptr<sf::RectangleShape> dialogueBox;
-        std::unique_ptr<sf::Text> mainText;        // SOLO UNA VEZ
+        std::unique_ptr<sf::Text> mainText;
         std::unique_ptr<sf::Text> instructionText;
-        std::unique_ptr<sf::Text> creditsText;     // SOLO UNA VEZ
+        
+        // NUEVO: Vector de líneas de créditos (cada línea es un texto independiente)
+        std::vector<std::unique_ptr<sf::Text>> creditLines;
+        
+        // Textos de agradecimiento
+        std::unique_ptr<sf::Text> thankYouText;
+        std::unique_ptr<sf::Text> escuadronText;
+        std::unique_ptr<sf::Text> exitInstructionText;
     };
 }
 
