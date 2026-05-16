@@ -3,21 +3,29 @@
 
 namespace Interface {
 
+    //=============================================================================
+    // Constructor
+    //=============================================================================
     GameIntroAnimation::GameIntroAnimation(float width, float height)
         : state(GameIntroState::Intro1),
           fadeAlpha(255.f),
           fadeSpeed(200.f),
-          isFading(true),  // Comienza con fade in
+          isFading(true),
           pendingState(GameIntroState::Intro1),
           screenWidth(width),
-          screenHeight(height)
+          screenHeight(height),
+          skipRequested(false),
+          isHoveringSkip(false)
     {
-        fadeOverlay.setSize({1280.f, 720.f});
-        fadeOverlay.setFillColor(sf::Color(0, 0, 0, 255));
+        fadeOverlay = std::make_unique<sf::RectangleShape>(sf::Vector2f(1280.f, 720.f));
+        fadeOverlay->setFillColor(sf::Color(0, 0, 0, 255));
     }
 
+    //=============================================================================
+    // Load all assets
+    //=============================================================================
     bool GameIntroAnimation::loadAssets(const sf::Font& font) {
-        // --- 1. CREAR LOS OBJETOS QUE NO DEPENDEN DE TEXTURAS ---
+        // Create UI elements
         dialogueBox = std::make_unique<sf::RectangleShape>(sf::Vector2f(1000.f, 150.f));
         dialogueBox->setFillColor(sf::Color(0, 0, 0, 210));
         dialogueBox->setOutlineThickness(2);
@@ -28,19 +36,31 @@ namespace Interface {
         mainText = std::make_unique<sf::Text>(font, "", 26);
         mainText->setFillColor(sf::Color::White);
 
+        // Create SKIP button
+        skipButton = std::make_unique<sf::RectangleShape>(sf::Vector2f(100.f, 40.f));
+        skipButton->setFillColor(sf::Color(50, 50, 50, 200));
+        skipButton->setOutlineThickness(2);
+        skipButton->setOutlineColor(sf::Color::White);
+        skipButton->setPosition({1150.f, 20.f});
+        
+        skipButtonText = std::make_unique<sf::Text>(font, "SKIP", 20);
+        skipButtonText->setFillColor(sf::Color::White);
+        sf::FloatRect skipBounds = skipButtonText->getLocalBounds();
+        skipButtonText->setOrigin({skipBounds.size.x / 2.f, skipBounds.size.y / 2.f});
+        skipButtonText->setPosition({1200.f, 40.f});
+
         backgroundMusic = std::make_unique<sf::Music>();
 
-        // --- 2. CARGAR TEXTURA PRINCIPAL PRIMERO ---
+        // Load main texture
         if (!bgTex1.loadFromFile("assets/anim04.png")) {
             std::cerr << "[GameIntro] Error: assets/anim04.png not found" << std::endl;
-            return false; // Si falla, abortamos (El check en el draw evitará el crasheo)
+            return false;
         }
         
-        // --- 3. CREAR EL SPRITE CON LA TEXTURA (Regla de SFML 3) ---
         backgroundSprite = std::make_unique<sf::Sprite>(bgTex1);
         backgroundSprite->setScale({1280.f / bgTex1.getSize().x, 720.f / bgTex1.getSize().y});
 
-        // --- 4. CARGAR EL RESTO DE TEXTURAS ---
+        // Load remaining textures
         if (!bgTex2.loadFromFile("assets/anim09.png")) {
             std::cerr << "[GameIntro] Error: assets/anim09.png not found" << std::endl;
             bgTex2 = bgTex1;
@@ -56,7 +76,7 @@ namespace Interface {
             bgTex4 = bgTex1;
         }
         
-        // --- 5. LOAD MUSIC ---
+        // Load music
         if (!backgroundMusic->openFromFile("assets/audio/undertale_dogsong.ogg")) {
             std::cerr << "[GameIntro] Error: assets/audio/undertale_dogsong.ogg not found" << std::endl;
             return false; 
@@ -68,13 +88,18 @@ namespace Interface {
         return true;
     }
 
+    //=============================================================================
+    // Start the intro
+    //=============================================================================
     void GameIntroAnimation::start() {
         reset();
+        skipRequested = false;
+        isHoveringSkip = false;
         state = GameIntroState::Intro1;
         backgroundSprite->setTexture(bgTex1, true);
         isFading = true;
         fadeAlpha = 255.f;
-        fadeOverlay.setFillColor(sf::Color(0, 0, 0, 255));
+        fadeOverlay->setFillColor(sf::Color(0, 0, 0, 255));
         
         if (backgroundMusic) {
             backgroundMusic->stop();
@@ -82,13 +107,63 @@ namespace Interface {
         }
     }
 
+    //=============================================================================
+    // Skip the intro
+    //=============================================================================
+    void GameIntroAnimation::skip() {
+        if (!skipRequested && !isFading) {
+            skipRequested = true;
+            std::cout << "[GameIntro] Skip requested!" << std::endl;
+        }
+    }
+
+    //=============================================================================
+    // Handle mouse movement for skip button
+    //=============================================================================
+    void GameIntroAnimation::handleMouseMove(const sf::Vector2f& mousePos) {
+        if (!skipButton) return;
+        
+        isHoveringSkip = skipButton->getGlobalBounds().contains(mousePos);
+        
+        if (isHoveringSkip) {
+            skipButton->setFillColor(sf::Color(150, 150, 150, 230));
+            skipButton->setOutlineColor(sf::Color::Yellow);
+        } else {
+            skipButton->setFillColor(sf::Color(50, 50, 50, 200));
+            skipButton->setOutlineColor(sf::Color::White);
+        }
+    }
+
+    //=============================================================================
+    // Handle mouse click on skip button
+    //=============================================================================
+    bool GameIntroAnimation::handleMouseClick(const sf::Vector2f& mousePos) {
+        if (!skipButton) return false;
+        
+        if (skipButton->getGlobalBounds().contains(mousePos)) {
+            skip();
+            return true;
+        }
+        return false;
+    }
+
+    //=============================================================================
+    // Start fade transition
+    //=============================================================================
     void GameIntroAnimation::startFadeToNext() {
         isFading = true;
         fadeAlpha = 0.f;
     }
 
+    //=============================================================================
+    // Handle keyboard input
+    //=============================================================================
     void GameIntroAnimation::handleInput(sf::Keyboard::Key key) {
-        if (key == sf::Keyboard::Key::Enter && !isFading) {
+        if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Space) {
+            skip();
+        }
+        
+        if (key == sf::Keyboard::Key::Enter && !isFading && !skipRequested) {
             switch (state) {
                 case GameIntroState::Intro1:
                     pendingState = GameIntroState::Intro2;
@@ -112,29 +187,35 @@ namespace Interface {
         }
     }
 
+    //=============================================================================
+    // Update animation
+    //=============================================================================
     void GameIntroAnimation::update(float dt) {
-        // Actualizar textos según el estado actual
+        if (skipRequested && !isFading) {
+            pendingState = GameIntroState::FadingOut;
+            startFadeToNext();
+            skipRequested = false;
+        }
+        
         switch (state) {
             case GameIntroState::Intro1:
-                mainText->setString("Your ship's engines have failed,\nnow you find yourself stranded in a strange galaxy...\n(Press Enter)");
+                mainText->setString("Your ship's engines have failed.\nNow you find yourself stranded in a strange galaxy...\n(Press ENTER)");
                 break;
             case GameIntroState::Intro2:
-                mainText->setString("You must repair and upgrade your ship,\nto be able to return home with your dog.\n(Press Enter)");
+                mainText->setString("You must repair and upgrade your ship\nto be able to return home with your dog.\n(Press ENTER)");
                 break;
             case GameIntroState::Intro3:
-                mainText->setString("There is only one way, you will need to find money.\n(Press Enter)");
+                mainText->setString("There is only one way: you will need to earn money.\n(Press ENTER)");
                 break;
             case GameIntroState::Intro4:
-                mainText->setString("You will have to negotiate with different planets,\nuntil you buy what you need for your ship\nGood luck on your mission Juan Jose Josefino.\n(Press Enter to begin your journey)");
+                mainText->setString("You will have to negotiate with different planets\nuntil you buy everything you need for your ship.\n\nGood luck on your mission, Juan Jose Josefino.\n(Press ENTER to begin your journey)");
                 break;
             default:
                 break;
         }
         
-        // Manejar el fade
         if (isFading) {
             if (pendingState == GameIntroState::FadingOut) {
-                // Desvanecimiento a negro (aumenta alpha)
                 fadeAlpha += fadeSpeed * dt;
                 if (fadeAlpha >= 255.f) {
                     fadeAlpha = 255.f;
@@ -142,17 +223,14 @@ namespace Interface {
                     state = GameIntroState::Finished;
                     if (backgroundMusic) backgroundMusic->stop();
                 }
-                fadeOverlay.setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
+                fadeOverlay->setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
             } else {
-                // Transición entre fondos
                 fadeAlpha += fadeSpeed * dt;
                 
                 if (fadeAlpha >= 255.f) {
-                    // Completar transición
                     fadeAlpha = 255.f;
                     isFading = false;
                     
-                    // Cambiar al siguiente fondo
                     switch (pendingState) {
                         case GameIntroState::Intro2:
                             backgroundSprite->setTexture(bgTex2, true);
@@ -167,17 +245,13 @@ namespace Interface {
                             break;
                     }
                     state = pendingState;
-                    
-                    // Hacer fade out del overlay
                     isFading = true;
-                    pendingState = GameIntroState::Finished;  // Marcador para segundo fade
+                    pendingState = GameIntroState::Finished;
                 } else {
-                    // Durante el fade: overlay negro con alpha creciente
-                    fadeOverlay.setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
+                    fadeOverlay->setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
                 }
             }
             
-            // Segundo fade (después de cambiar la imagen)
             if (pendingState == GameIntroState::Finished && isFading && fadeAlpha > 0) {
                 fadeAlpha -= fadeSpeed * dt * 2;
                 if (fadeAlpha <= 0) {
@@ -185,11 +259,10 @@ namespace Interface {
                     isFading = false;
                     pendingState = GameIntroState::Intro1;
                 }
-                fadeOverlay.setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
+                fadeOverlay->setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
             }
         }
         
-        // Centrar texto
         if (state == GameIntroState::Intro1 || 
             state == GameIntroState::Intro2 || 
             state == GameIntroState::Intro3 || 
@@ -200,14 +273,14 @@ namespace Interface {
         }
     }
 
+    //=============================================================================
+    // Draw all elements
+    //=============================================================================
     void GameIntroAnimation::draw(sf::RenderWindow& window) {
-        // SAFETY: If something is null, we abort the drawing instead of crashing
         if (!backgroundSprite || !dialogueBox || !mainText) return;
 
-        // Draw background
         window.draw(*backgroundSprite);
         
-        // Draw dialog
         if (state == GameIntroState::Intro1 || 
             state == GameIntroState::Intro2 || 
             state == GameIntroState::Intro3 || 
@@ -216,27 +289,39 @@ namespace Interface {
             window.draw(*mainText);
         }
         
-        // Draw the fade overlay if it is active
-        if (isFading) {
-            window.draw(fadeOverlay);
+        if (skipButton && skipButtonText) {
+            window.draw(*skipButton);
+            window.draw(*skipButtonText);
+        }
+        
+        if (isFading && fadeOverlay) {
+            window.draw(*fadeOverlay);
         }
     }
 
+    //=============================================================================
+    // Reset animation
+    //=============================================================================
     void GameIntroAnimation::reset() {
         state = GameIntroState::Intro1;
         fadeAlpha = 255.f;
         isFading = true;
         pendingState = GameIntroState::Intro1;
+        skipRequested = false;
+        isHoveringSkip = false;
         
         if (backgroundMusic) {
             backgroundMusic->stop();
         }
         
         backgroundSprite->setTexture(bgTex1, true);
-        fadeOverlay.setFillColor(sf::Color(0, 0, 0, 255));
+        fadeOverlay->setFillColor(sf::Color(0, 0, 0, 255));
         mainText->setString("");
     }
 
+    //=============================================================================
+    // Check if music is playing
+    //=============================================================================
     bool GameIntroAnimation::isMusicPlaying() const {
         return backgroundMusic && backgroundMusic->getStatus() == sf::SoundSource::Status::Playing;
     }

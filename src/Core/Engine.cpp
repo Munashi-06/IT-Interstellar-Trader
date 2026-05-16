@@ -423,7 +423,24 @@ namespace Game {
                 }
             }
             else if (currentState == State::GameIntro) {
-                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) gameIntro.handleInput(keyPressed->code);
+                // Manejar movimiento del mouse para el botón SKIP
+                if (auto* mouseMoved = event->getIf<sf::Event::MouseMoved>()) {
+                    sf::Vector2f mousePos = window.mapPixelToCoords(mouseMoved->position);
+                    gameIntro.handleMouseMove(mousePos);
+                }
+                
+                // Manejar clic del mouse en el botón SKIP
+                if (const auto* mouseButton = event->getIf<sf::Event::MouseButtonPressed>()) {
+                    if (mouseButton->button == sf::Mouse::Button::Left) {
+                        sf::Vector2f mousePos = window.mapPixelToCoords(mouseButton->position);
+                        gameIntro.handleMouseClick(mousePos);
+                    }
+                }
+                
+                // Manejar teclado (Enter, ESC, S, SPACE)
+                if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) {
+                    gameIntro.handleInput(keyPressed->code);
+                }
             }
             else if (currentState == State::Animation1) {
                 if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) intro.handleInput(keyPressed->code);

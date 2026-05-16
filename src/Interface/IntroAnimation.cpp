@@ -2,6 +2,10 @@
 #include <iostream>
 
 namespace Interface {
+    
+    //=============================================================================
+    // Constructor
+    //=============================================================================
     IntroAnimation::IntroAnimation(float width, float height) 
         : state(AnimState::Watching), 
           fadeAlpha(0.f), 
@@ -10,6 +14,9 @@ namespace Interface {
           screenWidth(width)
     {}
 
+    //=============================================================================
+    // Load all assets
+    //=============================================================================
     bool IntroAnimation::loadAssets(const sf::Font& font) {
         // 1. Load Textures
         if (!bgTex.loadFromFile("assets/anim02.png") ||
@@ -17,7 +24,7 @@ namespace Interface {
             return false;
         }
         
-        // 2. Music (SFML 3 uses setLooping)
+        // 2. Music
         backgroundMusic = std::make_unique<sf::Music>();
         if (!backgroundMusic->openFromFile("assets/audio/end.ogg")) {
             std::cerr << "Error: assets/audio/end.ogg not found" << std::endl;
@@ -48,20 +55,38 @@ namespace Interface {
         mainText = std::make_unique<sf::Text>(font, "", 26);
         mainText->setFillColor(sf::Color::White);
 
-        // 5. Configure Credits
-        std::string creditsStr = "IT: INTERSTELLAR TRADER\n\n\n"
-                                 "STORY AND CODE\nJuan Jose Josefino\n\n\n"
-                                 "VISUAL ART\nAngel\n\n\n"
-                                 "SYSTEMS\nProject IT 2026\n\n\n\n"
+        // 5. Configure Instruction Text
+        instructionText = std::make_unique<sf::Text>(font, "Press ENTER to continue...", 20);
+        instructionText->setFillColor(sf::Color::Yellow);
+        instructionText->setOutlineColor(sf::Color::Black);
+        instructionText->setOutlineThickness(1);
+        instructionText->setStyle(sf::Text::Italic);
+
+        sf::FloatRect instrBounds = instructionText->getLocalBounds();
+        instructionText->setOrigin({instrBounds.size.x / 2.f, instrBounds.size.y / 2.f});
+        instructionText->setPosition({640.f, 680.f});
+
+        // 6. Configure Credits
+        std::string creditsStr = "IT: INTERSTELLAR TRADER\n\n"
+                                 "STORY AND CODE\nJuan Jose Josefino\n\n"
+                                 "VISUAL ART\nAngel\n\n"
+                                 "SYSTEMS\nProject IT 2026\n\n\n"
                                  "THANKS FOR PLAYING";
-        creditsText = std::make_unique<sf::Text>(font, creditsStr, 32);
+        creditsText = std::make_unique<sf::Text>(font, creditsStr, 28);
         creditsText->setFillColor(sf::Color::Yellow);
-        creditsText->setOrigin({creditsText->getLocalBounds().size.x / 2.f, 0.f});
+        creditsText->setOutlineColor(sf::Color::Black);
+        creditsText->setOutlineThickness(1);
+        
+        sf::FloatRect creditsBounds = creditsText->getLocalBounds();
+        creditsText->setOrigin({creditsBounds.size.x / 2.f, 0.f});
         creditsText->setPosition({640.f, 750.f});
 
         return true;
     }
 
+    //=============================================================================
+    // Handle keyboard input
+    //=============================================================================
     void IntroAnimation::handleInput(sf::Keyboard::Key key) {
         if (key == sf::Keyboard::Key::Enter) {
             if (state == AnimState::Watching) {
@@ -78,16 +103,18 @@ namespace Interface {
         }
     }
 
+    //=============================================================================
+    // Update animation logic
+    //=============================================================================
     void IntroAnimation::update(float dt) {
-        // Text logic
         if (state == AnimState::Dialogue1) {
-            mainText->setString("Thus Juan Jose Josefino was able to return to his home planet...");
+            mainText->setString("Thus, Juan Jose Josefino was able to return to his home planet...");
         }
         else if (state == AnimState::Poema) {
-            mainText->setString("Among stars his solitude danced,\nflying in the void with great will.\nCosmic dust traced his path.");
+            mainText->setString("Among the stars, his solitude danced,\nFlying through the void with great will.\nCosmic dust traced his path.");
         }
         else if (state == AnimState::Dialogue2) {
-            mainText->setString("The journey has ended, but stellar trade never sleeps.\n(Press Enter to finish)");
+            mainText->setString("The journey has ended, but stellar trade never sleeps.\n(Press ENTER to finish)");
         }
         else if (state == AnimState::Transition) {
             fadeAlpha += 110.f * dt;
@@ -95,26 +122,26 @@ namespace Interface {
                 fadeAlpha = 255.f;
                 state = AnimState::Credits;
             }
-            // Cross-fade: One disappears, another appears
-            personSprite->setColor(sf::Color(255, 255, 255, 255 - (uint8_t)fadeAlpha));
-            anim01Sprite->setColor(sf::Color(255, 255, 255, (uint8_t)fadeAlpha));
+            personSprite->setColor(sf::Color(255, 255, 255, 255 - static_cast<uint8_t>(fadeAlpha)));
+            anim01Sprite->setColor(sf::Color(255, 255, 255, static_cast<uint8_t>(fadeAlpha)));
         }
         else if (state == AnimState::Credits) {
             creditsText->move({0.f, -scrollSpeed * dt});
             
-            // Completion condition: Text gone AND music finished
             float textBottom = creditsText->getPosition().y + creditsText->getLocalBounds().size.y;
             if (textBottom < 0 && !isMusicPlaying()) {
                 state = AnimState::Finished;
             }
         }
 
-        // Center main text
         sf::FloatRect bounds = mainText->getLocalBounds();
         mainText->setOrigin({bounds.size.x / 2.f, bounds.size.y / 2.f});
         mainText->setPosition({640.f, 600.f});
     }
 
+    //=============================================================================
+    // Draw all elements
+    //=============================================================================
     void IntroAnimation::draw(sf::RenderWindow& window) {
         window.draw(*backgroundSprite);
         
@@ -126,9 +153,17 @@ namespace Interface {
             window.draw(*personSprite);
         }
 
-        if (state == AnimState::Dialogue1 || state == AnimState::Poema || state == AnimState::Dialogue2) {
-            window.draw(*dialogueBox);
-            window.draw(*mainText);
+        if (state == AnimState::Watching || state == AnimState::Dialogue1 || 
+            state == AnimState::Poema || state == AnimState::Dialogue2) {
+            
+            if (state != AnimState::Watching) {
+                window.draw(*dialogueBox);
+                window.draw(*mainText);
+            }
+            
+            if (instructionText) {
+                window.draw(*instructionText);
+            }
         }
 
         if (state == AnimState::Credits) {
@@ -136,10 +171,16 @@ namespace Interface {
         }
     }
 
+    //=============================================================================
+    // Check if music is playing
+    //=============================================================================
     bool IntroAnimation::isMusicPlaying() const {
         return backgroundMusic && backgroundMusic->getStatus() == sf::SoundSource::Status::Playing;
     }
 
+    //=============================================================================
+    // Reset animation to initial state
+    //=============================================================================
     void IntroAnimation::reset() {
         state = AnimState::Watching;
         fadeAlpha = 0.f;
