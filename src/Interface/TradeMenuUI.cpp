@@ -355,7 +355,6 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 qtyT.setPosition({ 450.f, yPos });
                 window.draw(qtyT);
                 
-                float localBasePrice = currentPlanet.getLocalBasePrice(slot->itemID, catalog);
                 float planetPrice = currentPlanet.getItemPrice(slot->itemID, catalog);
                 float finalSellPrice;
 
@@ -363,16 +362,18 @@ void TradeMenuUI::draw(sf::RenderWindow& window, const Inventory& playerInv, con
                 priceT.setFillColor(sf::Color::White);
 
                 if (showingOriginalPrices) {
-                    finalSellPrice = localBasePrice;
+                    // show the original buy price instead of the calculated sell price
+                    finalSellPrice = slot->buyPrice;
                 } else {
                     finalSellPrice = TradeManager::getFinalSellPrice(*itemData, planetPrice, player, slot->buyPrice, slot->originPlanet, currentPlanet.getName());
                     
+                    // Comparar contra el precio de compra (buyPrice)
                     if (slot->originPlanet == currentPlanet.getName()) {
-                        priceT.setFillColor(sf::Color::White);
-                    } else if (finalSellPrice > localBasePrice) {
-                        priceT.setFillColor(sf::Color::Green);
-                    } else if (finalSellPrice < localBasePrice) {
-                        priceT.setFillColor(sf::Color::Red);
+                        priceT.setFillColor(sf::Color::White);  // same planet = no bonus or penalty
+                    } else if (finalSellPrice > slot->buyPrice) {
+                        priceT.setFillColor(sf::Color::Green);  // win more than you paid
+                    } else if (finalSellPrice < slot->buyPrice) {
+                        priceT.setFillColor(sf::Color::Red);    // receive less than you paid
                     }
                 }
                 ss.str("");

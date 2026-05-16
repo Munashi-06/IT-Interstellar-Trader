@@ -150,7 +150,7 @@ void ShipMenuUI::draw(sf::RenderWindow& window, const Player& player, const std:
                 sf::Text qualityText(font, itemData->getRarityString());
                 
                 // Price formatting (truncating to 2 decimals)
-                std::string price = std::to_string(itemData->getPrice());
+                std::string price = std::to_string(slot->buyPrice);
                 price = price.substr(0, price.find(".") + 3); 
                 price = "Bs. " + price; 
                 sf::Text priceText(font, price);
