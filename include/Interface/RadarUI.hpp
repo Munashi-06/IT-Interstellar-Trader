@@ -23,7 +23,7 @@ public:
         background.setOutlineColor(sf::Color::Cyan);
         background.setPosition({50.f, 50.f});
 
-        title = std::make_unique<sf::Text>(font, "RADAR DE PRIORIDAD", 20);
+        title = std::make_unique<sf::Text>(font, "PRIORITY RADAR", 20);
         title->setFillColor(sf::Color::Cyan);
         title->setPosition({60.f, 60.f});
     }

@@ -111,7 +111,7 @@ namespace Game {
         animBtn.setOutlineColor(sf::Color::White);
         animBtn.setPosition({ 1050.f, 130.f });
 
-        animBtnText = sf::Text(mainFont, "REGRESAR A CASA");
+        animBtnText = sf::Text(mainFont, "RETURN HOME");
         animBtnText.setCharacterSize(16);
         animBtnText.setFillColor(sf::Color::White);
         animBtnText.setOrigin({animBtnText.getLocalBounds().size.x / 2.f, animBtnText.getLocalBounds().size.y / 2.f});
@@ -908,15 +908,15 @@ namespace Game {
         }
         else if (currentState == State::PirateEncounter) {
             window.clear(sf::Color::Black);
-            bgStars.draw(window, spaceShip.getPosition());
             window.setView(window.getDefaultView()); 
             pirates.draw(window, mainFont); 
             
             sf::RectangleShape darkOverlay({1280.f, 720.f}); darkOverlay.setFillColor(sf::Color(0, 0, 0, 100));
             window.draw(darkOverlay);
 
-            if (!pirates.isShowingButtons()) {
-                sf::Text warningText(mainFont, "PIRATAS TE ATACAN!"); 
+
+            if (!pirates.isShowingButtons() || pirates.isShowingButtons()) {
+                sf::Text warningText(mainFont, "PIRATES ARE ATTACKING!"); 
                 warningText.setCharacterSize(30);
                 warningText.setFillColor(sf::Color::Red);
                 warningText.setOutlineThickness(2);
@@ -924,12 +924,6 @@ namespace Game {
                 warningText.setPosition({640.f, 150.f});
                 window.draw(warningText);
                 
-                sf::Text continueText(mainFont, "Presiona ENTER para ver opciones");
-                continueText.setCharacterSize(16);
-                continueText.setFillColor(sf::Color::White);
-                continueText.setOrigin({continueText.getLocalBounds().size.x / 2.f, 0.f});
-                continueText.setPosition({640.f, 650.f});
-                window.draw(continueText);
             }
         }
         if (popup && popup->isActive()) {

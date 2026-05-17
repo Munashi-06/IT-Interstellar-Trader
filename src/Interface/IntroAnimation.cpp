@@ -52,8 +52,8 @@ namespace Interface {
             "=============================================================================",
             "",
             "DEVELOPED BY",
-            "SQUADRON ALPHA",
-            "Good Wonder - Good Wave - Wild Wolf",
+            "ESCUADRON ALPHA",
+            "BUENA MARAVILLA BUENA ONDA LOBO SALVAJE",
             "",
             "MAIN CREDITS",
             "",
@@ -209,7 +209,7 @@ namespace Interface {
         centerText(*thankYouText, 280.f);
 
         escuadronText = std::make_unique<sf::Text>(font, 
-            "Hecho por Escuadron Alpha\nBuena Maravilla - Buena Onda - Lobo Salvaje", 26);
+            "Developed by: Escuadron Alpha\nBuena Maravilla Buena Onda Lobo Salvaje", 26);
         escuadronText->setFillColor(sf::Color::White);
         escuadronText->setOutlineColor(sf::Color::Black);
         escuadronText->setOutlineThickness(1);
@@ -280,8 +280,9 @@ namespace Interface {
             }
             
             float lastLineY = creditsScrollY + (creditLines.size() * 35.f);
-            if (lastLineY < 0 && !isMusicPlaying()) {
-                state = AnimState::Finished;
+            if (lastLineY < 0) {
+                state = AnimState::ThankYou;
+                thankYouTimer = 0.f;
             }
         }
 

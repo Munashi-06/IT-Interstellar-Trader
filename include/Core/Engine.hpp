@@ -73,7 +73,7 @@ namespace Game {
         sf::Sprite sunSprite{AssetManager::getTexture("sun")};
 
         sf::Text planetNameText{mainFont};
-        sf::Text animBtnText{mainFont, "REGRESAR A CASA"};
+        sf::Text animBtnText{mainFont, "RETURN HOME"};
         sf::Text adminShipText{mainFont, "SPACE SHIP"};
         sf::Text confirmText{mainFont, ""};
         sf::Text optionsText{mainFont, "[Y] YES - LAND    [N] NO - CANCEL"};

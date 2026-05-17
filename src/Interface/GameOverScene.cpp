@@ -64,7 +64,7 @@ namespace Game {
         
         sf::FloatRect textBounds = gameOverText.getLocalBounds();
         gameOverText.setOrigin(sf::Vector2f(textBounds.size.x / 2.f, textBounds.size.y / 2.f));
-        gameOverText.setPosition(sf::Vector2f(640.f, 180.f));
+        gameOverText.setPosition(sf::Vector2f(640.f, 100.f));
 
         // Status text (will be updated based on death reason)
         subText.setCharacterSize(24);
@@ -72,7 +72,7 @@ namespace Game {
         
         sf::FloatRect subBounds = subText.getLocalBounds();
         subText.setOrigin(sf::Vector2f(subBounds.size.x / 2.f, subBounds.size.y / 2.f));
-        subText.setPosition(sf::Vector2f(640.f, 500.f));
+        subText.setPosition(sf::Vector2f(640.f, 580.f));
 
         // Continue text
         continueText.setString("Press ENTER to return to main menu");
@@ -81,7 +81,7 @@ namespace Game {
         
         sf::FloatRect contBounds = continueText.getLocalBounds();
         continueText.setOrigin(sf::Vector2f(contBounds.size.x / 2.f, contBounds.size.y / 2.f));
-        continueText.setPosition(sf::Vector2f(640.f, 620.f));
+        continueText.setPosition(sf::Vector2f(640.f, 650.f));
         
         std::cout << "[GAMEOVER] Constructor completed" << std::endl;
     }
@@ -145,7 +145,7 @@ namespace Game {
         // Recenter the text after changing it
         sf::FloatRect subBounds = subText.getLocalBounds();
         subText.setOrigin(sf::Vector2f(subBounds.size.x / 2.f, subBounds.size.y / 2.f));
-        subText.setPosition(sf::Vector2f(640.f, 500.f));
+        subText.setPosition(sf::Vector2f(640.f, 580.f));
     }
 
     //=============================================================================
@@ -180,9 +180,9 @@ namespace Game {
         }
         
         // Fade in effect for the overlay
-        if (fadeAlpha < 200.f) {
+        if (fadeAlpha < 180.f) {
             fadeAlpha += fadeSpeed * dt;
-            if (fadeAlpha > 200.f) fadeAlpha = 200.f;
+            if (fadeAlpha > 180.f) fadeAlpha = 180.f;
             overlay.setFillColor(sf::Color(0, 0, 0, static_cast<uint8_t>(fadeAlpha)));
         }
         
@@ -197,9 +197,29 @@ namespace Game {
     void GameOverScene::draw(sf::RenderWindow& window) {
         if (!active) return;
         
+        sf::RectangleShape fullScreenBg({1280.f, 720.f});
+        fullScreenBg.setFillColor(sf::Color(0, 0, 0, 255));
+        window.draw(fullScreenBg);
+        
         if (anim09Sprite) {
-            window.draw(*anim09Sprite);
+
+            sf::Sprite fullScreenSprite = *anim09Sprite;
+            sf::Vector2u texSize = anim09Texture->getSize();
+            fullScreenSprite.setOrigin({static_cast<float>(texSize.x) / 2.f, static_cast<float>(texSize.y) / 2.f});
+            fullScreenSprite.setPosition({640.f, 360.f});
+            
+            float scaleX = 1280.f / static_cast<float>(texSize.x);
+            float scaleY = 720.f / static_cast<float>(texSize.y);
+            float scale = std::max(scaleX, scaleY) * 1.15f;
+            
+
+            static float timer = 0.f;
+            float pulse = 1.0f + 0.03f * std::sin(timer * 3.0f);
+            fullScreenSprite.setScale({scale * pulse, scale * pulse});
+            
+            window.draw(fullScreenSprite);
         }
+        
         window.draw(overlay);
         window.draw(gameOverText);
         window.draw(subText);

@@ -35,25 +35,42 @@ namespace Interface {
 
     void PirateEncounter::draw(sf::RenderWindow& window, sf::Font& font) {
         if (!active || !pirateSprite) return;
-        window.draw(*pirateSprite);
+        
+        sf::RectangleShape fullScreenBg({1280.f, 720.f});
+        fullScreenBg.setFillColor(sf::Color(0, 0, 0, 255));
+        window.draw(fullScreenBg);
+
+        sf::Sprite fullScreenPirate = *pirateSprite;
+        sf::Vector2u texSize = pirateTex.getSize();
+        fullScreenPirate.setOrigin({static_cast<float>(texSize.x) / 2.f, static_cast<float>(texSize.y) / 2.f});
+        fullScreenPirate.setPosition({640.f, 360.f});
+        
+        float scaleX = 1280.f / static_cast<float>(texSize.x);
+        float scaleY = 720.f / static_cast<float>(texSize.y);
+        float scale = std::max(scaleX, scaleY)*1.15f;
+
+        float pulse = 1.0f + 0.05f * std::sin(displayTimer * 5.0f);
+        fullScreenPirate.setScale({scale * pulse, scale * pulse});
+        
+        window.draw(fullScreenPirate);
 
         if (currentMenu == PirateMenu::Result) {
             sf::Text resText(font, resultMessage);
-            resText.setCharacterSize(22);
+            resText.setCharacterSize(24);
             resText.setFillColor(sf::Color::Yellow);
             resText.setOutlineColor(sf::Color::Black);
             resText.setOutlineThickness(2);
             sf::FloatRect b = resText.getLocalBounds();
             resText.setOrigin(sf::Vector2f(b.size.x / 2.f, b.size.y / 2.f));
-            resText.setPosition(sf::Vector2f(640.f, 480.f));
+            resText.setPosition(sf::Vector2f(640.f, 580.f));
             window.draw(resText);
             
             sf::Text sub(font, "Press ENTER to continue...");
-            sub.setCharacterSize(14);
+            sub.setCharacterSize(18);
             sub.setFillColor(sf::Color::White);
             sf::FloatRect sb = sub.getLocalBounds();
             sub.setOrigin(sf::Vector2f(sb.size.x / 2.f, sb.size.y / 2.f));
-            sub.setPosition(sf::Vector2f(640.f, 530.f));
+            sub.setPosition(sf::Vector2f(640.f, 650.f));
             window.draw(sub);
         } else if (showButtons) {
             const auto& opts = (currentMenu == PirateMenu::Main) ? mainOptions : briberyOptions;
@@ -62,7 +79,6 @@ namespace Interface {
                 btn.setOrigin(sf::Vector2f(190.f, 22.5f));
                 btn.setPosition(sf::Vector2f(640.f, 420.f + (i * 65.f)));
                 
-                // Cambiar color si el mouse está sobre el botón
                 sf::FloatRect btnBounds = btn.getGlobalBounds();
                 sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
                 bool isHover = btnBounds.contains(mousePos);
@@ -85,6 +101,16 @@ namespace Interface {
                 window.draw(btn);
                 window.draw(txt);
             }
+        }
+
+        if (!showButtons && currentMenu != PirateMenu::Result) {
+            sf::Text continueText(font, "Press ENTER to continue...");
+            continueText.setCharacterSize(18);
+            continueText.setFillColor(sf::Color::White);
+            sf::FloatRect cb = continueText.getLocalBounds();
+            continueText.setOrigin(sf::Vector2f(cb.size.x / 2.f, cb.size.y / 2.f));
+            continueText.setPosition(sf::Vector2f(640.f, 650.f));
+            window.draw(continueText);
         }
     }
 
