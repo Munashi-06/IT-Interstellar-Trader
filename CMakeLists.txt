@@ -5,7 +5,18 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Forzar enlazado estático" FORCE)
 
-find_package(SFML 3 COMPONENTS Graphics Window System Audio REQUIRED)
+find_package(SFML 3 COMPONENTS Graphics Window System Audio QUIET)
+
+if(NOT SFML_FOUND)
+    message(STATUS "SFML 3 no detectado en el sistema. Descargando mediante FetchContent...")
+    include(FetchContent)
+    FetchContent_Declare(
+        SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG        3.0.0
+    )
+    FetchContent_MakeAvailable(SFML)
+endif()
 
 add_executable(IT-Interstellar-Trader 
     src/Core/main.cpp
