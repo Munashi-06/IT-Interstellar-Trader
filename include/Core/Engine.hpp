@@ -70,6 +70,7 @@ namespace Game {
         sf::Sprite backgroundSprite{AssetManager::getTexture("bg_main")};
         sf::Sprite settingsBackgroundSprite{AssetManager::getTexture("bg_settings")};
         sf::Sprite alertSprite{AssetManager::getTexture("alert_icon")};
+        sf::Sprite sunSprite{AssetManager::getTexture("sun")};
 
         sf::Text planetNameText{mainFont};
         sf::Text animBtnText{mainFont, "REGRESAR A CASA"};

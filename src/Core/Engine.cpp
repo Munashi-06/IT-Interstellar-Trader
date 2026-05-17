@@ -76,6 +76,13 @@ namespace Game {
         upgrades.initTrees(spaceShip);
         upgradeTree = std::make_unique<UpgradeTreeUI>(mainFont);
         debugMenu = std::make_unique<DebugMenuUI>(mainFont);
+
+        sunSprite.setTexture(AssetManager::getTexture("sun"));
+        sf::Vector2u sunTexSize = AssetManager::getTexture("sun").getSize();
+        sunSprite.setOrigin({static_cast<float>(sunTexSize.x) / 2.f, static_cast<float>(sunTexSize.y) / 2.f});
+        float sunScale = 80.f / std::max(sunTexSize.x, sunTexSize.y);
+        sunSprite.setScale({sunScale, sunScale});
+        sunSprite.setPosition({640.f, 360.f});
         
 
         debugMenu->setOnTriggerVictory([this]() {
@@ -149,7 +156,12 @@ namespace Game {
     }
 
     void Engine::executeAction(const std::string& option) {
-        if (option == "NEW GAME" || option == "CONTINUE") currentState = State::GameIntro;
+        if (option == "NEW GAME"){
+            currentState = State::GameIntro;
+        } 
+        else if (option == "CONTINUE"){
+            currentState = State::Playing;
+        }
         else if (option == "SETTINGS") {
             currentState = State::Options;
         }
@@ -792,12 +804,7 @@ namespace Game {
             window.draw(generalBackground); 
             bgStars.draw(window, spaceShip.getPosition());
 
-            sf::Vector2f center(640.f, 360.f);
-            sf::CircleShape sun(15.f);
-            sun.setFillColor(sf::Color::White);
-            sun.setOrigin({15.f, 15.f});
-            sun.setPosition(center);
-            window.draw(sun);
+            window.draw(sunSprite);
 
             const auto& planets = world->getPlanets();
             for (size_t i = 0; i < planets.size(); ++i) {

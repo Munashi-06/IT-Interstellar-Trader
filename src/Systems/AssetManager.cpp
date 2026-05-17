@@ -31,6 +31,7 @@ bool AssetManager::loadAll() {
     loadTex("bg_main", "assets/mainMenu_background.jpeg");
     loadTex("bg_settings", "assets/settingsMenu_background.png");
     loadTex("alert_icon", "assets/alert_icon.png");
+    loadTex("sun", "assets/planets/sun.png");
     // Add all future textures here! e.g., loadTex(“player”, “assets/player.png”);
 
     std::cout << "[FILES] Todos los recursos cargados exitosamente.\n";
