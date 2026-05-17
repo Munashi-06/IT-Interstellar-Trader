@@ -312,7 +312,6 @@ void ShipMenuUI::handleInput(const sf::Event& event, const sf::Vector2f& mousePo
             // Clic on SAVE & EXIT
             if (saveExitBtn.getGlobalBounds().contains(mousePos)) {
                 SaveSystem::saveGame(player, upgrades, planets);
-                std::cout << "[SYSTEM] Game successfully saved from the in-game console.\n";
                 currentState = State::Menu;
                 return;
             }

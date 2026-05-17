@@ -26,8 +26,8 @@ public:
         globalCatalog = ItemFactory::loadDatabase("assets/data/items.txt");
     }
     
-    bool update(Player& player); // Devuelve si hubo cambios en el estado del mundo que requieran actualizar la interfaz
-
+    bool update(Player& player, bool& outRestocked); // Returns true if state changed, sets outRestocked if it was a market update
+    
     std::unique_ptr<Heap>& getRadar() { return radar; }
     void setDeltaTime(float dt) { deltaTime = dt; }
     float getDeltaTime() const { return deltaTime; }

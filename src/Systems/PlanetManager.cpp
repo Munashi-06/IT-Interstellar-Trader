@@ -1,25 +1,5 @@
 #include "Systems/PlanetManager.hpp"
 
-/*
-Why use a std::map<int, std::vector<Planet>>?
-    Automatic Grouping: The map organizes planets by their orbit immediately upon reading the file.
-
-    Uniqueness Guarantee: By iterating over the map keys, you ensure that you only choose one planet for each orbit number.
-
-    Flexibility: If you have 50 planets in your file, but 10 are in orbit 1, the code will pick only one of those 10 at random and move on to search in orbit 2.
-
-How to use it in main.cpp or a future Game class:
-
-        // Generate the solar system for the match
-        std::vector<Planet> solarSystem = PlanetManager::loadUniqueOrbitPlanets("planets_db.txt");
-
-        // Now you can use them in your SFML logic
-        for (const auto& p : solarSystem) {
-            std::cout << "Planet: " << p.getName() << " | Orbit: " << p.getOrbit() << std::endl;
-        }
-
-*/
-
 std::vector<Planet> PlanetManager::loadUniqueOrbitPlanets(const std::string& filename) {
     std::map<int, std::vector<Planet>> orbitPool;
     std::ifstream file(filename);

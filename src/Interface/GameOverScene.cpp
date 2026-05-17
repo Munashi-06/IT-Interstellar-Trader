@@ -21,8 +21,6 @@ namespace Game {
           baseScale(1.0f),
           deathReason(DeathReason::NoMoneyNoItems)  // Default reason
     {
-        std::cout << "[GAMEOVER] Constructor called" << std::endl;
-        
         // Create texture
         anim09Texture = std::make_unique<sf::Texture>();
         
@@ -31,11 +29,10 @@ namespace Game {
             std::cerr << "[GAMEOVER] Error: Could not load assets/anim06.png" << std::endl;
             if (!anim09Texture->loadFromFile("assets/anim03.png")) {
                 std::cerr << "[GAMEOVER] Error: Could not load anim03.png either" << std::endl;
-            } else {
+            }
+            else {
                 std::cout << "[GAMEOVER] Using anim03.png as fallback" << std::endl;
             }
-        } else {
-            std::cout << "[GAMEOVER] anim06.png loaded successfully" << std::endl;
         }
         
         // Create sprite with the texture
@@ -82,8 +79,6 @@ namespace Game {
         sf::FloatRect contBounds = continueText.getLocalBounds();
         continueText.setOrigin(sf::Vector2f(contBounds.size.x / 2.f, contBounds.size.y / 2.f));
         continueText.setPosition(sf::Vector2f(640.f, 650.f));
-        
-        std::cout << "[GAMEOVER] Constructor completed" << std::endl;
     }
 
     //=============================================================================
@@ -157,7 +152,6 @@ namespace Game {
         if (const auto* key = event.getIf<sf::Event::KeyPressed>()) {
             if (key->code == sf::Keyboard::Key::Enter) {
                 active = false;
-                std::cout << "[GAMEOVER] Enter pressed, deactivating" << std::endl;
                 return true;
             }
         }
@@ -244,7 +238,6 @@ namespace Game {
         active = a;
         if (active) {
             reset();
-            std::cout << "[GAMEOVER] Activated" << std::endl;
         }
     }
 

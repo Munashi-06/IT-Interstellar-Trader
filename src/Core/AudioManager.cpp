@@ -15,7 +15,6 @@ bool AudioManager::loadMusic(const std::string& path){
     currentMusicPath = path;
     music.setLooping(true);
     music.setVolume(static_cast<float>(musicVolume));
-    std::cout << "Música cargada: " << path << std::endl;
     return true;
 }
 
@@ -66,10 +65,6 @@ bool AudioManager::loadSFX(const std::string& hoverPath, const std::string& clic
         success = false;
     }
 
-    if (success){
-        std::cout << "Efectos de sonido cargados: " << hoverPath << ", " << clickPath << std::endl;
-    }
-
     return success;
 }
 
@@ -111,7 +106,6 @@ bool AudioManager::loadTheme(const std::string& path){
     currentMusicPath = path;
     music.setLooping(true);
     music.setVolume(static_cast<float>(musicVolume));
-    std::cout << "Theme cargado: " << path << std::endl;
     return true;
 }
 

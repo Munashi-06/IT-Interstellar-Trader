@@ -34,4 +34,6 @@ public:
     static bool loadGame(SaveData& outData);
 
     static void handleImput();
+
+    static void deleteSave();
 };

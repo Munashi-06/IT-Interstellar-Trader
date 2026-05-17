@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <cstdio> // For std::remove in SaveSystem::deleteSave()
 
 std::string SaveSystem::currentSeedText = "";
 
@@ -17,7 +18,6 @@ unsigned int SaveSystem::setGameSeed(const std::string& seedText) {
         finalSeed = static_cast<unsigned int>(hasher(seedText));
     }
     std::srand(finalSeed);
-    std::cout << "[SEED] Universe initialized with: " << currentSeedText << "\n";
     return finalSeed;
 }
 
@@ -71,7 +71,6 @@ bool SaveSystem::saveGame(Player& player, const UpgradeManager& upgrades, const 
     }
     file << "\n";
 
-    std::cout << "[SAVE] Save file saved successfully.\n";
     return true;
 }
 
@@ -144,6 +143,12 @@ bool SaveSystem::loadGame(SaveData& outData) {
             }
         }
     }
-    std::cout << "[SAVE] Save file loaded successfully.\n";
     return true;
+}
+
+void SaveSystem::deleteSave() {
+    if (std::remove("save.dat") == 0) {
+    }
+    else {
+    }
 }

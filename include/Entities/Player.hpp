@@ -34,7 +34,6 @@ public:
     void setEventFrequencyBonus(bool val) { hasEventFrequencyBonus = val; }
     void setEventDurationBonus(bool val) { hasEventDurationBonus = val; }
     void setIsSmuggler(bool val) { isSmuggler = val; }
-    void setIsManipulator(bool val) { isManipulator = val; }
     void setDiscount(float val) { discount = val; }
     void setCorporateLicense(bool val) { corporateLicense = val; }
     void setMonopolyCharter(bool val) { monopolyCharter = val; }
@@ -61,7 +60,6 @@ public:
     bool gethasEventFrequencyBonus() const { return hasEventFrequencyBonus; }
     bool gethasEventDurationBonus() const { return hasEventDurationBonus; }
     bool getisSmuggler() const { return isSmuggler; }
-    bool getisManipulator() const { return isManipulator; }
     float getDiscount() const { return discount; }
     bool getCorporateLicense() const { return corporateLicense; }
     bool getMonopolyCharter() const { return monopolyCharter; }
@@ -99,7 +97,6 @@ private:
     bool hasEventFrequencyBonus = false;
     bool hasEventDurationBonus = false;
     bool isSmuggler = false;
-    bool isManipulator = false;
 
     float discount = 0.00f; // Percentage discount for trading (e.g., 0.05 for 5% discount)
     bool corporateLicense = false; // Whether the player has a corporate license for trading in high-security planets

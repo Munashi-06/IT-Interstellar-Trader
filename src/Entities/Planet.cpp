@@ -478,13 +478,9 @@ void Planet::restockMarket(const std::unordered_map<std::string, std::unique_ptr
                 int maxRestock = std::min(slot->initialQuantity, slot->maxStackSize);
                 slot->quantity = std::min(slot->quantity + restockAmount, maxRestock);
                 itemsRestocked++;
-                std::cout << "  [RESTOOK] " << itemData->getName() << ": " << oldQty << " -> " << slot->quantity << std::endl;
             } else {
                 itemsSkippedFull++;
             }
         }
     }
-    
-    std::cout << "[RESTOOK] " << name << ": " << itemsRestocked << " reabastecidos, "
-              << itemsSkippedFull << " llenos, " << itemsAtZero << " en cero." << std::endl;
 }

@@ -292,8 +292,8 @@ void UpgradeTreeUI::handleNodeClick(std::shared_ptr<BinNode<Upgrade>> node, std:
             if (playerMoney >= K(node).cost) {
                 // There is enough money; purchase the upgrade
                 manager.purchaseUpgrade(node, sibling, playerMoney);
-                std::cout << "[UPGRADE] Successfully purchased: " << K(node).name << "\n";
-            } else {
+            }
+            else {
                 // No money
                 outMessage = "Insufficient funds. You need: " + std::to_string(static_cast<int>(K(node).cost)) + " Bs.";
             }

@@ -1,9 +1,10 @@
 #include "Core/World.hpp"
 
-bool World::update(Player& player) {
+bool World::update(Player& player, bool& outRestocked) {
     bool hasChanged = stateManager.update(deltaTime, solarSystem, player);
+    outRestocked = false; // 1. Default to false every frame
     
-    // RESTOCK TIMER: Restock markets every 300 seconds (5 minutes), influenced by the player's ship level (higher level = more frequent restocks)
+    // RESTOCK TIMER: Restock markets every 300 seconds (5 minutes)
     static float restockTimer = 0.0f;
     restockTimer += deltaTime;
     
@@ -12,8 +13,8 @@ bool World::update(Player& player) {
             planet.restockMarket(globalCatalog, player.getShipLevel());
         }
         restockTimer = 0.0f;
-        std::cout << "[ECONOMIA] Restock de mercados planetarios (nivel " << player.getShipLevel() << ")." << std::endl;
         hasChanged = true;
+        outRestocked = true; // 2. Signal the Engine that a restock just happened!
     }
     
     if (hasChanged) {

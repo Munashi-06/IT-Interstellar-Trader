@@ -18,13 +18,9 @@ namespace Game {
           gameIntro(1280.f, 720.f),
           spaceShip(640.f + 132.f, 360.f, "assets/player.png"),
           gameOverScene(nullptr)
-    {
-        std::cout << "[ENGINE] Constructor llamado" << std::endl;
-    }
+    {}
 
     bool Engine::init() {
-        std::cout << "[ENGINE] Iniciando init()..." << std::endl;
-        
         // 1. CARGAR TODOS LOS ARCHIVOS PRIMERO
         if (!AssetManager::loadAll()) {
             std::cerr << "[ENGINE] Error: AssetManager::loadAll() fallo" << std::endl;
@@ -144,14 +140,11 @@ namespace Game {
         gameIntro.loadAssets(mainFont);
         
         // CREAR GAMEOVERSCENE AQUÍ
-        std::cout << "[ENGINE] Creando GameOverScene..." << std::endl;
         gameOverScene = std::make_unique<Game::GameOverScene>(mainFont);
         if (!gameOverScene) {
             std::cerr << "[ENGINE] Error: Failed to create GameOverScene" << std::endl;
             return false;
         }
-        std::cout << "[ENGINE] GameOverScene creado correctamente" << std::endl;
-
         return true;
     }
 
@@ -221,9 +214,17 @@ namespace Game {
         sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
         if (currentState == State::Playing) {
-            if (world->update(spaceShip)) {
-                alertTimer = 3.0f;
-                if(spaceShip.gethasAdvancedRadar()) radarUI->update(world->getRadar()->getHeapArray());
+            bool marketRestocked = false;
+            if (world->update(spaceShip, marketRestocked)) {
+                if (marketRestocked) {
+                    // It was a 5-minute restock: Show the Pop-up
+                    popup->show("MARKET UPDATE: All planetary markets have been successfully restocked.", 3.5f);
+                    audio.playClick();
+                }
+                else {
+                    alertTimer = 3.0f;
+                }
+                if(spaceShip.gethasAdvancedRadar()) radarUI->update(world->getRadar()->getHeapArray()); 
             }
             if (alertTimer > 0) alertTimer -= dt;
 
@@ -348,7 +349,12 @@ namespace Game {
                     }
                     else if (keyPressed->code == sf::Keyboard::Key::Enter || keyPressed->code == sf::Keyboard::Key::Space) {
                         std::string opt = mainMenu->getSelectedOption();
-                        if (opt == "CONTINUE" && !SaveSystem::saveExists()) continue;
+                        // --- SHOW POP-UP IF THERE IS NO SAVE ---
+                        if (opt == "CONTINUE" && !SaveSystem::saveExists()) {
+                            popup->show("There is no SaveFile. or. You Lost Your Last Game and. The SaveFile has been Deleted", 2.f);
+                            audio.playClick();
+                            continue; // Skip the rest of the loop
+                        }
                         
                         executeAction(opt);
                         
@@ -418,7 +424,12 @@ namespace Game {
                         // If the click was on an empty area, we ignore the event
                         if (opt == "") continue;
 
-                        if (opt == "CONTINUE" && !SaveSystem::saveExists()) continue;
+                        // --- SHOW POP-UP IF THERE IS NO SAVE ---
+                        if (opt == "CONTINUE" && !SaveSystem::saveExists()) {
+                            popup->show("There is no SaveFile. or. You Lost Your Last Game and. The SaveFile has been Deleted", 2.f);
+                            audio.playClick();
+                            continue; // Skip the rest of the loop
+                        }
                         
                         executeAction(opt);
                         if (opt == "NEW GAME") {
@@ -706,7 +717,7 @@ namespace Game {
             }     
             else if (currentState == State::GameOver) {
                 if (gameOverScene && gameOverScene->handleInput(*event)) {
-                    std::cout << "[ENGINE] Returning to main menu from Game Over" << std::endl;
+                    SaveSystem::deleteSave();
                     currentState = State::Menu;
                     spaceShip.resetToDefaults();
                     upgrades.resetTrees();

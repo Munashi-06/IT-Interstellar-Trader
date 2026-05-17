@@ -122,66 +122,62 @@ void UpgradeManager::initTrees(Player& player) {
     L(R(L(propulsionTree))) = std::make_shared<BinNode<Upgrade>>(std::move(coldResistance));
 
     // RIGHT CHILD OF ION THRUSTER: Nuclear Propulsion
-    // Effect: Unlocks Orbit 7 and increases travel speed by 50%
+    // Effect: Unlocks Orbit 7
     Upgrade nuclearPropulsion(
         "prop_2", 
         "Nuclear Propulsion", 
-        "Next-gen propulsion system. Unlocks Orbit 7 and 1. Increases travel speed by 50%.", 
+        "Next-gen propulsion system. Unlocks Orbit 7 and 1.", 
         3500.0f, 
         false, 
         [&player]() {
             player.setMaxOrbit(7);
             player.setMinOrbit(1);
-            // player.setTravelSpeed(player.getTravelSpeed() * 1.5f);
         }
     );
 
     R(propulsionTree) = std::make_shared<BinNode<Upgrade>>(std::move(nuclearPropulsion));
 
     // RIGHT CHILD OF NUCLEAR PROPULSION: Fusion Propulsion
-    // Effect: Unlocks Orbits 8 & 9 and increases travel speed by an extra 25%
+    // Effect: Unlocks Orbits 8 & 9
     Upgrade fusionPropulsion(
         "prop_3", 
         "Fusion Propulsion", 
-        "Enhanced nuclear propulsion. Unlocks Orbits 8 & 9 and increases travel speed by an extra 25%.", 
+        "Enhanced nuclear propulsion. Unlocks Orbits 8 & 9.", 
         5000.0f, 
         false, 
         [&player]() {
             player.setMaxOrbit(9);
-            // player.setTravelSpeed((player.getTravelSpeed()/(1*5f))*1.75f);
         }
     );
 
     R(R(propulsionTree)) = std::make_shared<BinNode<Upgrade>>(std::move(fusionPropulsion));
 
     // RIGHT CHILD OF FUSION PROPULSION: Antimatter Propulsion
-    // Effect: Unlocks Orbit 10 and increases travel speed by an extra 50%
+    // Effect: Unlocks Orbit 10
     Upgrade antimatterPropulsion(
         "prop_4", 
         "Antimatter Propulsion", 
-        "State-of-the-art propulsion. Unlocks Orbit 10 and increases travel speed by an extra 50%.", 
+        "State-of-the-art propulsion. Unlocks Orbit 10.", 
         8000.0f, 
         false, 
         [&player]() {
             player.setMaxOrbit(10);
-            // player.setTravelSpeed((player.getTravelSpeed()/(1*5f))*2.25f);
         }
     );
 
     R(R(R(propulsionTree))) = std::make_shared<BinNode<Upgrade>>(std::move(antimatterPropulsion));
 
     // RIGHT CHILD OF ANTIMATTER PROPULSION: Warp Drive
-    // Effect: Allows Player to return home and travel speed becomes irrelevant
+    // Effect: Allows Player to return home
     Upgrade warpDrive(
         "prop_5", 
         "Warp Drive", 
-        "Revolutionary propulsion. Allows instant travel between any orbits. YOU ARE FREE TO GO HOME.", 
+        "Revolutionary propulsion. YOU ARE FREE TO GO HOME.", 
         15000.0f, 
         false, 
         [&player]() {
             player.setMinOrbit(1);
             player.setMaxOrbit(10);
-            // player.setTravelSpeed(9999.f);
             player.setHasWarpDrive(true);
         }
     );
@@ -267,7 +263,7 @@ void UpgradeManager::initTrees(Player& player) {
     L(L(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage));
     L(R(L(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(quantumStorage2));
 
-    // ================= BRANCH B: THE BROKER (RIGHT) - NUEVA ESTRUCTURA =================
+    // ================= BRANCH B: THE BROKER (RIGHT) =================
 
     // RIGHT CHILD (NUEVO PADRE): Deep Market Scanners
     Upgrade marketScanners(
@@ -283,11 +279,11 @@ void UpgradeManager::initTrees(Player& player) {
 
     R(logisticsTree) = std::make_shared<BinNode<Upgrade>>(std::move(marketScanners));
 
-    // RIGHT-LEFT CHILD: Insider Trading Link (Desplazado hacia abajo a la izquierda)
+    // RIGHT-LEFT CHILD: Insider Trading Link
     Upgrade insiderTrading(
         "log_intel_2", 
         "Insider Trading Link", 
-        "Tap into corporate networks. Planet events last 30 seconds longer.", 
+        "Tap into corporate networks. Planet events last 30 seconds longer. You cannot make evets more frequent", 
         2000.0f, 
         true, 
         [&player]() {
@@ -297,33 +293,19 @@ void UpgradeManager::initTrees(Player& player) {
 
     L(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(insiderTrading));
 
-    // RIGHT-LEFT-LEFT CHILD: Market Predictor Algorithm (Hijo de Insider Trading)
+    // RIGHT-RIGHT CHILD: Market Predictor Algorithm (Deep Market Scanners Child)
     Upgrade marketPredictor(
         "log_intel_1", 
         "Market Predictor", 
-        "Advanced AI intercepts comms. Increases Planet Event frequency. No room for extra cargo.", 
+        "Advanced AI intercepts comms. Increases Planet Event frequency. You cannot make events last longer", 
         2500.0f, 
-        false,
+        true,
         [&player]() {
             player.setEventFrequencyBonus(true);
         }
     );
 
-    R(L(R(logisticsTree))) = std::make_shared<BinNode<Upgrade>>(std::move(marketPredictor));
-
-    // RIGHT-LEFT-RIGHT CHILD: Manipulator Chip (Hijo de Insider Trading)
-    Upgrade manipulatorChip(
-        "log_intel_3", 
-        "Manipulator Chip", 
-        "Illicit tech manipulates local conditions. Allows triggering one event every 4 minutes. Only can trigger War, Plague or Tech Boom events. Costs 5000 credits per use.", 
-        3000.0f, 
-        true,
-        [&player]() {
-            player.setIsManipulator(true);
-        }
-    );
-
-    R(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(manipulatorChip));
+    R(R(logisticsTree)) = std::make_shared<BinNode<Upgrade>>(std::move(marketPredictor));
 
 #pragma endregion
 
@@ -542,28 +524,21 @@ std::string UpgradeManager::findDeepestPurchased(std::shared_ptr<BinNode<Upgrade
     
     searchDeepest(node, 0);
     
-    if (deepestId.empty()) {
-        std::cout << "[SYSTEM] No purchased upgrades found in this branch." << std::endl;
-    } else {
-        std::cout << "[SYSTEM] Deepest upgrade found: " << deepestId << " at depth " << maxDepth << std::endl;
-    }
-    
     return deepestId;
 }
 
 bool UpgradeManager::deactivateDeepestUpgrade(Player& player, int treeType, int branch) {
-    // 1. Elegir el árbol raíz
+    // 1. Select the root tree
     std::shared_ptr<BinNode<Upgrade>> rootToSearch = nullptr;
     if (treeType == 1) rootToSearch = propulsionTree;
     else if (treeType == 2) rootToSearch = logisticsTree;
     else if (treeType == 3) rootToSearch = tradingTree;
 
     if (!rootToSearch) {
-        std::cout << "[SYSTEM] Invalid tree type." << std::endl;
         return false;
     }
 
-    // 2. Definir en qué rama vamos a buscar inicialmente
+    // 2. Specify which branch to search initially
     std::shared_ptr<BinNode<Upgrade>> startNode = rootToSearch;
     if (branch == 1 && L(rootToSearch)) {
         startNode = L(rootToSearch);
@@ -572,67 +547,61 @@ bool UpgradeManager::deactivateDeepestUpgrade(Player& player, int treeType, int 
         startNode = R(rootToSearch);
     } 
 
-    // 3. Encontrar la última mejora de esa zona
+    // 3. Find the latest improvement in that area
     std::string idToRemove = findDeepestPurchased(startNode);
     
-    // Si no encontró nada en la rama específica, el daño rebota y busca en TODO el árbol
+    // If nothing is found in the specific branch, the damage bounces back and searches the ENTIRE tree
     if (idToRemove.empty()) {
-        std::cout << "[SYSTEM] Rama vacia. Redirigiendo el daño al resto del sistema..." << std::endl;
-        // Al buscar desde rootToSearch, revisará automáticamente la rama contraria y,
-        // si la contraria también está vacía, ¡seleccionará al mismísimo Nodo Padre!
+        // When searching from rootToSearch, it will automatically check the opposite branch, and
+        // if the opposite branch is also empty, it will select the parent node itself!
         idToRemove = findDeepestPurchased(rootToSearch);
     }
 
-    // Si después de buscar en todo el árbol sigue vacío, es que no hay absolutamente nada comprado
+    // If the tree is still empty after searching through it, that means absolutely nothing has been purchased
     if (idToRemove.empty()) {
-        std::cout << "[SYSTEM] No hay mejoras compradas en este arbol.\n";
         return false; 
     }
 
-    std::cout << "[SYSTEM] Eliminando la mejora: " << idToRemove << std::endl;
-
-    // 4. Obtener TODAS las mejoras globales y borrar la víctima de la lista
+    // 4. Retrieve ALL global buffs and remove the target from the list
     std::vector<std::string> currentUpgrades = getPurchasedUpgrades();
     
-    // Verificar que el upgrade existe en la lista
+    // Check that the upgrade is in the list
     auto it = std::find(currentUpgrades.begin(), currentUpgrades.end(), idToRemove);
     if (it == currentUpgrades.end()) {
-        std::cout << "[SYSTEM] Error: Mejora no encontrada en la lista!" << std::endl;
         return false;
     }
     
     currentUpgrades.erase(it);
 
-    // 5. Guardar el estado actual que NO queremos perder
+    // 5. Save the current state that we do NOT want to lose
     float savedMoney = player.getMoney();
     short savedOrbit = player.getCurrentOrbit();
     auto savedItems = player.getInventory().getSlots();
 
-    // 6. ¡FORMATEO DE FÁBRICA!
+    // 6. FACTORY RESET!
     player.resetToDefaults();
     resetTrees();
 
-    // 7. Re-aplicar el resto de mejoras
+    // 7. Reapply the remaining improvements
     loadPurchasedUpgrades(currentUpgrades);
 
-    // 8. Restaurar el estado guardado
+    // 8. Restore the saved state
     player.setMoney(savedMoney);
 
-    // Seguridad de Órbita
+    // Orbital Safety
     short minLegal = player.getMinOrbitReach();
     short maxLegal = player.getMaxOrbitReach();
     if (savedOrbit < minLegal) savedOrbit = minLegal;
     if (savedOrbit > maxLegal) savedOrbit = maxLegal;
     player.setCurrentOrbit(savedOrbit);
 
-    // Restaurar los items en el inventario
+    // Restore the items in the inventory
     player.getInventory().clearAll();
     for (const auto& slot : savedItems) {
         if (slot.has_value()) {
             player.getInventory().addItem(slot->itemID, slot->quantity, slot->maxStackSize, slot->buyPrice);
         }
     }
-
-    std::cout << "[SYSTEM] La mejora " << idToRemove << " ha sido destruida.\n";
+    
     return true;
 }

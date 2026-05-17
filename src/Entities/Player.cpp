@@ -131,7 +131,6 @@ void Player::resetToDefaults() {
     hasEventFrequencyBonus = false;
     hasEventDurationBonus = false;
     isSmuggler = false;
-    isManipulator = false;
 
     discount = 0.00f;
     corporateLicense = false;
